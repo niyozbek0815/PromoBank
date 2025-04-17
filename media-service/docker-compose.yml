@@ -1,0 +1,66 @@
+services:
+
+  # media Server Service
+  media_nginx:
+    image: nginx:alpine
+    container_name: media_nginx
+    ports:
+      - "8088:80"
+    volumes:
+      - ./src:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    depends_on:
+      - media_app
+      - media_db
+    networks:
+    - promobank
+
+  #Database Service
+  # db:s
+  #   image : mysql
+  #   container_name : mysql
+  #   volumes:
+  #     - ./mysql/data:/var/lib/mysql
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     MYSQL_DATABASE: blog
+  #     MYSQL_ROOT_PASSWORD: password
+  media_db:
+    image: postgres
+    container_name: media_db
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
+    ports:
+      - "5440:5432"
+    environment:  
+      POSTGRES_DB: media_db
+      POSTGRES_USER: root 
+      POSTGRES_PASSWORD: password 
+    networks:
+    - promobank
+  # Application Service
+  media_app:
+    container_name: media_app
+    build: 
+      context: ./php
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/var/www
+    # ports:
+    #   - "9000:9000"
+    working_dir: /var/www
+    networks:
+      - promobank
+
+  #phpMyAdmin Service
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   container_name: phpmyadmin
+  #   ports:
+  #     - "3400:80"
+  #   depends_on:
+  #     - db
+networks:
+  promobank:
+    driver: bridge

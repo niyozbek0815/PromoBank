@@ -1,0 +1,66 @@
+services:
+
+  # Web Server Service
+  promo_nginx:
+    image: nginx:alpine
+    container_name: promo_nginx
+    ports:
+      - "8082:80"
+    volumes:
+      - ./src:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    depends_on:
+      - promo_app
+      - promo_db
+    networks:
+    - promobank
+
+  #Database Service
+  # db:
+  #   image : mysql
+  #   container_name : mysql
+  #   volumes:
+  #     - ./mysql/data:/var/lib/mysql
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     MYSQL_DATABASE: blog
+  #     MYSQL_ROOT_PASSWORD: password
+  promo_db:
+    image: postgres
+    container_name: promo_db
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    environment:  
+      POSTGRES_DB: promo_db
+      POSTGRES_USER: root 
+      POSTGRES_PASSWORD: password 
+    networks:
+    - promobank
+  # Application Service
+  promo_app:
+    container_name: promo_app
+    build: 
+      context: ./php
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/var/www
+    # ports:
+    #   - "9000:9000"
+    working_dir: /var/www
+    networks:
+      - promobank
+
+  #phpMyAdmin Service
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   container_name: phpmyadmin
+  #   ports:
+  #     - "3400:80"
+  #   depends_on:
+  #     - db
+networks:
+  promobank:
+    driver: bridge

@@ -1,0 +1,15 @@
+docker network create promobank
+docker compose -f docker/pgadmin/docker-compose.pgadmin.yml up -d
+
+har bir serviceni alohida 
+cd service_name
+docker-compose build
+docker-compose up -d
+cd src
+docker-compose exec your_app_name php artisan migrate
+qilib chiqish kerak
+
+
+global composerni elon qilish
+echo 'export PATH="/usr/local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
