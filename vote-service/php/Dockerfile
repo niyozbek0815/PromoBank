@@ -5,6 +5,7 @@ RUN echo "\e[1;33mInstall COMPOSER\e[0m" \
     && cd /tmp \
     && curl -sS https://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/composer
+RUN docker-php-ext-install pcntl
 # 2. PHP extensionlar va system kutubxonalarini o‘rnatish
 RUN apt-get update \
     && apt-get -y install --no-install-recommends \
