@@ -53,6 +53,20 @@ services:
     networks:
       - promobank
 
+  promo_horizon:
+    container_name: promo_horizon
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    depends_on:
+      - promo_app
+    command: php artisan horizon
+    volumes:
+      - ./src:/var/www
+    working_dir: /var/www
+    networks:
+      - promobank
+    restart: unless-stopped
   #phpMyAdmin Service
   # phpmyadmin:
   #   image: phpmyadmin/phpmyadmin

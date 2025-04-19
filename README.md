@@ -28,7 +28,7 @@ Platforma turli kanallar (web, telegram, mobil) orqali yirik brendlar uchun prom
 
 ## 🧪 Texnologiyalar
 
-- PHP 8.3
+- PHP 8.4
 - Laravel 11
 - Docker + Docker Compose
 - PHP-FPM

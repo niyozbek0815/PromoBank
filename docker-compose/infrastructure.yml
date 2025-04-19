@@ -1,0 +1,41 @@
+services:
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: qadar@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - promobank
+
+  redis:
+    image: redis:7-alpine
+    container_name: promobank_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - promobank
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: promobank_rabbitmq
+    ports:
+      - "5672:5672"       # AMQP
+      - "15672:15672"     # Web UI
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    networks:
+      - promobank
+
+volumes:
+  pgadmin-data:
+
+networks:
+  promobank:
+    external: true

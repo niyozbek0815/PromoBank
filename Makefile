@@ -1,7 +1,7 @@
 # Docker settings
 DOCKER_NETWORK=promobank
-SERVICES=api-gateway auth-service promo-service game-service payment-service notification-service web-service media-service vote-service
-PGADMIN_COMPOSE=docker/pgadmin/docker-compose.pgadmin.yml
+SERVICES= api-getaway auth-service promo-service game-service payment-service notification-service profile-service web-service media-service vote-service
+INFRA_COMPOSE=docker-compose/infrastructure.yml
 
 # Helper
 .PHONY: help
@@ -39,7 +39,10 @@ help:
 	@echo "  make optimize                       # Optimize all Laravel services"
 	@echo "  make optimize s=\"auth-service\"     # Optimize specific service"
 	@echo ""
-
+	@echo "🧰 CUSTOM COMMAND:"
+	@echo "  make run s=service c='command'      # Run any command inside a service (artisan, composer, bash...)"
+	@echo "  make run-all c='command'            # Run a command in all services"
+	@echo "                                      # Example: make run s=\"auth-service\" c=\"php artisan migrate\""
 # Create Docker network if not exists
 .PHONY: network
 network:
@@ -51,9 +54,9 @@ network:
 	fi
 
 # Start pgAdmin
-.PHONY: pgadmin
-pgadmin:
-	docker compose -f $(PGADMIN_COMPOSE) up -d
+.PHONY: docker-global
+docker-global:
+	docker compose -f $(INFRA_COMPOSE) up -d
 
 # Build services
 .PHONY: build
@@ -163,5 +166,29 @@ optimize:
 			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-gateway/_app/')"; \
 			echo "🚀 Optimizing $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan optimize; \
+		done; \
+	fi
+# Run any custom command inside a service container
+.PHONY: run
+run:
+	@if [ -z "$(s)" ] || [ -z "$(c)" ]; then \
+		echo "❌ Usage: make run s=\"service1 service2\" c='your-command'"; \
+	else \
+		for service in $(s); do \
+			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
+			echo "⚙️ Running command in $$service (container: $$app_container): $(c)"; \
+			docker compose -f $$service/docker-compose.yml exec -T $$app_container sh -c '$(c)'; \
+		done; \
+	fi
+x.PHONY: run-all
+run-all:
+	@if [ -z "$(c)" ]; then \
+		echo "❌ Please provide a command to run in all services:"; \
+		echo "   make run-all c=\"php artisan migrate\""; \
+	else \
+		for service in $(SERVICES); do \
+			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
+			echo "▶️ Running in $$service (container: $$app_container): $(c)"; \
+			docker compose -f $$service/docker-compose.yml exec -T $$app_container sh -c '$(c)'; \
 		done; \
 	fi
