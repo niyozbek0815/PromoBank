@@ -17,7 +17,7 @@ help:
 	@echo ""
 	@echo "🚀 UP:"
 	@echo "  make up                             # Run all services"
-	@echo "  make up s=\"api-gateway\""
+	@echo "  make up s=\"api-getaway\""
 	@echo ""
 	@echo "📦 MIGRATE:"
 	@echo "  make migrate                        # Migrate all services"
@@ -26,7 +26,7 @@ help:
 	@echo "🧯 DOWN:"
 	@echo "  make down                           # Stop all services"
 	@echo "  make down s=\"auth-service\""
-	@echo "  make down s=\"api-gateway promo-service\""
+	@echo "  make down s=\"api-getaway promo-service\""
 	@echo ""
 	@echo "♻️ RESTART:"
 	@echo "  make restart                        # Restart all services (down -> build -> up)"
@@ -93,13 +93,13 @@ up:
 migrate:
 	@if [ -z "$(s)" ]; then \
 		for service in $(SERVICES); do \
-			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-gateway/_app/')"; \
+			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
 			echo "📦 Migrating $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan migrate; \
 		done; \
 	else \
 		for service in $(s); do \
-			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-gateway/_app/')"; \
+			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
 			echo "📦 Migrating $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan migrate; \
 		done; \
@@ -146,7 +146,7 @@ key:
 		echo "❌ Please specify the service with: make key s=\"service-name\""; \
 	else \
 		for service in $(s); do \
-			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-gateway/_app/')"; \
+			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
 			echo "🔑 Generating APP_KEY for $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan key:generate; \
 		done; \
@@ -157,13 +157,13 @@ key:
 optimize:
 	@if [ -z "$(s)" ]; then \
 		for service in $(SERVICES); do \
-			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-gateway/_app/')"; \
+			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
 			echo "🚀 Optimizing $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan optimize; \
 		done; \
 	else \
 		for service in $(s); do \
-			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-gateway/_app/')"; \
+			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
 			echo "🚀 Optimizing $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan optimize; \
 		done; \
