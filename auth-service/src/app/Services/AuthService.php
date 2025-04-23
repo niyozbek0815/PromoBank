@@ -28,8 +28,6 @@ class AuthService
                 'is_guest' => true
             ]
         );
-
-
         if ($user->wasRecentlyCreated) {
             // Yangi foydalanuvchi yaratildi
             $is_new = true;

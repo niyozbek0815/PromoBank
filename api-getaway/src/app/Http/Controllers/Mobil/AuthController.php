@@ -21,9 +21,9 @@ class AuthController extends Controller
         return $this->forwardRequest($this->url, '/login', $request);
     }
 
-    public function guest(Request $request)
+    public function register(Request $request)
     {
-        return $this->forwardRequest($this->url, '/guest', $request);
+        return $this->forwardRequest($this->url, '/register', $request);
     }
 
     // public function me(Request $request)

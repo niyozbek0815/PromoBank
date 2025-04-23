@@ -14,10 +14,7 @@ return new class extends Migration
         Schema::create('districts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('region_id')->constrained()->cascadeOnUpdate();
-            $table->integer('tarif_id');
             $table->string('name');
-            $table->boolean('status')->default(false);
-            $table->timestamps();
         });
     }
 
