@@ -34,5 +34,10 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'playmobile' => [
+        'username' => env('PLAYMOBILE_USERNAME'),
+        'password' => env('PLAYMOBILE_PASSWORD'),
+        'endpoint' => env('PLAYMOBILE_ENDPOINT'),
+    ],
 
 ];

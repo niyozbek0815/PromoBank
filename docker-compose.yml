@@ -1,0 +1,48 @@
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - api_app
+      - auth_app
+      - promo_app
+      - media_app
+    networks:
+      - promobank
+
+  api_app:
+    build:
+      context: ./api-getaway/php
+    container_name: api_app
+    networks:
+      - promobank
+
+  auth_app:
+    build:
+      context: ./auth-service/php
+    container_name: auth_app
+    networks:
+      - promobank
+
+  promo_app:
+    build:
+      context: ./promo-service/php
+    container_name: promo_app
+    networks:
+      - promobank
+
+  media_app:
+    build:
+      context: ./media-service/php
+    container_name: media_app
+    networks:
+      - promobank
+
+networks:
+  promobank:
+    external: true

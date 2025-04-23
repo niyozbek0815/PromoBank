@@ -13,27 +13,37 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('region_id')->nullable();
+            $table->unsignedBigInteger('district_id')->nullable();
             $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
+            // $table->string('email')->unique();
+            // $table->string('password');
+            $table->string('phone', 50)->unique()->nullable();
+            $table->string('phone2', 50)->nullable();
+            $table->char('gender', 1)->nullable(); // M, F, U
+            $table->boolean('is_guest')->default(false);
+            $table->boolean('status')->default(true);
             $table->timestamps();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
+            $table->string('phone')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
+            $table->unsignedBigInteger('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
+            $table->string('device', 50); // mobile, desktop, telegram
+            $table->string('device_model', 50);
+            $table->string('platform', 50); // Android, iOS, Telegram
             $table->longText('payload');
+            $table->string('user_agent')->nullable();
             $table->integer('last_activity')->index();
+            $table->timestamp('otp_sent_at')->nullable(); // OTP yuborilgan vaqt
+            $table->timestamps();
         });
     }
 

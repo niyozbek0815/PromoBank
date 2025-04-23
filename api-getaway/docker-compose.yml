@@ -88,4 +88,4 @@ services:
   #     - promobank 
 networks:
   promobank:
-    driver: bridge
+    external: true

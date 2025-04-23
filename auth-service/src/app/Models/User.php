@@ -2,47 +2,61 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Mass assignable fields
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
-        'email',
-        'password',
+        'phone',
+        'phone2',
+        'region_id',
+        'district_id',
+        'gender',
+        "status",
+        "is_guest"
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Hidden fields during serialization (like API responses)
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
-        'password',
         'remember_token',
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Type casting for specific fields
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    // JWT interface methods
+    public function getJWTIdentifier()
+    {
+        return $this->getKey(); // returns the user id
+    }
+
+    public function getJWTCustomClaims(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'user_id' => $this->id,
+            'phone' => $this->phone,
+            'is_guest' => $this->is_guest,
         ];
     }
 }

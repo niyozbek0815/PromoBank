@@ -75,6 +75,7 @@ services:
   #     - "3400:80"
   #   depends_on:
   #     - db
+
 networks:
   promobank:
-    driver: bridge
+    external: true
