@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('phone2', 50)->nullable();
             $table->char('gender', 1)->nullable(); // M, F, U
             $table->boolean('is_guest')->default(false);
-            $table->boolean('status')->default(true);
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
 

@@ -15,15 +15,23 @@ class AuthController extends Controller
     {
         $this->url = config('services.auth_service.url');
     }
-
+    public function guest(Request $request)
+    {
+        return $this->forwardRequest("POST", $this->url, '/guest', $request);
+    }
     public function login(Request $request)
     {
-        return $this->forwardRequest($this->url, '/login', $request);
+        return $this->forwardRequest("POST", $this->url, '/login', $request);
     }
 
     public function register(Request $request)
     {
-        return $this->forwardRequest($this->url, '/register', $request);
+
+        return $this->forwardRequest("POST", $this->url, '/register', $request);
+    }
+    public function check(Request $request, $id)
+    {
+        return $this->forwardRequest("POST", $this->url, '/check/' . $id, $request);
     }
 
     // public function me(Request $request)

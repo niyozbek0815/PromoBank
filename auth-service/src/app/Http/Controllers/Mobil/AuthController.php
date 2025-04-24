@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Mobil;
 
 use App\Events\GuestSessionEvent;
+use App\Http\Requests\Mobil\RegisterRequest;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Mobil\GuestRequest;
+use App\Http\Requests\Mobil\LoginCheckRequest;
 use App\Http\Requests\Mobil\LoginRequuest;
 use App\Services\AuthService;
 use App\Services\SmsSendService;
@@ -25,7 +27,6 @@ class AuthController extends Controller
     }
     public function guest(GuestRequest $request)
     {
-
         $req = $request->validated();
         $user = User::firstOrCreate(
             ['phone' => $req['uuid'], 'is_guest' => true],
@@ -100,6 +101,7 @@ class AuthController extends Controller
             return $this->successResponse(
                 [
                     'phone' => $phone,
+                    'user_id' => $data['user_id'],
                     'token' => $data['token'],
                     'is_new' => $data['is_new']
                 ],
@@ -107,100 +109,48 @@ class AuthController extends Controller
             );
         }
     }
+    public function check(LoginCheckRequest $request, $id)
+    {
+        $req = $request->validated();
+        DB::transaction(function () use ($req, $request, $id) {
+            $user = User::findOrFail($id)->load('userOtps');
+            $userOld = User::where('phone', $req['uuid'])->latest()->first();
+            $data = $this->authService->check($user, $userOld, $req, $request->header('User-Ip'));
+            if ($data['error']) {
+                return $this->errorResponse(
+                    $data['success'],
+                    $data['success'],
+                    422
+                );
+            } else {
+                unset($data["error"]);
+                return $this->successResponse(
+                    $data,
+                    "Check saccessfully!!!"
+                );
+            }
+        });
+    }
+    public function register(RegisterRequest $request)
+    {
+        return $this->successResponse(
+            [
+                'phone' => $request['auth_user']
+            ],
+            "Sms muofaqiyatli jo'natildi"
+        );
+        // $user = Auth::user();
+        // DB::transaction(function () use ($user, $request) {
+        //     // Update user name
+        //     $user->name = $request->input('name');
+        //     $user->save();
+        //     // Handle profile image
+        //     if ($request->has('image')) {
+        //         $media->profile($request->input('image'), $user, 'profile');
+        //     }
+        // });
+        // return response()->json([
+        //     'success' => "User created successfully!!!"
+        // ]);
+    }
 }
-//     public function register(Request $request)
-//     {
-//         // Telefon raqamini tekshirish
-//         $request->validate([
-//             'phone' => 'required|unique:users,phone'
-//         ]);
-
-//         // Foydalanuvchini yaratish (phone va name)
-//         $user = User::create([
-//             'phone' => $request->phone,
-//             'name' => $request->name, // name ham yuborilishi mumkin
-//         ]);
-
-//         // OTP yaratish (6 raqamli random)
-//         // $otp = rand(100000, 999999);
-//         $otp = 111111;
-
-//         // OTPni user_sessions jadvaliga saqlash
-//         $userAgent = $request->userAgent();
-
-//         $device = 'desktop';
-//         if (Str::contains($userAgent, ['Android', 'iPhone', 'Mobile'])) {
-//             $device = 'mobile';
-//         } elseif (Str::contains($userAgent, 'Telegram')) {
-//             $device = 'telegram';
-//         }
-
-//         $platform = 'Unknown';
-//         if (Str::contains($userAgent, 'Android')) {
-//             $platform = 'Android';
-//         } elseif (Str::contains($userAgent, 'iPhone')) {
-//             $platform = 'iOS';
-//         } elseif (Str::contains($userAgent, 'Telegram')) {
-//             $platform = 'Telegram';
-//         }
-
-//         DB::table('sessions')->insert([
-//             'user_id' => $user->id,
-//             'ip_address' => $request->ip(),
-//             'device' => $device,
-//             'platform' => $platform,
-//             'payload' => json_encode([
-//                 'user_agent' => $userAgent,
-//                 'ip' => $request->ip(),
-//                 'timestamp' => now()->toDateTimeString()
-//             ]),
-//             'last_activity' => now()->timestamp,
-//             'otp' => $otp,
-//             'otp_sent_at' => now(),
-//             'created_at' => now(),
-//             'updated_at' => now(),
-//         ]);
-
-//         // SMS API orqali OTP yuborish (Twilio, Nexmo va hokazo)
-//         $this->sendOtpViaSms($user->phone, $otp);
-
-//         return response()->json(['message' => 'OTP yuborildi!']);
-//     }
-
-//     // SMS orqali OTP yuborish
-//     protected function sendOtpViaSms($phone, $otp)
-//     {
-//         // Masalan, Twilio yoki Nexmo API bilan OTP yuborish
-//         // API orqali OTP yuboriladi
-//     }
-
-//     // OTPni tasdiqlash va JWT tokenni yaratish
-//     public function verifyOtp(Request $request)
-//     {
-//         // Foydalanuvchi tomonidan yuborilgan OTPni tekshirish
-//         $request->validate([
-//             'phone' => 'required',
-//             'otp' => 'required|numeric'
-//         ]);
-
-//         // OTPni tekshirish: Foydalanuvchi telefon raqami va OTPni ma'lumotlar bazasidan tekshirish
-//         $session = DB::table('user_sessions')
-//             ->where('phone', $request->phone)
-//             ->where('otp', $request->otp)
-//             ->where('otp_sent_at', '>', now()->subMinutes(5)) // OTP 5 daqiqadan ko‘proq eski bo‘lmasligi kerak
-//             ->first();
-
-//         if (!$session) {
-//             return response()->json(['message' => 'OTP noto‘g‘ri yoki muddati o‘tgan!'], 400);
-//         }
-
-//         // Foydalanuvchini topish
-//         $user = User::find($session->user_id);
-
-//         // JWT token yaratish
-//         $token = JWTAuth::fromUser($user);
-
-//         // Tokenni qaytarish
-//         return response()->json(['token' => $token]);
-//     }
-// }

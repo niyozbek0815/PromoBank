@@ -9,6 +9,7 @@ use App\Models\UserOtp;
 use Detection\MobileDetect;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthService
 {
@@ -25,22 +26,20 @@ class AuthService
             [
                 'name' => 'User' . rand(0, 100000),
                 'phone' => $phone,
-                'is_guest' => true
+                'is_guest' => false,
+                'status' => false
             ]
         );
-        if ($user->wasRecentlyCreated) {
-            // Yangi foydalanuvchi yaratildi
-            $is_new = true;
-        } else {
+        $is_new = true;
+        if (!$user->wasRecentlyCreated) {
             // Mavjud foydalanuvchi qaytarildi
-            $userOtp = UserOtps::where('user_id', $user->id)->where("created_at", '>', Carbon::now()->subMinutes(1))->count();
+            $userOtp = UserOtps::where('user_id', $user->id)->where("created_at", '>', Carbon::now()->subMinutes(20))->count();
             if ($userOtp > 3) {
                 return [
                     "message" => "Juda ko'p urunishlar qildingiz. Iltimos keyinroq qayta urinib ko'ring!!!",
                     "code" => 422
                 ];
             }
-            $is_new = false;
         }
 
         $userOtp = $this->generateOtp($user);
@@ -51,6 +50,7 @@ class AuthService
         return [
             'is_new' => $is_new,
             'token' => $userOtp['token'],
+            'user_id' => $user->id,
             "code" => 200
         ];
     }
@@ -71,28 +71,22 @@ class AuthService
             'expires_at' => $now->addMinutes(5),
         ]);
     }
-    public function check($user, $userOld, array $req)
+    public function check($user, $userOld, array $req, $ip)
     {
         if ($user->userOtps &&  $user->userOtps->otp == $req['password'] && $req['token'] == $user->userOtps->token) {
-            $user->active = true;
+            $user->status = true;
             $user->save();
             if ($userOld) {
-                $card = $userOld->carts;
-                if ($card) {
-                    $card->users_id = $user->id;
-                    $card->save();
-                }
-                $favorit = $userOld->favorites;
-                foreach ($favorit as $fav) {
-                    $pivot = $fav->pivot;
-                    $pivot->user_id = $user->id;
-                    $pivot->save();
-                }
+                // boshqa microservicelarga user malumotlarini
+                //  yangi userga olib o'tishga xabar yuboriladi
             }
+            JWTAuth::factory()->setTTL(60);
+            $token = JWTAuth::claims([
+                'ip' => $ip
+            ])->fromUser($user);
             return ([
                 "user_id" => $user->id,
-                'success' => 'Login Successfully',
-                'token' => $user->createToken($user->phone)->plainTextToken,
+                'token' => $token,
                 'error' => null
             ]);
         } else {

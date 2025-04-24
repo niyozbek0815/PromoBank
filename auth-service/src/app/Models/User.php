@@ -59,4 +59,8 @@ class User extends Authenticatable implements JWTSubject
             'is_guest' => $this->is_guest,
         ];
     }
+    public function userOtps()
+    {
+        return $this->hasOne(UserOtps::class, 'user_id', 'id')->where('used', false)->latest();
+    }
 }
