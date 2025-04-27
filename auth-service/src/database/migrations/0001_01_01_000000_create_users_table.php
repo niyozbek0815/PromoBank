@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name');
             // $table->string('email')->unique();
             // $table->string('password');
-            $table->string('phone', 50)->unique()->nullable();
+            $table->string('phone', 50)->unique();
             $table->string('phone2', 50)->nullable();
             $table->char('gender', 1)->nullable(); // M, F, U
             $table->boolean('is_guest')->default(false);

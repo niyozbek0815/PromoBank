@@ -34,7 +34,9 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-    'auth_service' => [
-        'url' => env('AUTH_SERVICE_URL', 'http://auth_nginx/api'),
+    'urls' => [
+        'api_getaway' => env('API_GETA'),
+        'media_service' => env('MEDIA_SERVICE_URL'),
+        'auth_service' => env('AUTH_SERVICE_URL',),
     ],
 ];

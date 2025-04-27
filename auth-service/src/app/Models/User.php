@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasMedia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -9,7 +10,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasMedia;
 
     /**
      * Mass assignable fields
@@ -62,5 +63,13 @@ class User extends Authenticatable implements JWTSubject
     public function userOtps()
     {
         return $this->hasOne(UserOtps::class, 'user_id', 'id')->where('used', false)->latest();
+    }
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
+    }
+    public function district()
+    {
+        return $this->belongsTo(District::class);
     }
 }

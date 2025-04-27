@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Mobil;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Http;
-use Soap\Url;
 
 class AuthController extends Controller
 {
@@ -13,7 +11,7 @@ class AuthController extends Controller
     protected $url;
     public function __construct()
     {
-        $this->url = config('services.auth_service.url');
+        $this->url = config('services.urls.auth_service');
     }
     public function guest(Request $request)
     {
@@ -33,25 +31,16 @@ class AuthController extends Controller
     {
         return $this->forwardRequest("POST", $this->url, '/check/' . $id, $request);
     }
-
-    // public function me(Request $request)
-    // {
-    //     $token = $request->bearerToken();
-
-    //     if (!$token) {
-    //         return response()->json(['error' => 'Token not found'], 401);
-    //     }
-
-    //     try {
-    //         $response = Http::withToken($token)->get("{$this->authServiceUrl}/me");
-
-    //         if ($response->successful()) {
-    //             return response()->json($response->json());
-    //         }
-
-    //         return response()->json(['error' => 'Unauthorized'], $response->status());
-    //     } catch (\Exception $e) {
-    //         return response()->json(['error' => 'Auth service unavailable'], 503);
-    //     }
-    // }
+    public function userupdate(Request $request)
+    {
+        return $this->forwardRequest("PUT", $this->url, '/user_update', $request);
+    }
+    public function checkUpdate(Request $request)
+    {
+        return $this->forwardRequest("POST", $this->url, '/check_update', $request);
+    }
+    public function logout(Request $request)
+    {
+        return $this->forwardRequest("DELETE", $this->url, '/logout', $request);
+    }
 }

@@ -3,8 +3,9 @@
 namespace App\Http\Requests\Mobil;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class RegisterRequest extends FormRequest
+class UserUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -13,12 +14,19 @@ class RegisterRequest extends FormRequest
     {
         return true;
     }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
     public function rules(): array
     {
         return [
             'region_id' => ['required', 'integer', 'exists:regions,id'],
             'district_id' => ['required', 'integer', 'exists:districts,id'],
             'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'regex:/^\+998\d{9}$/', 'max:14', Rule::unique('users', 'phone')->ignore($this->auth_user['id'])],
             'phone2' => ['required', 'string', 'regex:/^\+998\d{9}$/', 'max:14'],
             'gender' => ['required', 'in:e,a'],
             'avatar'    => ['nullable', 'string', function ($attribute, $value, $fail) {
@@ -36,20 +44,4 @@ class RegisterRequest extends FormRequest
             }],
         ];
     }
-
-    public function messages(): array
-    {
-        return [
-            'region_id.exists' => 'Tanlangan viloyat mavjud emas.',
-            'district_id.exists' => 'Tanlangan tuman mavjud emas.',
-            'gender.in' => 'Jins faqat Erkak yoki Ayol bo‘lishi kerak.',
-            'phone.regex' => 'Telefon raqami +998 bilan boshlanishi va jami 13 ta belgidan iborat bo‘lishi kerak.',
-            'phone2.regex' => 'Qo‘shimcha raqam +998 bilan boshlanishi va jami 13 ta belgidan iborat bo‘lishi kerak.',
-        ];
-    }
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
 }

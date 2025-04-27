@@ -49,7 +49,7 @@ class CheckGuestToken
                 'Accept' => 'application/json',
                 'X-Forwarded-For' => $request->ip(),
                 'User-Agent' => $request->userAgent(),
-            ])->post(config('services.auth_service.url') . '/refresh-token', $request->all());
+            ])->post(config('services.urls.auth_service') . '/refresh-token', $request->all());
 
             $data = json_decode($res->getBody()->getContents(), true)['data'] ?? [];
             $newToken = $data['token'] ?? null;
@@ -83,7 +83,7 @@ class CheckGuestToken
     protected function buildUserFromPayload($payload): array
     {
         return [
-            'auth_user_id' => $payload->get('user_id') ?? null,
+            'id' => $payload->get('user_id') ?? null,
             'is_guest'     => $payload->get('is_guest') ?? null,
             'phone'        => $payload->get('phone') ?? null,
             'ip'           => $payload->get('ip') ?? null,

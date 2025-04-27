@@ -42,7 +42,7 @@ class AuthService
             }
         }
 
-        $userOtp = $this->generateOtp($user);
+        $userOtp = $this->generateOtp($user, $user['phone']);
         // $result = $this->smsService->sendMessage($userOtp['otp'], $phone, $userOtp['id']);
         // if ($result['status'] == 'failed') {
         //     return ["message" => "Iltimos birozdan so'ng qayta urinib ko'ring!!!", "code" => 422];
@@ -54,10 +54,10 @@ class AuthService
             "code" => 200
         ];
     }
-    private function generateOtp($user)
+    private function generateOtp($user, $phone)
     {
         $now = now();
-        if ($user['phone'] == "+998900191099") {
+        if ($phone == "+998900191099") {
             $otp = 111111;
         } else {
             $otp = rand(100000, 999999);
@@ -96,44 +96,36 @@ class AuthService
             ];
         }
     }
-    public function checkUpdate($user, array $req, $media)
+    public function checkUpdate($user, array $req)
     {
         if ($user->userOtps &&  $user->userOtps->otp == $req['password'] && $req['token'] == $user->userOtps->token) {
             $user->update([
                 'name' => $req['name'],
                 'phone' => $req['phone'],
             ]);
-            if ($req['image']) {
-                $media->profile($req['image'], $user, "profile");
-            }
-            return ["message" => "User Updated Successfully!!!", "error_type" => 200];
+            // if ($req['image']) {
+            //     $media->profile($req['image'], $user, "profile");
+            // }
+            return ["error_type" => 200];
         } else {
             return [
-                'message' => "Parol xato yoki eskirgan iltimos qayta urinib ko'ring !!!",
                 "error_type" => 422
             ];
         }
     }
 
-    public function update($user,  $smsService, $data)
+    public function update($user,  $data)
     {
-        $update = true;
-        $userOtp = UserOtps::where('user_id', $user->id)->where('type', 0)->where("created_at", '>', Carbon::now()->subMinutes(20))->count();
-        if ($userOtp > 3) {
-            return [
-                "result" => "Juda ko'p urunishlar qildingiz. Iltimos keyinroq qayta urinib ko'ring!!!",
-                "error_type" => 422
-            ];
-        }
-        $userOtp = $this->generateOtp($user, 1);
-        $result = $smsService->sendMessage($userOtp['otp'], $user['phone'], $userOtp['id'], $userOtp['token'], $userOtp['user_id']);
-        if ($result['status'] == 'failed') {
-            unset($result["status"]);
-            return ["result" => $result['error'], "error_type" => 422];
-        }
-        $result['update'] = $update;
-        $result['message'] = "Updated Code Sended!!!";
-        $result['data'] = $data;
-        return ["result" => $result, "error_type" => null];
+        $userOtp = $this->generateOtp($user, $data['phone']);
+
+        // $result = $this->smsService->sendMessage($userOtp['otp'], $data['phone'], $userOtp['id']);
+        // if ($result['status'] == 'failed') {
+        //     return ["message" => "Iltimos birozdan so'ng qayta urinib ko'ring!!!", "code" => 422];
+        // }
+        return [
+            "error_type" => null,
+            'token' => $userOtp['token'],
+            'user_id' => $user->id,
+        ];
     }
 }

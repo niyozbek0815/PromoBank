@@ -39,5 +39,10 @@ return [
         'password' => env('PLAYMOBILE_PASSWORD'),
         'endpoint' => env('PLAYMOBILE_ENDPOINT'),
     ],
+    'urls' => [
+        'api_getaway' => env('API_GATEWAY_URL'),
+        'media_service' => env('MEDIA_SERVICE_URL'),
+        'auth_service' => env('AUTH_SERVICE_URL',),
+    ],
 
 ];

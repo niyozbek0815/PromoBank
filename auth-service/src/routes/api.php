@@ -16,7 +16,7 @@ Route::controller(AuthController::class)->group(function () {
     Route::put('/user_update', 'userupdate');
     Route::post('/check_update', 'checkUpdate');
     // Route::post('/resendsms/{id}', 'resendsms');
-    Route::post('/logout', 'logout');
+    // Route::post('/logout', 'logout');
 });
 Route::controller(AddresController::class)->group(function () {
     Route::get('/regions', 'region');

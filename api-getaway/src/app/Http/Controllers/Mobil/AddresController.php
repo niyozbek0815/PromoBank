@@ -10,7 +10,7 @@ class AddresController extends Controller
     protected $url;
     public function __construct()
     {
-        $this->url = config('services.auth_service.url');
+        $this->url = config('services.urls.auth_service');
     }
 
     public function region(Request $request)

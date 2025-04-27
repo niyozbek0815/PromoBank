@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Mobil;
+namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LoginRequuest extends FormRequest
+class MediaRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,8 +22,9 @@ class LoginRequuest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone' => 'required, regex:/^\+998\d{9}$/',
-            'max:14',
+            'file' => 'required|file|',
+            'context' => 'required|string|max:50',
+            'user_id' => 'nullable|integer'
         ];
     }
 }
