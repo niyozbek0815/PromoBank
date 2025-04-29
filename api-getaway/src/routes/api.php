@@ -12,6 +12,8 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/register', 'register')->middleware(['guestCheck']);
     Route::put('/user_update', 'userupdate')->middleware(['guestCheck']);
     Route::post('/check_update', 'checkUpdate')->middleware(['guestCheck']);
+    Route::get('/user', 'user')->middleware(['guestCheck']);
+
     // Route::post('/resendsms/{id}', 'resendsms');
     // Route::post('/logout', 'logout')->middleware(['guestCheck']);
 });

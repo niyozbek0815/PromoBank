@@ -5,20 +5,25 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Requests\MediaRequest;
+use Illuminate\Support\Facades\Storage;
+use PhpParser\Node\Stmt\Return_;
 
 class MediaController extends Controller
 {
     public function upload(MediaRequest $request)
     {
         $file = $request->file('file');
+        $imageUrls = $request->input('image_urls');
 
+        if ($imageUrls !== null) {
+            $this->deleteImages($imageUrls);
+        }
         $context = $request->input('context'); // ex: 'user_avatar'
-        $userId = $request->input('user_id');
-        $saved = $this->store($file, $context, $userId);
+        $saved = $this->store($file, $context);
         return response()->json($saved);
     }
 
-    public function store($file, string $context, $userId = null): array
+    public function store($file, string $context): array
     {
         // Faylning ma'lumotlarini olish
         $originalName = $file->getClientOriginalName();
@@ -40,7 +45,6 @@ class MediaController extends Controller
             'file_name' => $fileName,
             'name' => $originalName,
             'mime_type' => $mimeType,
-
             'collection_name' => $context,
             'uuid' => $uuid,
             'path' => $path,
@@ -49,6 +53,34 @@ class MediaController extends Controller
     }
 
 
+    public function deleteImages(array $imageUrls)
+    {
+        $allDeleted = true;
+        foreach ($imageUrls as $image) {
+
+            // '/media' prefiksini olib tashlash
+            $relativePath = str_starts_with($image, '/media')
+                ? ltrim(substr($image, strlen('/media')), '/')
+                : ltrim($image, '/');
+
+            // $relativePath = 'uploads/user_avatar/7c764d43-760c-41a-801e-3f85230f53fa.png';
+            // return Storage::disk('public')->exists($relativePath);
+            // Faylni storage orqali o‘chirish
+            if (Storage::disk('public')->exists($relativePath)) {
+                $deleted = Storage::disk('public')->delete($relativePath);
+
+                // Agar o'chirish muvaffaqiyatsiz bo'lsa, xato haqida xabar berish
+                if (!$deleted) {
+                    $allDeleted = false;
+                }
+            } else {
+                // Fayl mavjud emas, o‘tkazib yuborish
+                $allDeleted = false;
+            }
+        }
+
+        return $allDeleted;
+    }
     // public function destroy($collection, $filename)
     // {
     //     $path = "uploads/{$collection}/{$filename}";

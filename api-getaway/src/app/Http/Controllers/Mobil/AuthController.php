@@ -43,4 +43,8 @@ class AuthController extends Controller
     {
         return $this->forwardRequest("DELETE", $this->url, '/logout', $request);
     }
+    public function user(Request $request)
+    {
+        return $this->forwardRequest("GET", $this->url, '/user', $request);
+    }
 }

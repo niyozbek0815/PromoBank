@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers\Mobil;
 
-use App\Events\GuestSessionEvent;
 use App\Http\Requests\Mobil\RegisterRequest;
 use App\Models\User;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -16,10 +14,12 @@ use App\Http\Requests\Mobil\LoginCheckRequest;
 use App\Http\Requests\Mobil\LoginRequuest;
 use App\Http\Requests\Mobil\UserUpdateRequest;
 use App\Http\Resources\Mobil\UserResource;
-use App\Models\Media;
+use App\Jobs\UploadUserAvatarJob;
+use App\Jobs\UserSessionJob;
+use App\Jobs\UserUpdateAvatarJob;
 use App\Services\AuthService;
 use App\Services\SmsSendService;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
 class AuthController extends Controller
@@ -45,25 +45,26 @@ class AuthController extends Controller
         $token = JWTAuth::claims([
             'ip' => $request->header('User-Ip')
         ])->fromUser($user);
-        // event(new GuestSessionEvent($user, $req, $request->header('User-Ip'),  $request->header('User-Agent')));
-        $session = DB::table('sessions')->insert([
-            'id' => Str::random(32), // Random id
-            'user_id' => $user->id,
-            'ip_address' => $request->header('User-Ip'),
-            'device' => $req['device'] ?? 'mobile', // Qurilma turi, agar yuborilmasa, "mobile" bo'ladi
-            'device_model' => $req['model'] ?? 'Unknown', // Qurilma modeli, agar yuborilmasa, 'Unknown'
-            'platform' => $req['platform'] ?? 'Unknown', // Platforma, agar yuborilmasa, 'Unknown'
-            'payload' => json_encode($req), // Requestning barcha ma'lumotlari
-            'user_agent' => $request->header('User-Agent'), // User agent
-            'last_activity' => now()->timestamp, // Faoliyat vaqti
-            'created_at' => now(), // Yaratilgan vaqt
-            'updated_at' => now(), // Yangilangan vaqt
-        ]);
+
+        Queue::connection('redis')->push(new UserSessionJob($user['id'],  $request->header('User-Ip'), $req, $request->header('User-Agent')));
+
+        // $session = DB::table('sessions')->insert([
+        //     'id' => Str::random(32), // Random id
+        //     'user_id' => $user->id,
+        //     'ip_address' => $request->header('User-Ip'),
+        //     'device' => $req['device'] ?? 'mobile', // Qurilma turi, agar yuborilmasa, "mobile" bo'ladi
+        //     'device_model' => $req['model'] ?? 'Unknown', // Qurilma modeli, agar yuborilmasa, 'Unknown'
+        //     'platform' => $req['platform'] ?? 'Unknown', // Platforma, agar yuborilmasa, 'Unknown'
+        //     'payload' => json_encode($req), // Requestning barcha ma'lumotlari
+        //     'user_agent' => $request->header('User-Agent'), // User agent
+        //     'last_activity' => now()->timestamp, // Faoliyat vaqti
+        //     'created_at' => now(), // Yaratilgan vaqt
+        //     'updated_at' => now(), // Yangilangan vaqt
+        // ]);
         return $this->successResponse(
             [
                 'token' => $token,
-                'user' => $user,
-                'ses' => $session
+                'user' => $user
             ],
             "Guest token created saccecfully"
         );
@@ -139,40 +140,39 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
 
-        DB::beginTransaction();
 
-        try {
-            $user_req =  $request['auth_user'];
-            $id = $user_req['id'];
-            $user = User::findOrFail($id);
-            $user->region_id = $request['region_id'];
-            $user->district_id = $request['district_id'];
-            $user->name = $request->input('name');
-            $user->phone2 = $request['phone2'];
-            $user->gender = $request['gender'];
-            $user->save();
-            if ($request->filled('avatar')) {
-                $mediaResponse = $this->uploadToMediaService($request['avatar'], $user_req);
-                $this->saveMediaData($id, $mediaResponse);
-            }
-            DB::commit();
-            return $this->successResponse(['user' => new UserResource($user->load(['media', 'district', 'region'])),], "User muvaffaqiyatli ro‘yxatdan o‘tdi");
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            return $this->errorResponse('Xatolik: ' . $e->getMessage(), 500);
+        $user_req =  $request['auth_user'];
+        $id = $user_req['id'];
+        $user = User::findOrFail($id);
+        $user->region_id = $request['region_id'];
+        $user->district_id = $request['district_id'];
+        $user->name = $request->input('name');
+        $user->phone2 = $request['phone2'];
+        $user->gender = $request['gender'];
+        $user->save();
+        if ($request->filled('avatar')) {
+            Queue::connection('redis')->push(new UploadUserAvatarJob($id,  $request['avatar']));
         }
+        return $this->successResponse(['user' => new UserResource($user->load(['media', 'district', 'region'])),], "User muvaffaqiyatli ro‘yxatdan o‘tdi");
     }
     public function userupdate(UserUpdateRequest $request)
     {
         $data = $request->validated();
         $user_req = $request['auth_user'];
-        $user = User::findOrFail($user_req['id']);
+        $user = User::with('media')->findOrFail($user_req['id']);
         if ($user->phone === $data['phone']) {
-            $user->update(['name' => $data['name']]);
-            // if ($request['image']) {
-            //     $media->profile($request['image'], $user, "profile");
-            // }
-            return $this->successResponse(['user' => new UserResource($user->load(['media', 'district', 'region'])),], "User data updated Successfully!!!");
+            $user->update([
+                'name' => $data['name'],
+                'phone' => $data['phone'],
+                'region_id' => $data['region_id'],
+                'district_id' => $data['district_id'],
+                'phone2' => $data['phone2'],
+                'gender' => $data['gender'],
+            ]);
+            if ($request->filled('avatar')) {
+                Queue::connection('redis')->push(new UserUpdateAvatarJob($user_req['id'], $user, $request['avatar']));
+            }
+            return $this->successResponse(['user' => new UserResource($user->load(['media', 'district', 'region']))], "User data updated Successfully!!!");
         } else {
             $return = $this->authService->update($user,  $data);
             if ($return['error_type'] == 422) {
@@ -189,72 +189,13 @@ class AuthController extends Controller
             }
         }
     }
-    public function saveMediaData($id, $mediaResponse)
-    {
-        $media = Media::create([
-            'model_type' => \App\Models\User::class, // model class nomi (to'liq namespace bilan)
-            'model_id' => $id, // bog'lanadigan modelning IDsi
-            'uuid' => $mediaResponse['uuid'],
-            'collection_name' => $mediaResponse['collection_name'],
-            'file_name' => $mediaResponse['file_name'],
-            'name' => $mediaResponse['name'],
-            'mime_type' => $mediaResponse['mime_type'],
-            'path' => $mediaResponse['path'],
-            'url' => $mediaResponse['url'],
-        ]);
-    }
-    public function uploadToMediaService(string $base64Image, $user)
-    {
-        if (!preg_match("/^data:image\/(\w+);base64,/", $base64Image, $type)) {
-            throw new \InvalidArgumentException('Rasm formati noto‘g‘ri');
-        }
 
-        $imageType = strtolower($type[1]);
-        $fileName = Str::uuid() . '.' . $imageType;
-        $base64Str = preg_replace('/^data:image\/\w+;base64,/', '', $base64Image);
-        $base64Str = str_replace(' ', '+', $base64Str);
-
-        $tempDir = storage_path('app/temp');
-        $tempFilePath = "{$tempDir}/{$fileName}";
-
-        try {
-            // temp katalogi mavjudligini tekshirish va kerak bo‘lsa yaratish
-            if (!file_exists($tempDir)) {
-                mkdir($tempDir, 0755, true);
-            }
-            // Faylni vaqtinchalik saqlash
-            file_put_contents($tempFilePath, base64_decode($base64Str));
-
-            // Media-service'ga yuborish
-            $response = Http::attach(
-                'file',
-                file_get_contents($tempFilePath),
-                $fileName
-            )->post(config('services.urls.media_service') . '/api/media/upload', [
-                'context' => 'user_avatar',
-                'user_id' => $user['id'],
-            ]);
-
-            if (!$response->successful()) {
-                throw new \Exception('Media-service xato: ' . $response->body());
-            }
-
-            return $response->json();
-        } catch (\Exception $e) {
-            throw $e;
-        } finally {
-            // Faylni o‘chirish
-            if (file_exists($tempFilePath)) {
-                unlink($tempFilePath);
-            }
-        }
-    }
     public function checkUpdate(CheckUpdateRequest $request)
     {
         $req = $request->validated();
         $user_req = $request['auth_user'];
         $id = $user_req['id'];
-        $user = User::with(['media', 'district', 'region', 'userOtps'])->findOrFail($id);
+        $user = User::with(['userOtps'])->findOrFail($id);
         $data = $this->authService->checkUpdate($user, $req,);
 
         if ($data['error_type'] == 422) {
@@ -262,30 +203,19 @@ class AuthController extends Controller
             return $this->errorResponse("Parol xato yoki eskirgan iltimos qayta urinib ko'ring !!!", 422);
         } else {
             return $this->successResponse(
-                ['user' => new UserResource($user)],
+                ['user' => new UserResource($user->load(['media', 'district', 'region']))],
                 "User Updated Successfully!!!"
             );
         }
     }
-    // public function logout(Request $request, AuthService $authService)
-    // {
-    //     $req = $request->validate([
-    //         'uuid' => "required"
-    //     ]);
-    //     $user = Auth::user();
-    //     $user->currentAccessToken()->delete();
-    //     $user = User::firstOrCreate(
-    //         ['phone' => $req['uuid'], 'status' => 1],
-    //         [
-    //             'name' => 'User' . rand(0, 100000),
-    //             'phone' => $req['uuid'],
-    //             'status' => true
-    //         ]
-    //     );
-    //     return response()->json([
-    //         "user_id" => $user->id,
-    //         'success' => 'Login Successfully',
-    //         'token' => $user->createToken($user->phone)->plainTextToken,
-    //     ]);
-    // }
+    public function user(Request $request)
+    {
+        $user_req = $request['auth_user'];
+        $id = $user_req['id'];
+        $user = User::with(['media', 'district', 'region'])->findOrFail($id);
+        return $this->successResponse(
+            ['user' => new UserResource($user)],
+            "User Get Successfully!!!"
+        );
+    }
 }

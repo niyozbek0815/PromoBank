@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\UserUpdateAvatarJob;
 use App\Models\UserOtps;
 use Carbon\Carbon;
 use App\Models\User;
@@ -9,6 +10,7 @@ use App\Models\UserOtp;
 use Detection\MobileDetect;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Queue;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthService
@@ -57,11 +59,12 @@ class AuthService
     private function generateOtp($user, $phone)
     {
         $now = now();
-        if ($phone == "+998900191099") {
-            $otp = 111111;
-        } else {
-            $otp = rand(100000, 999999);
-        }
+        $otp = 111111;
+        // if ($phone == "+998900191099") {
+        //     $otp = 111111;
+        // } else {
+        //     $otp = rand(100000, 999999);
+        // }
         return UserOtps::create([
             'user_id' => $user['id'],
             'phone' => $user['phone'],
@@ -102,10 +105,14 @@ class AuthService
             $user->update([
                 'name' => $req['name'],
                 'phone' => $req['phone'],
+                'region_id' => $req['region_id'],
+                'district_id' => $req['district_id'],
+                'phone2' => $req['phone2'],
+                'gender' => $req['gender'],
             ]);
-            // if ($req['image']) {
-            //     $media->profile($req['image'], $user, "profile");
-            // }
+            if ($req['avatar'] !== null) {
+                Queue::connection('redis')->push(new UserUpdateAvatarJob($user['id'], $user, $req['avatar']));
+            }
             return ["error_type" => 200];
         } else {
             return [

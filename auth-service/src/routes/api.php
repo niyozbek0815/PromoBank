@@ -15,6 +15,8 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/register', 'register');
     Route::put('/user_update', 'userupdate');
     Route::post('/check_update', 'checkUpdate');
+    Route::get('/user', 'user');
+
     // Route::post('/resendsms/{id}', 'resendsms');
     // Route::post('/logout', 'logout');
 });

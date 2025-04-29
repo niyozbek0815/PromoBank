@@ -6,17 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Media extends Model
 {
-    protected $fillable = [
-        'model_type',
-        'model_id',
-        'uuid',
-        'collection_name',
-        'name',
-        'file_name',
-        'mime_type',
-        'path',
-        'url'
-    ];
+    protected $guarded = [];
 
     protected $appends = ['full_url'];
 

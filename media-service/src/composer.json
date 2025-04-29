@@ -10,7 +10,8 @@
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
-        "spatie/laravel-medialibrary": "^11.12"
+        "spatie/laravel-medialibrary": "^11.12",
+        "vladimir-yuldashev/laravel-queue-rabbitmq": "^14.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

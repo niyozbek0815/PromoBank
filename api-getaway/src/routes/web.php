@@ -1,7 +1,9 @@
 <?php
 
+use App\Jobs\TestRabbitMQJob;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,4 +27,10 @@ Route::get('/media/uploads/{context}/{fileName}', function ($context, $fileName)
 
     // Agar fayl topilmasa, 404 xatosi
     abort(404, 'File not found.');
+});
+
+
+Route::get('/test-rabbitmq', function () {
+    Queue::connection('redis')->push(new TestRabbitMQJob);
+    return 'Job queue ga qo‘shildi!';
 });
