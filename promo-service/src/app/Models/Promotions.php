@@ -73,4 +73,12 @@ class Promotions extends Model
     {
         return $this->hasOne(PromotionSetting::class);
     }
+    public function prizePromos()
+    {
+        return $this->hasMany(PrizePromo::class);
+    }
+    public function promoLogs()
+    {
+        return $this->hasMany(PromoLog::class);
+    }
 }

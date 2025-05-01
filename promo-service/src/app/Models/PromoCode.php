@@ -41,4 +41,8 @@ class PromoCode extends Model
     {
         return $this->hasMany(PromoCodeClaim::class);
     }
+    public function prizePromos()
+    {
+        return $this->hasMany(PrizePromo::class);
+    }
 }
