@@ -22,7 +22,9 @@ class DatabaseSeeder extends Seeder
                 CompaniesUsersSeeder::class,
                 WinnerSelectionTypeSeeder::class,
                 PlatformSeeder::class,
-                PromotionSeeder::class
+                PromotionSeeder::class,
+                PromoGenerationSeeder::class,
+                PromoCodeSeeder::class,
             ]
         );
     }

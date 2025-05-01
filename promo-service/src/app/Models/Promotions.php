@@ -53,4 +53,24 @@ class Promotions extends Model
     {
         return $this->belongsToMany(WinnerSelectionType::class, 'promotion_winner_selection_type');
     }
+    public function promoGenerations()
+    {
+        return $this->hasMany(PromoGeneration::class);
+    }
+    public function promoCodes()
+    {
+        return $this->hasMany(PromoCode::class, 'promotion_id');
+    }
+    public function promotionShops()
+    {
+        return $this->hasMany(PromotionShop::class, 'promotion_id');
+    }
+    public function promotionProducts()
+    {
+        return $this->hasMany(PromotionProduct::class, 'promotion_id');
+    }
+    public function setting()
+    {
+        return $this->hasOne(PromotionSetting::class);
+    }
 }
