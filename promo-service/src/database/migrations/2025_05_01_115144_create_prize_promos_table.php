@@ -14,8 +14,11 @@ return new class extends Migration
         Schema::create('prize_promos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('promotion_id')->constrained()->onDelete('cascade');
-            $table->foreignId('prize_id')->constrained()->onDelete('cascade');
-            $table->foreignId('category_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('prize_id')->constrained()->onDelete(action: 'cascade');
+            $table->foreignId('category_id')
+                ->nullable()
+                ->constrained('prize_categories')
+                ->nullOnDelete();
             $table->foreignId('promo_code_id')->nullable()->constrained()->onDelete('set null');
             $table->string('sub_prize')->nullable(); // agar bu JSON bo‘lsa, json() deb yozamiz
             $table->timestamps();
