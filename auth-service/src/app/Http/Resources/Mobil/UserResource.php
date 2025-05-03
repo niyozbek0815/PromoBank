@@ -16,6 +16,7 @@ class UserResource extends JsonResource
     {
         // return parent::toArray($request);
 
+        $default = config('services.urls.api_getaway') . '/media/upload/user_avate/default-avatar.png';
 
         return [
             'id' => $this->id,
@@ -25,7 +26,7 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'phone2' => $this->phone2 ?? null,
             'gender' => $this->gender,
-            'avatar_url' => $this->getMedia('user_avatar'),
+            'avatar_url' => $this->getMedia('user_avatar') ?: $default,
             'created_at' => $this->created_at?->toDateTimeString(),
             'updated_at' => $this->updated_at?->toDateTimeString(),
         ];

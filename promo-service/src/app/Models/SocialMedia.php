@@ -21,6 +21,6 @@ class SocialMedia extends Model
 
     public function type()
     {
-        return $this->belongsTo(SocialType::class, 'type_id');
+        return $this->belongsTo(SocialType::class, 'type_id')->select('id', 'name');
     }
 }

@@ -49,7 +49,7 @@ class UploadUserAvatarJob implements ShouldQueue
                 file_get_contents($tempFilePath),
                 $fileName
             )->post(config('services.urls.media_service') . '/api/media/upload', [
-                'context' => 'user_avatar',
+                'context' => 'company_logo',
                 'user_id' => $this->userId,
             ]);
 

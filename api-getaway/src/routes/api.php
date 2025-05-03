@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Mobil\AddresController;
 use App\Http\Controllers\Mobil\AuthController;
+use App\Http\Controllers\Mobil\PromoController;
 use Illuminate\Support\Facades\Route;
 
 Route::controller(AuthController::class)->group(function () {
@@ -21,4 +22,7 @@ Route::controller(AuthController::class)->group(function () {
 Route::controller(AddresController::class)->middleware(['guestCheck'])->group(function () {
     Route::get('/regions', 'region');
     Route::get('/regions/{region_id}', 'district');
+});
+Route::controller(PromoController::class)->middleware(['guestCheck'])->group(function () {
+    Route::get('/promo', 'index');
 });

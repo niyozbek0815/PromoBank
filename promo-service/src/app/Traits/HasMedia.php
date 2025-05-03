@@ -26,13 +26,10 @@ trait HasMedia
             ->sortByDesc('created_at')
             ->first();
 
-        // Agar media topilsa, faqat URL ni qaytarish
-        // Agar media topilsa, faqat URL ni qaytarish
         if ($media) {
             return $media->full_url; // faqat to'liq URL
         }
-        $baseUrl = config('services.urls.api_getaway');
-        return $baseUrl  . '/media/upload/user_avate/default-avatar.png';
+        return null;
     }
     /**
      * Hamma media'ni olish va har biri uchun faqat full_url qaytarish

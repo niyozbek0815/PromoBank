@@ -21,7 +21,11 @@ class PromotionSeeder extends Seeder
             for ($i = 1; $i <= 2; $i++) {
                 $promotion = Promotions::create([
                     'company_id' => $company->id,
-                    'name' => "Promo {$i} - " . $company->getTranslation('title', 'uz'), // <<< qo‘shildi
+                    'name' => [
+                        'uz' => "Aksiya {$i} - " . $company->getTranslation('name', 'uz'),
+                        'ru' => "Промоакция {$i} - " . $company->getTranslation('name', 'ru'),
+                        'kr' => "프로모션 {$i} - " . $company->getTranslation('name', 'kr'),
+                    ], // <<< qo‘shildi
                     'title' => [
                         'uz' => "Aksiya {$i} - " . $company->getTranslation('title', 'uz'),
                         'ru' => "Промоакция {$i} - " . $company->getTranslation('title', 'ru'),

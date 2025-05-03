@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasMedia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
 
 class Promotions extends Model
 {
-    use HasFactory, HasTranslations;
+    use HasFactory, HasTranslations, HasMedia;
 
     protected $fillable = [
         'name',
@@ -29,6 +30,7 @@ class Promotions extends Model
         'is_active' => 'boolean',
         'is_public' => 'boolean',
         'code_settings' => 'array',
+        'name' => "array",
         'extra_conditions' => 'array',
         'start_date' => 'datetime',
         'end_date' => 'datetime',
@@ -36,14 +38,7 @@ class Promotions extends Model
 
     public function company()
     {
-        return $this->belongsTo(Company::class);
-    }
-
-
-
-    public function users()
-    {
-        return $this->belongsToMany(User::class, 'promotion_users', 'promotion_id', 'user_id');
+        return $this->belongsTo(Company::class)->with(['media', 'socialMedia', 'socialMedia.type']);
     }
     public function platforms()
     {

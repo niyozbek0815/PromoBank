@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Http\Requests\MediaRequest;
 use Illuminate\Support\Facades\Storage;
-use PhpParser\Node\Stmt\Return_;
 
 class MediaController extends Controller
 {
@@ -48,7 +46,7 @@ class MediaController extends Controller
             'collection_name' => $context,
             'uuid' => $uuid,
             'path' => $path,
-            'url' => config('services.urls.api_getaway') . "/media/uploads/{$context}/{$fileName}",
+            'url' => "/media/uploads/{$context}/{$fileName}",
         ];
     }
 
