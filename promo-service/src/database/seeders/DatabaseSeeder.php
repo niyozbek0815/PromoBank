@@ -25,7 +25,10 @@ class DatabaseSeeder extends Seeder
                 PromotionSeeder::class,
                 PromoGenerationSeeder::class,
                 PromoCodeSeeder::class,
-                MediaSeeder::class
+                MediaSeeder::class,
+                ParticipationTypeSeeder::class,
+                PromotionParticipationTypeSeeder::class,
+                PlatformPromotionSeeder::class,
             ]
         );
     }

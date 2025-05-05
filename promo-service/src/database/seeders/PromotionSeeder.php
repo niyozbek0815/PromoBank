@@ -54,7 +54,7 @@ class PromotionSeeder extends Seeder
                 ]);
 
                 // Attach 1–3 random platforms
-                $promotion->platforms()->attach($platforms->random(rand(1, 3))->pluck('id'));
+                // $promotion->platforms()->attach($platforms->random(rand(1, 3))->pluck('id'));
 
                 // Attach 1 random winner selection type
                 $promotion->winnerSelectionTypes()->attach(

@@ -16,14 +16,16 @@ class PromotionResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'company' => new CompanyResource($this->company),
             'name' => $this->getTranslations('name'),
             'title' => $this->getTranslations('title'),
             'description' => $this->getTranslations('description'),
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
             'banner' => $this->getMedia('promo_banner'),
-            'video' => $this->getMedia('promo_video')
+            'video' => $this->getMedia('promo_video'),
+            'participation_type' => ParticipationTypeResource::collection($this->participationTypes),
+            'company' => new CompanyResource(resource: $this->company),
+
         ];
     }
 }

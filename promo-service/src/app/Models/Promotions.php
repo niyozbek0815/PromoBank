@@ -40,10 +40,6 @@ class Promotions extends Model
     {
         return $this->belongsTo(Company::class)->with(['media', 'socialMedia', 'socialMedia.type']);
     }
-    public function platforms()
-    {
-        return $this->belongsToMany(Platform::class, 'platform_promotion');
-    }
     public function winnerSelectionTypes()
     {
         return $this->belongsToMany(WinnerSelectionType::class, 'promotion_winner_selection_type');
@@ -75,5 +71,22 @@ class Promotions extends Model
     public function promoLogs()
     {
         return $this->hasMany(PromoLog::class);
+    }
+    // app/Models/Promotions.php
+
+    public function participationTypes()
+    {
+        return $this->hasMany(PromotionParticipationType::class, 'promotion_id')->with('participationType');
+    }
+    public function platformPromotions()
+    {
+        return $this->hasMany(PlatformPromotion::class, 'promotions_id');
+    }
+
+    public function platforms()
+    {
+        return $this->belongsToMany(Platform::class, 'platform_promotions', 'promotion_id', 'platform_id')
+            ->withPivot(['is_enabled', 'additional_rules'])
+            ->withTimestamps();
     }
 }

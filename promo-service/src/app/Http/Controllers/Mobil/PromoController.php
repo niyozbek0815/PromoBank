@@ -12,14 +12,18 @@ class PromoController extends Controller
 {
     public function index()
     {
-        DB::enableQueryLog(); // ✅ Loglarni yoqish
-        $promo = Promotions::with([
-            'media',
-            'company:id,name,title,region,address',
-            'company.media',
-            'company.socialMedia.type',
-        ])->select('id', 'company_id', 'name', 'title', 'description', 'start_date', 'end_date')->paginate(10);
-
+        $promo = Promotions::whereHas('platforms', function ($query) {
+            $query->where('name', 'mobile');
+        })
+            ->with([
+                'media',
+                'company:id,name,title,region,address',
+                'company.media',
+                'company.socialMedia.type',
+                'participationTypes.participationType'
+            ])
+            ->select('id', 'company_id', 'name', 'title', 'description', 'start_date', 'end_date')
+            ->paginate(10);
         return $this->successResponse(['promotions' => PromotionResource::collection($promo)], "success");
     }
 }

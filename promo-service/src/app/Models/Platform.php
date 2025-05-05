@@ -14,8 +14,15 @@ class Platform extends Model
         'description',
     ];
 
+    public function platformPromotions()
+    {
+        return $this->hasMany(PlatformPromotion::class, 'platform_id');
+    }
+
     public function promotions()
     {
-        return $this->belongsToMany(Promotions::class, 'platform_promotion');
+        return $this->belongsToMany(Promotions::class, 'platform_promotions')
+            ->withPivot(['is_enabled', 'additional_rules'])
+            ->withTimestamps();
     }
 }
