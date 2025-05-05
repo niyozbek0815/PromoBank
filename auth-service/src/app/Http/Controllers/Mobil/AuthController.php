@@ -22,6 +22,8 @@ use App\Services\SmsSendService;
 use Illuminate\Support\Facades\Queue;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
+use function PHPUnit\Framework\returnCallback;
+
 class AuthController extends Controller
 {
     protected $authService, $smsSend;
@@ -118,10 +120,13 @@ class AuthController extends Controller
     public function check(LoginCheckRequest $request, $id)
     {
         $req = $request->validated();
-        DB::transaction(function () use ($req, $request, $id) {
+
+        return DB::transaction(function () use ($req, $request, $id) {
             $user = User::findOrFail($id)->load('userOtps');
             $userOld = User::where('phone', $req['uuid'])->latest()->first();
+
             $data = $this->authService->check($user, $userOld, $req, $request->header('User-Ip'));
+
             if ($data['error']) {
                 return $this->errorResponse(
                     $data['success'],
@@ -132,7 +137,7 @@ class AuthController extends Controller
                 unset($data["error"]);
                 return $this->successResponse(
                     $data,
-                    "Check saccessfully!!!"
+                    "Check successfully!!!"
                 );
             }
         });

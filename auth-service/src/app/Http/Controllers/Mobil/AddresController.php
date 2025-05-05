@@ -18,7 +18,7 @@ class AddresController extends Controller
     public function district($region_id)
     {
         return $this->successResponse([
-            "regions" => District::select('id', 'name')->where('region_id', $region_id)->get()
+            "districts" => District::select('id', 'name')->where('region_id', $region_id)->get()
         ], "Return districts Saccessfully!!!");
     }
 }

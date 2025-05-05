@@ -15,7 +15,7 @@ class AuthController extends Controller
     }
     public function guest(Request $request)
     {
-        return $this->forwardRequest("POST", $this->url, '/guest', $request);
+        return $this->forwardRequest("POST", $this->url, '/guest-login', $request);
     }
     public function login(Request $request)
     {
@@ -29,22 +29,23 @@ class AuthController extends Controller
     }
     public function check(Request $request, $id)
     {
-        return $this->forwardRequest("POST", $this->url, '/check/' . $id, $request);
+        return $this->forwardRequest("POST", $this->url, '/verifications/' . $id, $request);
     }
     public function userupdate(Request $request)
     {
-        return $this->forwardRequest("PUT", $this->url, '/user_update', $request);
+        return $this->forwardRequest("PUT", $this->url, '/me', $request);
     }
     public function checkUpdate(Request $request)
     {
-        return $this->forwardRequest("POST", $this->url, '/check_update', $request);
+        return $this->forwardRequest("POST", $this->url, '/me/verify-update', $request);
     }
-    public function logout(Request $request)
-    {
-        return $this->forwardRequest("DELETE", $this->url, '/logout', $request);
-    }
+
     public function user(Request $request)
     {
-        return $this->forwardRequest("GET", $this->url, '/user', $request);
+        return $this->forwardRequest("GET", $this->url, '/me', $request);
     }
+    // public function logout(Request $request)
+    // {
+    //     return $this->forwardRequest("DELETE", $this->url, '/logout', $request);
+    // }
 }

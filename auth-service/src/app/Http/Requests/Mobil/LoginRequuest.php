@@ -22,8 +22,7 @@ class LoginRequuest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone' => 'required, regex:/^\+998\d{9}$/',
-            'max:14',
+            'phone' => ['required', 'regex:/^\+998\d{9}$/', 'max:14']
         ];
     }
 }

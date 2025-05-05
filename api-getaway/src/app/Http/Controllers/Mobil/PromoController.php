@@ -15,6 +15,30 @@ class PromoController extends Controller
 
     public  function index(Request $request)
     {
-        return $this->forwardRequest("GET", $this->url, '/promo', $request);
+        return $this->forwardRequest("GET", $this->url, '/promotions', $request);
+    }
+
+    public function viaPromocode(Request $request, $promotionId)
+    {
+        $request->validate([
+            'code' => 'required|string',
+            'type' => 'in:text,qr' // optional: distinguish input type
+        ]);
+
+        // Logika: promokodni tekshirish va ishtirokni yozish
+    }
+
+    public function viaReceipt(Request $request, $promotionId)
+    {
+        $request->validate([
+            'receipt' => 'required|file|mimes:jpeg,png,pdf', // yoki base64
+        ]);
+
+        // Logika: checkni yuklash va tekshirish
+    }
+
+    public function checkStatus($promotionId)
+    {
+        // Logika: foydalanuvchi allaqachon ishtirok etganmi tekshirish
     }
 }

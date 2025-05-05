@@ -35,7 +35,7 @@ class AuthService
         $is_new = true;
         if (!$user->wasRecentlyCreated) {
             // Mavjud foydalanuvchi qaytarildi
-            $userOtp = UserOtps::where('user_id', $user->id)->where("created_at", '>', Carbon::now()->subMinutes(20))->count();
+            $userOtp = UserOtps::where('user_id', $user->id)->where("created_at", '>', Carbon::now()->subMinutes(2))->count();
             if ($userOtp > 3) {
                 return [
                     "message" => "Juda ko'p urunishlar qildingiz. Iltimos keyinroq qayta urinib ko'ring!!!",

@@ -6,5 +6,5 @@ use App\Http\Controllers\Mobil\PromoController;
 
 
 Route::controller(PromoController::class)->group(function () {
-    Route::get('/promo', 'index');
+    Route::get('/promotions', 'index');
 });

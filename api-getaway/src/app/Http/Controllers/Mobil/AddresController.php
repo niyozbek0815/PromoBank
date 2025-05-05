@@ -21,6 +21,6 @@ class AddresController extends Controller
 
     public function district(Request $request, $id)
     {
-        return $this->forwardRequest("GET", $this->url, '/regions/' . $id, $request);
+        return $this->forwardRequest("GET", $this->url, '/regions/' . $id . '/districts', $request);
     }
 }
