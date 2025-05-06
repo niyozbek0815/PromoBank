@@ -17,10 +17,10 @@ return new class extends Migration
             $table->json('name');
             $table->json('title');
             $table->json('description');
-            // $table->enum('platform', ['telegram', 'web', 'mobile', 'all'])->default('all');
             $table->boolean('is_active')->default(true);
             $table->boolean('is_public')->default(true);
-            $table->json('code_settings')->nullable(); // e.g., {"length":6,"charset":"alnum"}
+            $table->boolean('is_prize')->default(false);
+            $table->json('code_settings')->nullable();
             // $table->enum('winner_selection_type', ['manual', 'random', 'criteria'])->default('manual');
             $table->json('extra_conditions')->nullable(); // e.g., {"min_age":18,"location":"Tashkent"}
             $table->dateTime('start_date')->nullable();

@@ -20,7 +20,7 @@ return new class extends Migration
                 ->constrained('prize_categories')
                 ->nullOnDelete();
             $table->foreignId('promo_code_id')->nullable()->constrained()->onDelete('set null');
-            $table->string('sub_prize')->nullable(); // agar bu JSON bo‘lsa, json() deb yozamiz
+            $table->string('sub_prize')->nullable(); 
             $table->timestamps();
         });
     }

@@ -6,18 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class PromoCodeUser extends Model
 {
-    protected $table = 'promo_user';
+    protected $table = 'promo_code_users';
 
     protected $fillable = [
-        'promo_codes_id',
+        'promo_code_id',
         'user_id',
         'receipt_id',
         'platform_id',
+        'promotion_product_id',
+        'prize_id',
+        'sub_prize_id'
     ];
 
     public function promoCode()
     {
-        return $this->belongsTo(PromoCode::class, 'promo_codes_id');
+        return $this->belongsTo(PromoCode::class, 'promo_code_id');
     }
 
 

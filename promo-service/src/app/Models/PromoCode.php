@@ -12,7 +12,6 @@ class PromoCode extends Model
     protected $fillable = [
         'generation_id',
         'promotion_id',
-        'platform_id',
         'promocode',
         'is_used',
         'used_at',

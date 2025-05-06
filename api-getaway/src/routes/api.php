@@ -25,10 +25,6 @@ Route::controller(AddresController::class)->middleware(['guestCheck'])->group(fu
 Route::controller(PromoController::class)->prefix('promotions')->middleware(['guestCheck'])->group(function () {
     Route::get('/', 'index');
     Route::post('/{promotion}/participate/promocode', 'viaPromocode');
-
-    // Check skaner orqali ovoz berish
     Route::post('/{promotion}/participate/receipt', 'viaReceipt');
-
-    // Ishtirok holatini tekshirish
     Route::get('/{promotion}/participation-status', 'checkStatus');
 });

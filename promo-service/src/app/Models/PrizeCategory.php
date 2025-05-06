@@ -20,4 +20,8 @@ class PrizeCategory extends Model
     {
         return $this->hasMany(PrizePromo::class, 'category_id');
     }
+    public function prizes()
+    {
+        return $this->hasMany(Prize::class, 'category_id');
+    }
 }

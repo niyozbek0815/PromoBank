@@ -15,9 +15,8 @@ class PromotionSeeder extends Seeder
     public function run(): void
     {
         $platforms = Platform::all();
-        $winnerTypes = WinnerSelectionType::all();
 
-        Company::all()->each(function ($company) use ($platforms, $winnerTypes) {
+        Company::all()->each(function ($company) use ($platforms) {
             for ($i = 1; $i <= 2; $i++) {
                 $promotion = Promotions::create([
                     'company_id' => $company->id,
@@ -38,18 +37,14 @@ class PromotionSeeder extends Seeder
                     ],
                     'is_active' => (bool)random_int(0, 1),
                     'is_public' => (bool)random_int(0, 1),
-                    'code_settings' => [
-                        'length' => 8,
-                        'prefix' => strtoupper(Str::random(3)),
-                        'suffix' => strtoupper(Str::random(2)),
-                    ],
+                    'is_prize' => (bool)random_int(0, 1),
                     'extra_conditions' => [
                         'min_purchase' => rand(10000, 50000),
                         'region_restriction' => false,
                     ],
                     'start_date' => Carbon::now()->subDays(rand(1, 30)),
                     'end_date' => Carbon::now()->addDays(rand(15, 60)),
-                    'created_by_user_id' => rand(101, 103),
+                    'created_by_user_id' => rand(1, 3),
                     'status' => 'draft',
                 ]);
 
@@ -57,9 +52,7 @@ class PromotionSeeder extends Seeder
                 // $promotion->platforms()->attach($platforms->random(rand(1, 3))->pluck('id'));
 
                 // Attach 1 random winner selection type
-                $promotion->winnerSelectionTypes()->attach(
-                    $winnerTypes->random()->id
-                );
+
             }
         });
     }

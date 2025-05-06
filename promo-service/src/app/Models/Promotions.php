@@ -18,6 +18,7 @@ class Promotions extends Model
         'description',
         'is_active',
         'is_public',
+        'is_prize',
         'code_settings',
         'extra_conditions',
         'start_date',
@@ -40,10 +41,7 @@ class Promotions extends Model
     {
         return $this->belongsTo(Company::class)->with(['media', 'socialMedia', 'socialMedia.type']);
     }
-    public function winnerSelectionTypes()
-    {
-        return $this->belongsToMany(WinnerSelectionType::class, 'promotion_winner_selection_type');
-    }
+
     public function promoGenerations()
     {
         return $this->hasMany(PromoGeneration::class);
@@ -72,7 +70,6 @@ class Promotions extends Model
     {
         return $this->hasMany(PromoLog::class);
     }
-    // app/Models/Promotions.php
 
     public function participationTypes()
     {

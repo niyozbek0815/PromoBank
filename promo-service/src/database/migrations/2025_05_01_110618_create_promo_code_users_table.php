@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('promo_code_users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('promo_codes_id')->constrained('promo_codes')->onDelete('cascade');
+            $table->foreignId('promo_code_id')->constrained('promo_codes')->onDelete('cascade');
             $table->foreignId('user_id');
             $table->foreignId('receipt_id')->nullable();
             $table->foreignId('platform_id')->constrained()->onDelete('cascade');
             $table->foreignId('promotion_product_id')->nullable()->constrained('promotion_products')->onDelete('set null');
+            $table->foreignId('prize_id')->nullable()->constrained('prizes')->onDelete(action: 'cascade')->onDelete('set null');
+            $table->string('sub_prize_id')->nullable();
             $table->timestamps();
         });
     }

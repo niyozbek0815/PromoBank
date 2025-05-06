@@ -20,25 +20,16 @@ class PromoController extends Controller
 
     public function viaPromocode(Request $request, $promotionId)
     {
-        $request->validate([
-            'code' => 'required|string',
-            'type' => 'in:text,qr' // optional: distinguish input type
-        ]);
-
-        // Logika: promokodni tekshirish va ishtirokni yozish
+        return $this->forwardRequest("POST", $this->url, '/promotions/' . $promotionId . '/participate/promocode', $request);
     }
 
     public function viaReceipt(Request $request, $promotionId)
     {
-        $request->validate([
-            'receipt' => 'required|file|mimes:jpeg,png,pdf', // yoki base64
-        ]);
-
-        // Logika: checkni yuklash va tekshirish
+        return $this->forwardRequest("POST", $this->url, '/promotions/' . $promotionId . '/participate/receipt', $request);
     }
 
-    public function checkStatus($promotionId)
+    public function checkStatus(Request $request, $promotionId)
     {
-        // Logika: foydalanuvchi allaqachon ishtirok etganmi tekshirish
+        return $this->forwardRequest("GET", $this->url, '/promotions/' . $promotionId . '/participation-status', $request);
     }
 }

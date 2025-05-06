@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Promotions;
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -20,7 +18,7 @@ class DatabaseSeeder extends Seeder
                 CompanySeeder::class,
                 SocialMediaSeeder::class,
                 CompaniesUsersSeeder::class,
-                WinnerSelectionTypeSeeder::class,
+                // WinnerSelectionTypeSeeder::class,
                 PlatformSeeder::class,
                 PromotionSeeder::class,
                 PromoGenerationSeeder::class,
@@ -29,6 +27,11 @@ class DatabaseSeeder extends Seeder
                 ParticipationTypeSeeder::class,
                 PromotionParticipationTypeSeeder::class,
                 PlatformPromotionSeeder::class,
+                PrizeCategoriesSeeder::class,
+                PrizeSeeder::class,
+                PrizePromoSeeder::class,
+                SmartRandomRuleSeeder::class,
+                SmartRandomValueSeeder::class,
             ]
         );
     }

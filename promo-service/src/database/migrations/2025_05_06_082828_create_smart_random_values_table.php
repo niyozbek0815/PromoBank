@@ -11,12 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('prize_smart_rules', function (Blueprint $table) {
+        Schema::create('smart_random_values', function (Blueprint $table) {
             $table->id();
+
             $table->foreignId('prize_id')->constrained()->onDelete('cascade');
-            $table->string('rule_key'); // Masalan: gender, region_id
-            $table->string('rule_operator'); // Masalan: =, IN, >=, BETWEEN
-            $table->json('rule_value'); // Masalan: ["male"], ["10", "11"], ["2"]
+            $table->foreignId('rule_id')->constrained('smart_random_rules')->onDelete('cascade');
+
+            $table->string('operator');        // Masalan: =, !=, >=, IN, NOT IN
+            $table->json('values');            // Masalan: ["A", "B", "C"] yoki [6]
+
             $table->timestamps();
         });
     }
@@ -26,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('prize_smart_rules');
+        Schema::dropIfExists('smart_random_values');
     }
 };
