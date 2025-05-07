@@ -14,7 +14,6 @@ class Prize extends Model
         'description',
         'quantity',
         'daily_limit',
-        'prize_message',
         'is_active',
         'created_by_user_id',
         'valid_from',
@@ -42,12 +41,24 @@ class Prize extends Model
     {
         return $this->hasMany(SubPrize::class);
     }
+    public function message()
+    {
+        return $this->hasMany(PrizeMessage::class);
+    }
     public function prizePromos()
     {
         return $this->hasMany(PrizePromo::class);
     }
-    public function promoLogs()
+    public function prizeUsers()
     {
-        return $this->hasMany(PromoLog::class);
+        return $this->hasMany(PromoCodeUser::class, 'prize_id', 'id');
+    }
+    public function promoActions()
+    {
+        return $this->hasMany(PromoAction::class);
+    }
+    public function smartRandomValues()
+    {
+        return $this->hasMany(SmartRandomValue::class);
     }
 }

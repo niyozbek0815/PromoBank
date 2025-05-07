@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PromoLog extends Model
+class PromoAction extends Model
 {
     protected $fillable = [
         'promotion_id',
@@ -12,18 +12,21 @@ class PromoLog extends Model
         'user_id',
         'prize_id',
         'action',
+        'status',
+        'attempt_time',
         'message',
     ];
 
     public function promotion()
     {
-        return $this->belongsTo(Promotions::class);
+        return $this->belongsTo(Promotions::class, 'promotion_id');
     }
 
     public function promoCode()
     {
         return $this->belongsTo(PromoCode::class);
     }
+
 
     public function prize()
     {

@@ -22,7 +22,8 @@ class SendPromocodeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'promocode' => ['required', 'string']
+            'promocode' => ['required', 'string'],
+            'lang' => ['required', 'string']
         ];
     }
 }

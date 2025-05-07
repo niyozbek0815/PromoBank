@@ -20,7 +20,8 @@ return new class extends Migration
                 ->constrained('prize_categories')
                 ->nullOnDelete();
             $table->foreignId('promo_code_id')->nullable()->constrained()->onDelete('set null');
-            $table->string('sub_prize')->nullable(); 
+            $table->string('sub_prize')->nullable();
+            $table->boolean('is_used')->default(false);
             $table->timestamps();
         });
     }

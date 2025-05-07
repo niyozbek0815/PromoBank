@@ -2,111 +2,184 @@
 
 namespace App\Http\Controllers\Mobil;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\SendPromocodeRequest;
-use App\Http\Resources\PromotionResource;
-use App\Models\Platform;
+use App\Jobs\PrizePromoUpdateJob;
+use DB;
 use App\Models\Prize;
-use App\Models\PrizeCategory;
-use App\Models\PromoCode;
-use App\Models\PromoCodeUser;
-use App\Models\Promotions;
+use App\Models\Platform;
+use App\Models\PrizePromo;
+use App\Models\PromoAction;
 use Illuminate\Http\Request;
+use App\Models\PromoCodeUser;
+use Illuminate\Support\Carbon;
+use App\Jobs\PromoCodeConsumeJob;
+use App\Jobs\CreatePromoActionJob;
+use App\Http\Controllers\Controller;
+use App\Services\ViaPromocodeService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
+use App\Http\Resources\PromotionResource;
+use App\Repositories\PromoCodeRepository;
+use App\Repositories\PromotionRepository;
+use App\Http\Requests\SendPromocodeRequest;
+use App\Models\SmartRandomRule;
+use Illuminate\Support\Facades\Log;
 
 class PromoController extends Controller
 {
+    public function __construct(
+        private ViaPromocodeService $viaPromocodeService,
+        private PromotionRepository $promotionRepository,
+        private PromoCodeRepository $promoCodeRepository
+    ) {
+        $this->viaPromocodeService = $viaPromocodeService;
+        $this->promotionRepository = $promotionRepository;
+        $this->promoCodeRepository = $promoCodeRepository;
+    }
     public function index()
     {
 
-        $cacheKey = 'promotions:platform:mobile:page:' . request('page', 1);
-        $ttl = now()->addMinutes(5); // 5 daqiqa kesh
-
-        $promo = Cache::store('redis')->remember($cacheKey, $ttl, function () {
-            return Promotions::whereHas('platforms', function ($query) {
-                $query->where('name', 'mobile');
-            })
-                ->with([
-                    'media',
-                    'company:id,name,title,region,address',
-                    'company.media',
-                    'company.socialMedia.type',
-                    'participationTypes.participationType'
-                ])
-                ->select('id', 'company_id', 'name', 'title', 'description', 'start_date', 'end_date')
-                ->paginate(10);
-        });
-        return $this->successResponse(['promotions' => PromotionResource::collection($promo)], "success");
+        return $this->successResponse(['promotions' => PromotionResource::collection($this->viaPromocodeService->getPromotion())], "success");
     }
     public function viaPromocode(SendPromocodeRequest $request, $id)
     {
         $user = $request['auth_user'];
         $req = $request->validated();
+        $promocodeInput = $req['promocode'];
 
-        // Redis caching for platform ID
-        $platformId = Cache::store('redis')->remember('platform:mobile:id', now()->addMinutes(60), function () {
-            return Platform::where('name', 'mobile')->value('id');
-        });
+        $action = "vote";
+        $status = "failed";
+        $platformId = $this->viaPromocodeService->getPlatforms();
 
-        // Promotion mavjudligini tekshirish
-        $promotion = Promotions::whereHas('platforms', function ($query) {
-            $query->where('name', 'mobile');
-        })
-            ->whereHas('participationTypes.participationType', function ($query) {
-                $query->whereIn('slug', ['text_code', 'qr_code']);
-            })->with([
-                'media',
-            ])
-            ->select('id', 'is_prize') // faqat kerakli ustun
-            ->find($id);
-
+        $promotion = $this->viaPromocodeService->getPromotionById($id);
         if (!$promotion) {
             return $this->errorResponse('Promotion not found.', 'Promotion not found.', 404);
         }
 
-        // Promocode validatsiyasi
-        $promo = PromoCode::where('promotion_id', $id)
-            ->where('promocode', $req['promocode'])
-            ->first();
-        // return $this->successResponse(['promotions' => $promo], "success");
-        if (!$promo) {
+        $promocode = $this->promoCodeRepository->getPromoCodeByPromotionIdAndByPromocode($id, $promocodeInput);
+        if (!$promocode) {
             return $this->errorResponse('Promocode not found.', 'Promocode not found.', 404);
         }
 
-        if ($promo->is_used) {
-            return $this->errorResponse('Promocode avval foydalanilgan.', 'Promocode avval foydalanilgan.', 422);
-        }
-        if ($promotion->is_prize) {
-            // $categoryNames = PrizeCategory::whereHas('prizes', function ($query) use ($id) {
-            //     $query->where('promotion_id', $id);
-            // })->pluck('name');
-            $prize = Prize::whereHas('prizePromo', function ($q) use ($promo) {
-                $q->where('promo_code_id', $promo->id);
-            })->first();
-
-            if ($prize) {
-                return $this->successResponse(['data' => "Prize message"], 'Success');
-            }
-            
+        $prizeId = null;
+        $today = Carbon::today();
+        if ($promocode->is_used) {
+            $action = "claim";
+            $status = "blocked";
         } else {
-            $promoUser = PromoCodeUser::create([
-                'promo_code_id' => $promo->id,
-                'user_id'       => $user['id'],
-                'platform_id'   => $platformId,
-            ]);
+            if ($promotion->is_prize) {
+                // 1. Auto prize check with active prize and daily limit
+                $prizePromo = PrizePromo::with(['prize.message', 'prize.prizeUsers'])
+                    ->where('promo_code_id', $promocode->id)
+                    ->whereHas('prize', function ($q) use ($today) {
+                        $q->where('is_active', true)
+                            ->whereHas('prizeUsers', function ($query) use ($today) {
+                                $query->whereDate('created_at', $today);
+                            }, '<', DB::raw('daily_limit'));
+                    })
+                    ->first();
+
+                if ($prizePromo) {
+                    $action = "auto_win";
+                    $status = "won";
+                    $prizeId = $prizePromo->prize->id;
+                    Queue::connection('rabbitmq')->push(new PrizePromoUpdateJob($prizePromo->id));
+                } else {
+                    // 2. Smart prize evaluation
+                    $smartPrize = Prize::where('promotion_id', $id)
+                        ->whereHas('category', fn($q) => $q->where('name', 'smart_random'))
+                        ->with(['smartRandomValues.rule'])
+                        ->get();
+
+                    foreach ($smartPrize as $prize) {
+                        $isValid = true;
+                        foreach ($prize->smartRandomValues as $ruleValue) {
+                            $method = match ($ruleValue->rule->key) {
+                                'code_length'          => 'checkCodeLength',
+                                'uppercase_count'      => 'checkUppercaseCount',
+                                'lowercase_count'      => 'checkLowercaseCount',
+                                'digit_count'          => 'checkDigitCount',
+                                'special_char_count'   => 'checkSpecialCharCount',
+                                'starts_with'          => 'checkStartsWith',
+                                'not_starts_with'      => 'checkNotStartsWith',
+                                'ends_with'            => 'checkEndsWith',
+                                'not_ends_with'        => 'checkNotEndsWith',
+                                'contains'             => 'checkContains',
+                                'not_contains'         => 'checkNotContains',
+                                'contains_sequence'    => 'checkContainsSequence',
+                                'unique_char_count'    => 'checkUniqueCharCount',
+                                default                => null
+                            };
+
+                            if (!$method || !method_exists($this->viaPromocodeService, $method)) {
+                                Log::warning("Unknown rule method for key: {$ruleValue->rule->key}");
+                                $isValid = false;
+                                break;
+                            }
+
+                            if (!$this->viaPromocodeService->{$method}(
+                                $promocode->promocode,
+                                $ruleValue->operator,
+                                json_decode($ruleValue->values, true)
+                            )) {
+                                $isValid = false;
+                                break;
+                            }
+                        }
+
+                        if ($isValid) {
+                            $validPrize = $prize;
+                            $action = "auto_win";
+                            $status = "won";
+                            $prizeId = $prize->id;
+                            break;
+                        }
+                    }
+
+                    // 3. Manual prize fallback
+                    if (!$prizeId) {
+                        $manualPrizeExists = Prize::where('promotion_id', $id)
+                            ->whereHas('category', fn($q) => $q->where('name', 'manual'))
+                            ->exists();
+
+                        if ($manualPrizeExists) {
+                            $action = "vote";
+                            $status = "pending";
+                        }
+                    }
+                }
+            } else {
+                $action = "vote";
+                $status = "pending";
+            }
+
+            // Queue: consume promo and log action
+            Queue::connection('rabbitmq')->push(new PromoCodeConsumeJob(
+                $promocode->id,
+                $user['id'],
+                $platformId,
+                receiptId: $receiptId ?? null,
+                promotionProductId: $promotionProductId ?? null,
+                prizeId: $prizeId,
+                subPrizeId: $subPrizeId ?? null,
+            ));
         }
 
-        // Promocode foydalanuvchiga biriktiriladi
 
-
-        // Promocode yangilash
-        $promo->update([
-            'is_used' => true,
-            'used_at' => now(),
-        ]);
-
-        return $this->successResponse(['data' => $promoUser], 'Success');
+        Queue::connection('rabbitmq')->push(new CreatePromoActionJob([
+            'promotion_id' => $promotion->id,
+            'promo_code_id' => $promocode->id,
+            'user_id' => $user['id'],
+            'prize_id' => $prizeId,
+            'action' => $action,
+            'status' => $status,
+            'attempt_time' => now(),
+            'message' => null,
+        ]));
+        if ($action == "claim") {
+            return $this->errorResponse('Promocode avval foydalanilgan.', 'Promocode avval foydalanilgan.', 422);
+        } else {
+            return $this->successResponse(['status' => $status, 'action' => $action, 'prize_id' => $prizeId], 'Success');
+        }
     }
 
     public function viaReceipt(Request $request, $promotionId)

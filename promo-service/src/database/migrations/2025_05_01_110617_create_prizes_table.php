@@ -20,7 +20,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->unsignedInteger('quantity')->default(0);
             $table->unsignedInteger('daily_limit')->nullable();
-            $table->json('prize_message')->nullable(); // JSON structure
             $table->boolean('is_active')->default(true);
             $table->foreignId('created_by_user_id');
             $table->timestamp('valid_from')->nullable();

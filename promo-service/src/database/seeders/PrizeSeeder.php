@@ -33,13 +33,8 @@ class PrizeSeeder extends Seeder
                         'description' => $category->description . " uchun test sovg'a",
                         'quantity' => rand(1, 10),
                         'daily_limit' => rand(1, 5),
-                        'prize_message' => json_encode([
-                            'uz' => "Tabriklaymiz, siz {$category->name} turidagi sovg'ani yutdingiz!",
-                            'ru' => "Поздравляем, вы выиграли приз типа {$category->name}!",
-                            'kr' => "축하합니다, {$category->name} 유형의 경품에 당첨되셨습니다!",
-                        ]),
                         'is_active' => true,
-                        'created_by_user_id' => rand(101, 103), // yoki tizim user
+                        'created_by_user_id' => rand(1, 3), // yoki tizim user
                         'valid_from' => $now,
                         'valid_until' => $now->copy()->addDays(rand(30, 90)),
                         'created_at' => $now,
@@ -47,7 +42,6 @@ class PrizeSeeder extends Seeder
                     ];
                 }
 
-                // Bulk insert qilish (eng optimal usul)
                 Prize::insert($prizes);
             }
         }

@@ -12,6 +12,7 @@ class PrizePromo extends Model
         'category_id',
         'promo_code_id',
         'sub_prize',
+        'is_used'
     ];
 
     public function promotion()
@@ -33,8 +34,5 @@ class PrizePromo extends Model
     // {
     //     return $this->belongsTo(PromoCode::class);
     // }
-    public function promoLogs()
-    {
-        return $this->hasMany(PromoLog::class);
-    }
+
 }

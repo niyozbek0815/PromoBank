@@ -66,10 +66,7 @@ class Promotions extends Model
     {
         return $this->hasMany(PrizePromo::class);
     }
-    public function promoLogs()
-    {
-        return $this->hasMany(PromoLog::class);
-    }
+
 
     public function participationTypes()
     {
@@ -85,5 +82,9 @@ class Promotions extends Model
         return $this->belongsToMany(Platform::class, 'platform_promotions', 'promotion_id', 'platform_id')
             ->withPivot(['is_enabled', 'additional_rules'])
             ->withTimestamps();
+    }
+    public function promoActions()
+    {
+        return $this->hasMany(PromoAction::class, 'promotion_id');
     }
 }
