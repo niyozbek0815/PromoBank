@@ -23,7 +23,7 @@ class SendPromocodeRequest extends FormRequest
     {
         return [
             'promocode' => ['required', 'string'],
-            'lang' => ['required', 'string']
+            'lang' => ['required', 'string', 'in:uz,ru,kr']
         ];
     }
 }

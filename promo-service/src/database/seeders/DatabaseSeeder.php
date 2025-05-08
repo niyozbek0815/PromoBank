@@ -32,7 +32,10 @@ class DatabaseSeeder extends Seeder
                 PrizePromoSeeder::class,
                 SmartRandomRuleSeeder::class,
                 SmartRandomValueSeeder::class,
+                PrizeMessageSeeder::class,
+                PromotionMessageSeeder::class,
             ]
+
         );
     }
 }

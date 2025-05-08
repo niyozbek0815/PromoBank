@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('prize_messages', function (Blueprint $table) {
+        Schema::create('promotion_messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('prize_id')->nullable()->constrained('prizes')->nullOnDelete(); // default message if null
+            $table->foreignId('promotion_id')->nullable()->constrained('promotions')->nullOnDelete(); // default message if null
             $table->enum('platform', ['sms', 'mobile', 'bot', 'all']);
-            $table->enum('message_type', ['success', 'fail', 'info', 'etc']);
+            $table->enum('message_type', ['success', 'fail', 'claim', 'info', 'etc']);
             $table->json('message'); // laravel translatableda olindigan qilib  uz ru va kr xolatda
             $table->timestamps();
             $table->softDeletes();
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('prize_messages');
+        Schema::dropIfExists('promotion_messages');
     }
 };
