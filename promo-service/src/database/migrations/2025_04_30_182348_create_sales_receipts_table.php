@@ -11,25 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sales_receipts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id');
-
-            $table->string('name');
-            $table->string('chek_id')->unique();
-            $table->string('nkm_number');
-            $table->string('sn'); // serial number
-
-            $table->timestamp('check_date');
-            $table->enum('payment_type', ['naqt', 'karta']);
-            $table->decimal('qqs_summa', 12, 2);
-            $table->decimal('summa', 12, 2);
-
-            $table->decimal('lat', 10, 7)->nullable();
-            $table->decimal('long', 10, 7)->nullable();
-
-            $table->timestamps();
-        });
+     ch
     }
 
     /**
