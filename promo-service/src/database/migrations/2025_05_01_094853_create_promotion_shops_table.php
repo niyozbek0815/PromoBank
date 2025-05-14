@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('promotion_shops', function (Blueprint $table) {
             $table->id();
             $table->foreignId('promotion_id')->constrained()->onDelete('cascade');
-            $table->string('name');
+            $table->string('name')->unique();
             $table->string('adress')->nullable(); // intentionally kept as 'adress' as per your input
             $table->timestamps();
         });

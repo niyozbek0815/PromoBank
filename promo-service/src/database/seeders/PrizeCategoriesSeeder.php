@@ -34,6 +34,14 @@ class PrizeCategoriesSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
+            [
+                'name' => 'weighted random',
+                'description' => 'Prize category assigned by weighted random algorithm',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+
+
         ];
 
         DB::table('prize_categories')->insert($categories);

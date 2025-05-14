@@ -8,7 +8,7 @@ class PromotionProduct extends Model
 {
     protected $fillable = [
         'promotion_id',
-        'shops_id',
+        'shop_id',
         'name',
     ];
 
@@ -19,6 +19,6 @@ class PromotionProduct extends Model
 
     public function shop()
     {
-        return $this->belongsTo(PromotionShop::class, 'shops_id');
+        return $this->belongsTo(PromotionShop::class, 'shop_id');
     }
 }

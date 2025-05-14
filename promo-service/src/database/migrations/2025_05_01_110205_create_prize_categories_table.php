@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('prize_categories', function (Blueprint $table) {
             $table->id();
-            $table->enum('name', ['manual', 'smart_random', 'auto_bind']);
+            $table->enum('name', ['manual', 'smart_random', 'auto_bind', 'weighted random']);
             $table->text('description')->nullable();
             $table->timestamps();
             // Uncomment if soft deletes are needed

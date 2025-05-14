@@ -33,6 +33,7 @@ class PrizeSeeder extends Seeder
                         'description' => $category->description . " uchun test sovg'a",
                         'quantity' => rand(1, 10),
                         'daily_limit' => rand(1, 5),
+                        'probability_weight' => rand(1, 100),
                         'is_active' => true,
                         'created_by_user_id' => rand(1, 3), // yoki tizim user
                         'valid_from' => $now,

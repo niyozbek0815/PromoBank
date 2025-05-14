@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\ParticipationType;
 use App\Models\PromotionParticipationType;
 use App\Models\Promotions;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 

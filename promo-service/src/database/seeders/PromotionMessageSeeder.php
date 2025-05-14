@@ -48,7 +48,7 @@ class PromotionMessageSeeder extends Seeder
                     'kr' => "프로모코드가 성공적으로 등록되었습니다. SMS로 확인되었습니다.",
                 ],
                 'fail' => [
-                    'uz' => "Promocode ro'yhatga olinmadi. Iltimos, yana bir bor urunib ko'ring.",
+                    'uz' => "Afsuski, bu safar sizga sovg‘a chiqmadi. Omadingizni yana sinab ko‘ring!",
                     'ru' => "Промокод не зарегистрирован. Пожалуйста, попробуйте еще раз.",
                     'kr' => "프로모코드를 등록하지 못했습니다. 다시 시도해 주세요.",
                 ],

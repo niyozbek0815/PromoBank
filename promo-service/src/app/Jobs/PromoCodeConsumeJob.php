@@ -23,7 +23,7 @@ class PromoCodeConsumeJob implements ShouldQueue
     protected $subPrizeId;
 
     public function __construct(
-        $promoCodeId,
+        $promoCodeId = null,
         $userId,
         $platformId,
         $receiptId = null,
@@ -43,21 +43,22 @@ class PromoCodeConsumeJob implements ShouldQueue
     public function handle()
     {
         $data = [
-            'promo_code_id'         => $this->promoCodeId,
-            'user_id'               => $this->userId,
-            'platform_id'           => $this->platformId,
-            'receipt_id'            => $this->receiptId,
-            'promotion_product_id'  => $this->promotionProductId,
-            'prize_id'              => $this->prizeId,
-            'sub_prize_id'          => $this->subPrizeId,
+            'promo_code_id' => $this->promoCodeId,
+            'user_id' => $this->userId,
+            'platform_id' => $this->platformId,
+            'receipt_id' => $this->receiptId,
+            'promotion_product_id' => $this->promotionProductId,
+            'prize_id' => $this->prizeId,
+            'sub_prize_id' => $this->subPrizeId,
         ];
 
         // Faqat kerakli qiymatlar bilan to'ldiriladi, null'lar saqlanadi
         PromoCodeUser::create($data);
-
-        PromoCode::where('id', $this->promoCodeId)->update([
-            'is_used' => true,
-            'used_at' => now(),
-        ]);
+        if ($this->promoCodeId !== null) {
+            PromoCode::where('id', $this->promoCodeId)->update([
+                'is_used' => true,
+                'used_at' => now(),
+            ]);
+        }
     }
 }

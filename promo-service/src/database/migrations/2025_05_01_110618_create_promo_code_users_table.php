@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('promo_code_users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('promo_code_id')->constrained('promo_codes')->onDelete('cascade');
+            $table->foreignId('promo_code_id')->nullable()->constrained('promotion_products')->onDelete('set null');;
             $table->foreignId('user_id');
             $table->foreignId('receipt_id')->nullable();
             $table->foreignId('platform_id')->constrained()->onDelete('cascade');

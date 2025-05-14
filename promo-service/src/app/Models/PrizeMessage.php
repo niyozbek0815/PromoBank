@@ -26,7 +26,7 @@ class PrizeMessage extends Model
     {
         return $this->belongsTo(Prize::class);
     }
-    public static function getMessageFor(Prize $prize, string $platform, string $type): ?PrizeMessage
+    public static function getMessageFor(Prize $prize, string $platform, string $type)
     {
         return self::where('prize_id', $prize->id)
             ->where('platform', $platform)

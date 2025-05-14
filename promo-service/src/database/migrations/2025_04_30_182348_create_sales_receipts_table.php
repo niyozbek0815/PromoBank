@@ -11,7 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-     ch
+        Schema::create('sales_receipts', function (Blueprint $table) {
+            $table->id(); // Primary key
+            $table->string('chek_id')->unique(); // Unikal check raqami
+            $table->string('name')->nullable(); // Xaridor ismi (agar mavjud bo‘lsa)
+            $table->string('nkm_number'); // NKM raqami
+            $table->string('sn'); // Seriya raqami
+            $table->timestamp('check_date'); // Check vaqti
+            $table->string('payment_type'); // karta | naqd | online
+            $table->decimal('qqs_summa', 12, 2); // QQS summasi
+            $table->decimal('summa', 12, 2); // Umumiy summa
+            $table->decimal('lat', 10, 7); // GPS latitude
+            $table->decimal('long', 10, 7); // GPS longitude
+            $table->foreignId('user_id'); // Kim yuklagan
+            $table->timestamps(); // created_at va updated_at
+        });
     }
 
     /**

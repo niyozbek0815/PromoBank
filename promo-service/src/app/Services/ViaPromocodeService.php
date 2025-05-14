@@ -39,7 +39,7 @@ class ViaPromocodeService
         $cacheKey = 'HasPromotion:mobile' . $id;
         $ttl = now()->addMinutes(5); // 5 daqiqa kesh
         return Cache::store('redis')->remember($cacheKey, $ttl, function () use ($id) {
-            return  $this->promotionRepository->getPromotionByIdforViaPromocode($id);
+            return  $this->promotionRepository->getPromotionByIdforVia($id, ['text_code', 'qr_code']);
         });
     }
 
@@ -129,7 +129,7 @@ class ViaPromocodeService
         $message = $this->prizeMessageRepository->getMessageForPrize($prize->id, 'mobile', 'success');
         return $message ? $message->getTranslation('message', $lang) : "Tabriklaymiz siz {$prize->name} yutdingiz.";
     }
-    private function handlePrizeEvaluation($promocode, $promotion, $today, $lang, &$action, &$status, &$message): ?int
+    private function handlePrizeEvaluation($promocode, $promotion, $today, $lang, &$action, &$status, &$message)
     {
         // 1. Auto prize
         $prizePromo = PrizePromo::with(['prize.message', 'prize.prizeUsers'])
@@ -137,14 +137,16 @@ class ViaPromocodeService
             ->whereHas('prize', function ($q) use ($today) {
                 $q->where('is_active', true)
                     ->whereHas('prizeUsers', fn($query) => $query->whereDate('created_at', $today), '<', DB::raw('daily_limit'));
-            })->first();
+            })->with('prize')->first();
 
         if ($prizePromo) {
             $action = "auto_win";
             $status = "won";
             $message = $this->getPrizeMessage($prizePromo->prize, $lang);
+            $prize = $prizePromo->prize;
+            // $prize->increment('quantity', -1);
             Queue::connection('rabbitmq')->push(new PrizePromoUpdateJob($prizePromo->id));
-            return $prizePromo->prize->id;
+            // return $prizePromo->prize->id;
         }
 
         // 2. Smart prize
@@ -157,21 +159,29 @@ class ViaPromocodeService
                 $action = "auto_win";
                 $status = "won";
                 $message = $this->getPrizeMessage($prize, $lang);
-                return $prize->id;
+                break;
             }
         }
 
         // 3. Manual prize fallback
-        $hasManualPrize = Prize::where('promotion_id', $promotion->id)
-            ->whereHas('category', fn($q) => $q->where('name', 'manual'))->exists();
+        if ($status !== "won") {
+            $hasManualPrize = Prize::where('promotion_id', $promotion->id)
+                ->whereHas('category', fn($q) => $q->where('name', 'manual'))->exists();
 
-        if ($hasManualPrize) {
-            $action = "vote";
-            $status = "pending";
-            $message = $this->getPromotionMessage($promotion->id, $lang, 'success');
+            if ($hasManualPrize) {
+                $action = "vote";
+                $status = "pending";
+                $message = $this->getPromotionMessage($promotion->id, $lang, 'success');
+            }
         }
 
-        return null;
+
+        return [
+            'action' => $action,
+            'status' => $status,
+            'message' => $message,
+            'prize_name' => $prize ?? null,
+        ];
     }
 
     private function isValidSmartPrize($prize, string $code): bool

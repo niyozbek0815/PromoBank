@@ -32,14 +32,14 @@ class PromotionRepository implements PromotionRepositoryInterface
             ->get();
     }
 
-    public function getPromotionByIdforViaPromocode($id)
+    public function getPromotionByIdforVia($id, array $slug)
     {
         // Mobil platforma uchun reklama aktsiyasini ID bo'yicha olish
         return  $this->model->whereHas('platforms', function ($query) {
             $query->where('name', 'mobile');
         })
-            ->whereHas('participationTypes.participationType', function ($query) {
-                $query->whereIn('slug', ['text_code', 'qr_code']);
+            ->whereHas('participationTypes.participationType', function ($query) use ($slug) {
+                $query->whereIn('slug', $slug);
             })->select('id', 'is_prize') // faqat kerakli ustun
             ->find($id);
     }

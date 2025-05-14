@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('promotion_products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('promotion_id')->constrained()->onDelete('cascade');
-            $table->foreignId('shops_id')->constrained('promotion_shops')->onDelete('cascade');
+            $table->foreignId('shop_id')->constrained('promotion_shops')->onDelete('cascade');
             $table->string('name');
             $table->timestamps();
         });

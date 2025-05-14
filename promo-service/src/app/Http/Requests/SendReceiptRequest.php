@@ -32,6 +32,7 @@ class SendReceiptRequest extends FormRequest
             'summa'       => 'required|numeric|min:0',
             'lat'         => 'nullable|numeric|between:-90,90',
             'long'        => 'nullable|numeric|between:-180,180',
+            'lang' => ['required', 'string', 'in:uz,ru,kr'],
 
             // Embedded sales_products
             'products'                 => 'required|array|min:1',

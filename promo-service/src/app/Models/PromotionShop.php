@@ -18,6 +18,6 @@ class PromotionShop extends Model
     }
     public function products()
     {
-        return $this->hasMany(PromotionProduct::class, 'shops_id');
+        return $this->hasMany(PromotionProduct::class, 'shop_id');
     }
 }

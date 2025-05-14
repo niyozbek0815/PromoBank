@@ -87,4 +87,8 @@ class Promotions extends Model
     {
         return $this->hasMany(PromoAction::class, 'promotion_id');
     }
+    public function shops()
+    {
+        return $this->hasMany(PromotionShop::class, 'promotion_id');
+    }
 }

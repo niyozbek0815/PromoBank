@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
                 SmartRandomValueSeeder::class,
                 PrizeMessageSeeder::class,
                 PromotionMessageSeeder::class,
+                PromotionShopProductSeeder::class,
             ]
 
         );
