@@ -73,9 +73,6 @@ class ViaPromocodeService
             if ($promotion->is_prize) {
                 $prizeId = $this->handlePrizeEvaluation($promocode, $promotion, $today, $lang, $action, $status, $message);
             }
-
-            // return $prizeId;
-
             if (!$promotion->is_prize || !$prizeId) {
                 $action = "vote";
                 $status = "pending";
@@ -83,13 +80,14 @@ class ViaPromocodeService
             }
 
             Queue::connection('rabbitmq')->push(new PromoCodeConsumeJob(
-                $promocode->id,
-                $user['id'],
-                $platformId,
+                promoCodeId: $promocode->id,
+                userId: $user['id'],
+                platformId: $platformId,
                 receiptId: $receiptId ?? null,
                 promotionProductId: $promotionProductId ?? null,
-                prizeId: $prizeId,
+                prizeId: $prizeId ?? null,
                 subPrizeId: $subPrizeId ?? null,
+                promotionId: $id
             ));
         }
 
@@ -103,12 +101,11 @@ class ViaPromocodeService
             'attempt_time' => now(),
             'message' => null,
         ]));
-        $data = [
+        return  [
             'action' => $action,
             'status' => $status,
             'message' => $message,
         ];
-        return  $data;
     }
     private function getPlatforms()
     {
@@ -144,15 +141,12 @@ class ViaPromocodeService
             $status = "won";
             $message = $this->getPrizeMessage($prizePromo->prize, $lang);
             $prize = $prizePromo->prize;
-            // $prize->increment('quantity', -1);
             Queue::connection('rabbitmq')->push(new PrizePromoUpdateJob($prizePromo->id));
-            // return $prizePromo->prize->id;
         }
 
-        // 2. Smart prize
         $smartPrizes = Prize::where('promotion_id', $promotion->id)
             ->whereHas('category', fn($q) => $q->where('name', 'smart_random'))
-            ->with(['smartRandomValues.rule'])->get();
+            ->with(['smartRandomValues.rule'])->orderBy('index', 'asc')->get();
 
         foreach ($smartPrizes as $prize) {
             if ($this->isValidSmartPrize($prize, $promocode->promocode)) {

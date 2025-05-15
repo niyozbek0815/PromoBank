@@ -10,6 +10,7 @@ class Prize extends Model
         'promotion_id',
         'type_id',
         'category_id',
+        'index',
         'name',
         'description',
         'quantity',
@@ -26,6 +27,35 @@ class Prize extends Model
         'valid_until' => 'datetime',
         'is_active' => 'boolean',
     ];
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($product) {
+            if (is_null($product->index)) {
+                // Index kiritilmagan, oxiriga qo‘shiladi
+                $maxIndex = static::where('promotion_id', $product->promotion_id)->max('index') ?? 0;
+                $product->index = $maxIndex + 1;
+            } else {
+                // Index kiritilgan va mavjud bo‘lishi mumkin
+                $conflictExists = static::where('promotion_id', $product->promotion_id)
+                    ->where('index', '>=', $product->index)
+                    ->exists();
+
+                if ($conflictExists) {
+                    // To‘qnashuv bo‘lsa, barcha keyingi indexlarni 1 ga oshiramiz
+                    static::where('promotion_id', $product->promotion_id)
+                        ->where('index', '>=', $product->index)
+                        ->orderByDesc('index') // yuqoridan pastga qarab
+                        ->get()
+                        ->each(function ($item) {
+                            $item->index += 1;
+                            $item->save();
+                        });
+                }
+            }
+        });
+    }
 
     public function promotion()
     {

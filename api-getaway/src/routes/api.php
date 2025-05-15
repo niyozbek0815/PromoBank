@@ -26,5 +26,5 @@ Route::controller(PromoController::class)->prefix('promotions')->middleware(['gu
     Route::get('/', 'index');
     Route::post('/{promotion}/participate/promocode', 'viaPromocode');
     Route::post('/{promotion}/participate/receipt', 'viaReceipt');
-    Route::get('/{promotion}/participation-status', 'checkStatus');
+    Route::get('/{promotion}/participations', 'listParticipationHistory');
 });

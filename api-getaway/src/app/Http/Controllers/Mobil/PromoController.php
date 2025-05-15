@@ -32,4 +32,8 @@ class PromoController extends Controller
     {
         return $this->forwardRequest("GET", $this->url, '/promotions/' . $promotionId . '/participation-status', $request);
     }
+    public function listParticipationHistory(Request $request, $promotionId)
+    {
+        return $this->forwardRequest("POST", $this->url, '/promotions/' . $promotionId . '/participations', $request);
+    }
 }

@@ -37,7 +37,7 @@ class ViaReceiptService
         $action = "vote";
         $status = "failed";
         $selectedPrize = null;
-        $selectedProduct = null;
+        $selectedProductId = null;
         $today = Carbon::today();
         $promotion_boolean = false;
         $platformId = $this->getPlatforms();
@@ -46,7 +46,7 @@ class ViaReceiptService
             $promotion_boolean = true;
         } else {
             if ($promotion->is_prize) {
-                return  $this->handlePrizeEvaluation($req['name'], collect($req['products']), $promotion, $today, $lang, $action, $status, $message, $selectedPrize, $selectedProduct);
+                $this->handlePrizeEvaluation($req['name'], collect($req['products']), $promotion, $today, $lang, $action, $status, $message, $selectedPrize, $selectedProductId);
             }
         }
         Queue::connection(name: 'rabbitmq')->push(new CreateReceiptAndProductJob(
@@ -54,10 +54,11 @@ class ViaReceiptService
             $user,
             null,
             $platformId,
-            $selectedProduct ?? null,
+            $selectedProductId ?? null,
             $selectedPrize['id'] ?? null,
             $subPrizeId ?? null,
-            $status
+            $status,
+            $promotion->id ?? null,
         ));
         return [
             'action' => $action,
@@ -67,7 +68,7 @@ class ViaReceiptService
             'prize' => $selectedPrize ?? null,
         ];
     }
-    private function handlePrizeEvaluation($shopname, $checkProducts, $promotion, $today, $lang, &$action, &$status, &$message, &$selectedPrize, &$selectedProduct)
+    private function handlePrizeEvaluation($shopname, $checkProducts, $promotion, $today, $lang, &$action, &$status, &$message, &$selectedPrize, &$selectedProductId)
     {
         $prizes = Prize::where('promotion_id', $promotion->id)
             ->where('is_active', true)
@@ -77,8 +78,7 @@ class ViaReceiptService
                 fn($q) =>
                 $q->where('name', 'weighted random') // faqat 'weighted random' kategoriyadagi sovg'alar
             )
-            ->orderByDesc('probability_weight') // ehtimoliga ko‘ra katta-kichik tartib
-            ->get();
+            ->orderBy('index', 'asc')->get();
         $shop = PromotionShop::with('products:id,name')
             ->where('name', $shopname)
             ->where('promotion_id', $promotion->id)
@@ -111,12 +111,12 @@ class ViaReceiptService
             if ($entries->isEmpty()) {
                 $this->failResponse($promotion, $lang, $action, $status, $message);
             } else {
+
                 foreach ($prizes as $prize) {
                     foreach ($entries as $entry) {
-                        dd($entry);
                         if (random_int(1, $prize->probability_weight) === 1) {
                             $selectedPrize = $prize;
-                            $selectedProduct = $entry['product_id'];
+                            $selectedProductId = $entry['product_id'];
                             break; // Birinchi mos tushganini tanlaymiz
                         }
                     }

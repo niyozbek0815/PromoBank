@@ -1,0 +1,57 @@
+cloudflared tunnel run promobank-tunnel
+ishga tushurish
+⸻
+
+1. Tunnel-ni to‘xtatish (stop qilish)
+
+Agar tunnelni terminaldan ishga tushirgan bo‘lsangiz, uni Ctrl + C bilan to‘xtatishingiz mumkin.
+
+Agar tunnel macOS-da systemd yoki launchctl orqali service sifatida ishlayotgan bo‘lsa:
+
+launchctl unload ~/Library/LaunchAgents/com.cloudflare.cloudflared.plist
+
+Bu buyruq tunnel xizmatini to‘xtatadi (stop qiladi).
+
+⸻
+
+2. Tunnel-ni qayta ishga tushirish
+
+Kerak bo‘lsa, quyidagi buyruq bilan qayta ishga tushirasiz:
+
+launchctl load ~/Library/LaunchAgents/com.cloudflare.cloudflared.plist
+
+
+⸻
+
+3. Tunnelni systemd (Linux) da boshqarish
+
+Agar Linux-da bo‘lsangiz:
+
+sudo systemctl stop cloudflared
+sudo systemctl start cloudflared
+sudo systemctl restart cloudflared
+
+
+⸻
+
+4. Tunnelni har doim avtomatik ishga tushishini o‘chirish
+
+Agar tunnelni avtomatik start qiluvchi service mavjud bo‘lsa, uni o‘chirib qo‘yish:
+
+launchctl unload ~/Library/LaunchAgents/com.cloudflare.cloudflared.plist
+
+yoki Linux uchun:
+
+sudo systemctl disable cloudflared
+
+
+⸻
+
+Xulosa:
+	•	Tunnelni to‘xtatish uchun launchctl unload (macOS) yoki systemctl stop (Linux).
+	•	Tunnelni qayta ishga tushirish uchun launchctl load yoki systemctl start.
+	•	Tunnelni avtomatik ishga tushishini o‘chirish uchun launchctl unload (macOS) yoki systemctl disable (Linux).
+
+⸻
+
+Agar qo‘shimcha qilib, buyruqlarni soddalashtirish uchun alias yoki skript yozishni xohlasangiz, yordam beraman.

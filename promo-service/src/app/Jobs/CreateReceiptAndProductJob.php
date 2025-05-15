@@ -25,6 +25,7 @@ class CreateReceiptAndProductJob implements ShouldQueue
     protected $promotionProductId;
     protected $prizeId;
     protected $subPrizeId;
+    protected $promotionId;
     public $tries = 3;
     public $timeout = 15;
     protected $status;
@@ -37,7 +38,8 @@ class CreateReceiptAndProductJob implements ShouldQueue
         $promotionProductId = null,
         $prizeId = null,
         $subPrizeId = null,
-        $status
+        $status,
+        $promotionId
     ) {
         $this->data = $data;
         $this->user = $user;
@@ -47,6 +49,7 @@ class CreateReceiptAndProductJob implements ShouldQueue
         $this->prizeId = $prizeId;
         $this->subPrizeId = $subPrizeId;
         $this->status = $status;
+        $this->promotionId = $promotionId;
     }
     public function middleware()
     {
@@ -57,11 +60,11 @@ class CreateReceiptAndProductJob implements ShouldQueue
      */
     public function handle(): void
     {
-
+        $user = $this->user;
         try {
-            $receipt_id = DB::transaction(function () {
+            $receipt_id = DB::transaction(function () use ($user) {
                 $receipt = SalesReceipt::create([
-                    'user_id'      => $this->user['id'],
+                    'user_id'      => $user['id'],
                     'name'         => $this->data['name'],
                     'chek_id'      => $this->data['chek_id'],
                     'nkm_number'   => $this->data['nkm_number'],
@@ -91,12 +94,13 @@ class CreateReceiptAndProductJob implements ShouldQueue
             if ($this->status !== "failed") {
                 Queue::connection(name: 'rabbitmq')->push(new PromoCodeConsumeJob(
                     $this->promoCodeId,
-                    $this->user['id'],
+                    $user['id'],
                     $this->platformId,
                     $receipt_id,
                     $this->promotionProductId,
                     $this->prizeId,
-                    $this->subPrizeId
+                    $this->subPrizeId,
+                    $this->promotionId
                 ));
             }
         } catch (\Exception $e) {

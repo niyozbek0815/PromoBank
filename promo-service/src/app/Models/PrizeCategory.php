@@ -22,6 +22,6 @@ class PrizeCategory extends Model
     }
     public function prizes()
     {
-        return $this->hasMany(Prize::class, 'category_id');
+        return $this->hasMany(Prize::class, 'category_id')->orderBy('index', 'asc');
     }
 }

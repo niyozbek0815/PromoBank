@@ -9,13 +9,10 @@ use App\Http\Resources\PromotionResource;
 use App\Repositories\PromotionRepository;
 use App\Http\Requests\SendPromocodeRequest;
 use App\Http\Requests\SendReceiptRequest;
-use App\Jobs\CreateReceiptAndProductJob;
-use App\Models\PromotionProduct;
-use App\Models\Promotions;
-use App\Models\PromotionShop;
+use App\Http\Resources\PromoHistoryRecource;
+use App\Models\PromoCodeUser;
 use App\Services\ViaReceiptService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Queue;
 
 class PromoController extends Controller
 {
@@ -79,12 +76,25 @@ class PromoController extends Controller
         if (!empty($data['promotion'])) {
             return $this->errorResponse('Promotion not found.', 'Promotion not found.', 404);
         }
-        // return $this->successResponse(['promotions' => "S"], "success");
-        return  $this->successResponse($data, $data['message'] ?? "Promocode movaffaqiyatli ro'yhatga olindi");
+        return $data['action'] === "claim"
+            ? $this->errorResponse($data['message'] ?? "Kechirasiz promocodedan avval foydalanilgan", 422)
+            : $this->successResponse($data, $data['message'] ?? "Yutuq mavjud emas iltimos yana qayta urunib ko'ring");
     }
 
-    public function checkStatus(Request $request, $promotionId)
+    public function listParticipationHistory(Request $request, $promotionId)
     {
-        return $this->successResponse(['promotions' => "success3"], "success");
+        $user = $request['auth_user'];
+        $promo_user = PromoCodeUser::where('promotion_id', $promotionId)
+            ->where('user_id', $user['id'])
+            ->with([
+                'promoCode:promocode,id',
+                'receipt:id,chek_id,name,created_at',
+                'platform:id,name',
+                'promotionProduct:id,name',
+                'prize:id,name',
+            ])
+            ->orderByDesc('created_at')
+            ->get(['id', 'promo_code_id', 'platform_id', 'promotion_product_id', 'prize_id', 'receipt_id']);
+        return $this->successResponse(['promotions' => PromoHistoryRecource::collection($promo_user)], "success");
     }
 }

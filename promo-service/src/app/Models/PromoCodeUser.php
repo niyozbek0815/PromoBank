@@ -15,7 +15,8 @@ class PromoCodeUser extends Model
         'platform_id',
         'promotion_product_id',
         'prize_id',
-        'sub_prize_id'
+        'sub_prize_id',
+        'promotion_id'
     ];
 
     public function promoCode()
@@ -36,5 +37,17 @@ class PromoCodeUser extends Model
     public function promotionProduct()
     {
         return $this->belongsTo(PromotionProduct::class, 'promotion_product_id');
+    }
+    public function prize()
+    {
+        return $this->belongsTo(Prize::class);
+    }
+    // public function subPrize()
+    // {
+    //     return $this->belongsTo(SubPrize::class);
+    // }
+    public function promotion()
+    {
+        return $this->belongsTo(Promotions::class);
     }
 }

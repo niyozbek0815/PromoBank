@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('promotion_id')->constrained()->onDelete('cascade');
             // $table->foreignId('type_id')->constrained('prize_types')->onDelete('restrict');
             $table->foreignId('category_id')->constrained('prize_categories')->onDelete('restrict');
+            $table->unsignedInteger('index')->default(0);
             $table->string('name');
             $table->text('description')->nullable();
             $table->unsignedInteger('quantity')->default(0);
