@@ -29,6 +29,7 @@ class CreateReceiptAndProductJob implements ShouldQueue
     public $tries = 3;
     public $timeout = 15;
     protected $status;
+    protected $entries_count;
 
     public function __construct(
         array $data,
@@ -39,7 +40,8 @@ class CreateReceiptAndProductJob implements ShouldQueue
         $prizeId = null,
         $subPrizeId = null,
         $status,
-        $promotionId
+        $promotionId,
+        $entries_count = null
     ) {
         $this->data = $data;
         $this->user = $user;
@@ -50,6 +52,7 @@ class CreateReceiptAndProductJob implements ShouldQueue
         $this->subPrizeId = $subPrizeId;
         $this->status = $status;
         $this->promotionId = $promotionId;
+        $this->entries_count = $entries_count;
     }
     public function middleware()
     {
@@ -91,9 +94,11 @@ class CreateReceiptAndProductJob implements ShouldQueue
                 SalesProduct::insert($products->toArray());
                 return $receipt['id'];
             });
-            if ($this->status !== "failed") {
-                Queue::connection(name: 'rabbitmq')->push(new PromoCodeConsumeJob(
-                    $this->promoCodeId,
+            $times = $this->status === "pending" ? $this->entries_count : ($this->status !== "won" ? 1 : 0);
+
+            for ($i = 0; $i < $times; $i++) {
+                Queue::connection('rabbitmq')->push(new PromoCodeConsumeJob(
+                    $this->status === "pending" ? null : $this->promoCodeId,
                     $user['id'],
                     $this->platformId,
                     $receipt_id,

@@ -40,14 +40,12 @@ class ViaReceiptService
         $selectedProductId = null;
         $today = Carbon::today();
         $promotion_boolean = false;
+        $entries = collect();
         $platformId = $this->getPlatforms();
         $promotion = $this->getPromotionById($id);
-        if (!$promotion) {
-            $promotion_boolean = true;
-        } else {
-            if ($promotion->is_prize) {
-                $this->handlePrizeEvaluation($req['name'], collect($req['products']), $promotion, $today, $lang, $action, $status, $message, $selectedPrize, $selectedProductId);
-            }
+        $promotion_boolean = !$promotion;
+        if ($promotion && $promotion->is_prize) {
+            $this->handlePrizeEvaluation($req['name'], collect($req['products']), $promotion, $today, $lang, $action, $status, $message, $selectedPrize, $selectedProductId, $entries);
         }
         Queue::connection(name: 'rabbitmq')->push(new CreateReceiptAndProductJob(
             $req,
@@ -59,6 +57,7 @@ class ViaReceiptService
             $subPrizeId ?? null,
             $status,
             $promotion->id ?? null,
+            $entries->count() ?? 0
         ));
         return [
             'action' => $action,
@@ -68,7 +67,7 @@ class ViaReceiptService
             'prize' => $selectedPrize ?? null,
         ];
     }
-    private function handlePrizeEvaluation($shopname, $checkProducts, $promotion, $today, $lang, &$action, &$status, &$message, &$selectedPrize, &$selectedProductId)
+    private function handlePrizeEvaluation($shopname, $checkProducts, $promotion, $today, $lang, &$action, &$status, &$message, &$selectedPrize, &$selectedProductId, &$entries)
     {
         $prizes = Prize::where('promotion_id', $promotion->id)
             ->where('is_active', true)
@@ -78,6 +77,10 @@ class ViaReceiptService
                 fn($q) =>
                 $q->where('name', 'weighted random') // faqat 'weighted random' kategoriyadagi sovg'alar
             )
+            ->withCount(['prizeUsers as today_prize_users_count' => function ($query) use ($today) {
+                $query->whereDate('created_at', $today);
+            }])
+            ->havingRaw('today_prize_users_count < daily_limit')
             ->orderBy('index', 'asc')->get();
         $shop = PromotionShop::with('products:id,name')
             ->where('name', $shopname)
@@ -89,25 +92,9 @@ class ViaReceiptService
         } else {
             // Mahsulot nomlarini indekslash (case-insensitive)
             $promoProductMap = collect($shop->products)
-                ->keyBy(fn($product) => Str::lower($product->name));
+                ->keyBy(fn($product) => Str::lower($product->name));;
 
-            $entries = collect();
-
-            foreach ($checkProducts as $checkProduct) {
-                $checkName = Str::lower($checkProduct['name']);
-                foreach ($promoProductMap as $promoName => $promoProduct) {
-                    if (str_contains($checkName, $promoName)) {
-                        for ($i = 0; $i < $checkProduct['count']; $i++) {
-                            $entries->push([
-                                'shop_id'      => $shop->id,
-                                'product_id'   => $promoProduct->id,
-                                'product_name' => $promoProduct->name,
-                                'summa'        => $checkProduct['summa'],
-                            ]);
-                        }
-                    }
-                }
-            }
+            $entries = $this->buildEntries($checkProducts, $shop);
             if ($entries->isEmpty()) {
                 $this->failResponse($promotion, $lang, $action, $status, $message);
             } else {
@@ -169,5 +156,27 @@ class ViaReceiptService
     {
         $message = $this->promotionMessageRepository->getMessageForPromotion($promotionId, 'mobile', $type);
         return $message->getTranslation('message', $lang);
+    }
+    private function buildEntries($checkProducts, $shop)
+    {
+        $entries = collect();
+        $promoProductMap = collect($shop->products)->keyBy(fn($p) => Str::lower($p->name));
+
+        foreach ($checkProducts as $checkProduct) {
+            $checkName = Str::lower($checkProduct['name']);
+            foreach ($promoProductMap as $promoName => $promoProduct) {
+                if (str_contains($checkName, $promoName)) {
+                    for ($i = 0; $i < $checkProduct['count']; $i++) {
+                        $entries->push([
+                            'shop_id'      => $shop->id,
+                            'product_id'   => $promoProduct->id,
+                            'product_name' => $promoProduct->name,
+                            'summa'        => $checkProduct['summa'],
+                        ]);
+                    }
+                }
+            }
+        }
+        return $entries;
     }
 }
