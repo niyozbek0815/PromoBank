@@ -26,6 +26,7 @@ return new class extends Migration
                 'block',        // bloklandi
                 'manual_add',   // admin yutuq berdi
                 'auto_win',     // avtomatik yutuq (smart_random)
+                'bonus_win'
             ]);
 
             $table->enum('status', [

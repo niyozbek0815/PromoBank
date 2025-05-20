@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
+use Termwind\Components\BreakLine;
 
 class ReceiptService
 {
@@ -33,8 +34,9 @@ class ReceiptService
         $message = null;
         $action = "vote";
         $status = "failed";
-        $selectedPrize = null;
-        $selectedProductId = null;
+        $encouragementPoints = null;
+        $selectedPrizes = [];
+        $menualPrizeCount = 0;
         $today = Carbon::today();
         $platformId = $this->getPlatforms();
         $shop = PromotionShop::with('products:id,name')
@@ -45,7 +47,6 @@ class ReceiptService
                     ->where('end_date', '>=', $today);
             })
             ->first();
-
         if ($shop) {
             $promotion = $shop->promotion;
             $prizes = Prize::where('promotion_id', $shop->promotion_id)
@@ -71,14 +72,21 @@ class ReceiptService
             $manual_prizes = $groupedPrizes['manual'] ?? collect();
             $promoProductMap = collect($shop->products)
                 ->keyBy(fn($product) => Str::lower($product->name));
-            if ($weighted_prizes->isNotEmpty()) {
-                $entries =  $this->getWeightedRandomPrize($weighted_prizes, $shop, $checkProducts, $promoProductMap, $today, $lang, $action, $status, $message, $selectedPrize, $selectedProductId);
-            } elseif ($manual_prizes->isNotEmpty()) {
-                $this->getManualPrize($promotion, $lang, $action, $status, $message);
+            $entries = $this->getEntries($checkProducts, $shop, $promoProductMap);
+
+            foreach ($entries as $entry) {
+                $selected = false;
+                if ($weighted_prizes->isNotEmpty()) {
+                    $this->getWeightedRandomPrize($weighted_prizes, $entry, $selectedPrizes, $selected);
+                }
+                if ($manual_prizes->isNotEmpty() &&  !$selected) {
+                    $this->getManualPrize($menualPrizeCount);
+                }
+                $selected = false;
             }
-        } else {
-            // men shu yerda  xecha qanday aksiyada qatnashmayotgan chek uchun fag;batlantiruvchi bal beraman
-            $this->giveEncouragementPoints($user['id'], $req['name']);
+        }
+        if ($menualPrizeCount == 0 && count($selectedPrizes) == 0) {
+            $encouragementPoints = config('services.constants.encouragement_points');
         }
 
         Queue::connection(name: 'rabbitmq')->push(new CreateReceiptAndProductJob(
@@ -86,42 +94,31 @@ class ReceiptService
             $user,
             null,
             $platformId,
-            $selectedProductId ?? null,
-            $selectedPrize['id'] ?? null,
+            $selectedPrizes ?? null,
             $subPrizeId ?? null,
-            $status,
+            $menualPrizeCount,
             $promotion->id ?? null,
-            $entries->count() ?? 0
         ));
+
+        return [
+            'manualPrizes' => $menualPrizeCount,
+            'selectedPrizes' => $selectedPrizes,
+        ];
+
         return [
             'action' => $action,
             'status' => $status,
             'message' => $message,
-            'prize' => $selectedPrize ?? null,
         ];
     }
     private function giveEncouragementPoints($userId, $shopName)
     {
-        // bu yerda ball hisoblash va yozish logikasi bo'lishi mumkin
-        // masalan: 10 ball har aksiya yo‘q bo‘lsa
-
-        $points = 10;
-
-        // Ballarni saqlash logikasi — misol tariqasida log yozamiz
-        \Log::info("User {$userId} received encouragement points", [
-            'points' => $points,
-            'reason' => "No active promotion for shop '{$shopName}'",
-        ])
-
-        // Agar sizda points saqlanadigan model bo‘lsa:
-        // UserPoint::create([
-        //     'user_id' => $userId,
-        //     'points' => $points,
-        //     'reason' => 'no_promotion_check',
-        //     'source' => $shopName,
-        // ]);
+        $balls = 2;
+        $status = 'won';
+        $action = 'bonus_win';
+        $message = "Tabriklaymiz! Siz {$balls} promobal berildi. yana Skanerlang va promobalarni yig'ishda davom eting!";
     }
-    private function getWeightedRandomPrize($prizes, $shop, $checkProducts, $promoProductMap, $today, $lang, &$action, &$status, &$message, &$selectedPrize, &$selectedProductId)
+    private function getEntries($checkProducts, $shop, $promoProductMap)
     {
         $entries = collect();
 
@@ -129,7 +126,8 @@ class ReceiptService
             $checkName = Str::lower($checkProduct['name']);
             foreach ($promoProductMap as $promoName => $promoProduct) {
                 if (str_contains($checkName, $promoName)) {
-                    for ($i = 0; $i < $checkProduct['count']; $i++) {
+                    $count = ($checkProduct['count'] > 5) ? 5 : $checkProduct['count'];
+                    for ($i = 0; $i < $count; $i++) {
                         $entries->push([
                             'shop_id'      => $shop->id,
                             'product_id'   => $promoProduct->id,
@@ -140,34 +138,25 @@ class ReceiptService
                 }
             }
         }
-        if ($entries->isEmpty()) {
-            $this->failResponse($shop->promotion, $lang, $action, $status, $message);
-        } else {
-
-            foreach ($prizes as $prize) {
-                foreach ($entries as $entry) {
-                    if (random_int(1, $prize->probability_weight) === 1) {
-
-                        $selectedPrize = $prize;
-                        $selectedPrize->increment('awarded_quantity');
-                        $selectedProductId = $entry['product_id'];
-                        $action = "auto_win";
-                        $status = "won";
-                        $message = $this->getPrizeMessage($selectedPrize, $lang);
-                        break; // Birinchi mos tushganini tanlaymiz
-                    }
-                }
-            }
-        }
         return $entries;
     }
-
-    private function getManualPrize($promotion, $lang, &$action, &$status, &$message,)
-
+    private function getWeightedRandomPrize($prizes, $entry,  &$selectedPrizes, &$selected)
     {
-        $action = "vote";
-        $status = "pending";
-        $message = $this->getPromotionMessage($promotion->id, $lang, 'success');
+        foreach ($prizes as $prize) {
+            if (random_int(1, $prize->probability_weight) === 1) {
+                $selectedPrizes[] = [
+                    'entry' => $entry,
+                    'prize' => $prize,
+                ];
+                $selected = true;
+                break;
+            }
+        }
+    }
+
+    private function getManualPrize(&$menualPrizeCount)
+    {
+        $menualPrizeCount++;
     }
     private function getPlatforms()
     {

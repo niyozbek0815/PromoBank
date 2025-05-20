@@ -2,8 +2,11 @@
 
 namespace App\Jobs;
 
+use App\Models\EncouragementPoint;
+use App\Models\Prize;
 use App\Models\SalesProduct;
 use App\Models\SalesReceipt;
+use App\Models\UserPointBalance;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -16,43 +19,29 @@ class CreateReceiptAndProductJob implements ShouldQueue
 {
     use InteractsWithQueue, Queueable, SerializesModels;
 
-    protected array $data;
-    protected array $user;
-    protected $promoCodeId;
-    protected $userId;
-    protected $platformId;
-    protected $receiptId;
-    protected $promotionProductId;
-    protected $prizeId;
-    protected $subPrizeId;
-    protected $promotionId;
+
+
     public $tries = 3;
     public $timeout = 15;
-    protected $status;
-    protected $entries_count;
 
     public function __construct(
-        array $data,
-        array $user,
-        $promoCodeId = null,
-        $platformId,
-        $promotionProductId = null,
-        $prizeId = null,
-        $subPrizeId = null,
-        $status,
-        $promotionId,
-        $entries_count = null
+        protected array $data,
+        protected array $user,
+        protected  $promoCodeId = null,
+        protected $platformId,
+        protected  $selectedPrizes = [],
+        protected  $subPrizeId = null,
+        protected  $manualPrizeCount = 0,
+        protected   $promotionId,
     ) {
         $this->data = $data;
         $this->user = $user;
         $this->promoCodeId = $promoCodeId;
         $this->platformId = $platformId;
-        $this->promotionProductId = $promotionProductId;
-        $this->prizeId = $prizeId;
+        $this->selectedPrizes = $selectedPrizes;
         $this->subPrizeId = $subPrizeId;
-        $this->status = $status;
+        $this->manualPrizeCount = $manualPrizeCount;
         $this->promotionId = $promotionId;
-        $this->entries_count = $entries_count;
     }
     public function middleware()
     {
@@ -94,23 +83,53 @@ class CreateReceiptAndProductJob implements ShouldQueue
                 SalesProduct::insert($products->toArray());
                 return $receipt['id'];
             });
-            $times = $this->status === "pending" ? $this->entries_count : ($this->status !== "won" ? 1 : 0);
-
-            for ($i = 0; $i < $times; $i++) {
-                Queue::connection('rabbitmq')->push(new PromoCodeConsumeJob(
-                    $this->status === "pending" ? null : $this->promoCodeId,
-                    $user['id'],
-                    $this->platformId,
-                    $receipt_id,
-                    $this->promotionProductId,
-                    $this->prizeId,
-                    $this->subPrizeId,
-                    $this->promotionId
-                ));
+            if ($this->manualPrizeCount > 0 || !empty($thiss->selectedPrize)) {
+                $this->dispatchPromoCodeJob($user['id'], $receipt_id);
+            };
+            if ($this->manualPrizeCount == 0 && empty($thiss->selectedPrize)) {
+                $this->giveEncouragementPoints($user['id'], $receipt_id);
             }
         } catch (\Exception $e) {
-            // Log error
+
             \Log::error("Error processing job: " . $e->getMessage());
+            \Log::info("Selected prizes count", ['count' => count($this->selectedPrizes)]);
+            \Log::info("Manual prize count", ['count' => $this->manualPrizeCount]);
         }
+    }
+    private function giveEncouragementPoints($user_id, $receipt_id)
+    {
+        $encouragementPoints = config('services.constants.encouragement_points');
+
+        // Update balance in user_point_balances table
+        // 1. Avval satr bor-yo'qligini tekshirish va yaratish (agar yo'q bo'lsa)
+        UserPointBalance::firstOrCreate(
+            ['user_id' => $user_id],
+            ['balance' => 0]
+        );
+
+        // 2. So'ngra balansni oshirish
+        UserPointBalance::where('user_id', $user_id)->increment('balance', $encouragementPoints);
+
+        // Log the awarded encouragement points
+        EncouragementPoint::create([
+            'user_id' => $user_id,
+            'receipt_id' => $receipt_id,
+            'points' => $encouragementPoints,
+        ]);
+    }
+    private function dispatchPromoCodeJob($userId, $receiptId): void
+    {
+        Queue::connection('rabbitmq')->push(new PromoCodeUserForReceiptJob(
+            null,
+            $userId,
+            $this->platformId,
+            $receiptId,
+            null,
+            null,
+            $this->subPrizeId,
+            $this->promotionId,
+            $this->manualPrizeCount,
+            $this->selectedPrizes
+        ));
     }
 }

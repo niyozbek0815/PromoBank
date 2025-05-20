@@ -33,6 +33,8 @@ services:
     build:
       context: ./promo-service/php
     container_name: promo_app
+    mem_limit: 1024m
+    mem_reservation: 512m
     networks:
       - promobank
 

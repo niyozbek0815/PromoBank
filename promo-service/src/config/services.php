@@ -40,5 +40,8 @@ return [
         'auth_service' => env('AUTH_SERVICE_URL',),
         'promo_service' => env('PROMO_SERVICE_URL',),
     ],
+    'constants' => [
+        'encouragement_points' => env('ENCOURAGEMENT_POINTS'),
+    ],
 
 ];
