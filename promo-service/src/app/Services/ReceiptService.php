@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Jobs\CreateReceiptAndProductJob;
 use App\Models\Prize;
 use App\Models\PromotionShop;
+use App\Models\UserPointBalance;
 use App\Repositories\PlatformRepository;
 use App\Repositories\PrizeMessageRepository;
 use App\Repositories\PromotionMessageRepository;
@@ -31,9 +32,9 @@ class ReceiptService
     {
         $lang = $req['lang'];
         $entries = collect();
-        $message = null;
-        $action = "vote";
-        $status = "failed";
+        $message = [];
+        $action = null;
+        $status = null;
         $encouragementPoints = null;
         $selectedPrizes = [];
         $menualPrizeCount = 0;
@@ -85,9 +86,7 @@ class ReceiptService
                 $selected = false;
             }
         }
-        if ($menualPrizeCount == 0 && count($selectedPrizes) == 0) {
-            $encouragementPoints = config('services.constants.encouragement_points');
-        }
+
 
         Queue::connection(name: 'rabbitmq')->push(new CreateReceiptAndProductJob(
             $req,
@@ -100,16 +99,44 @@ class ReceiptService
             $promotion->id ?? null,
         ));
 
-        return [
-            'manualPrizes' => $menualPrizeCount,
-            'selectedPrizes' => $selectedPrizes,
-        ];
+        $this->returnMessage($promotion, $menualPrizeCount, $selectedPrizes, $lang, $action, $status, $message, $encouragementPoints);
+
 
         return [
             'action' => $action,
             'status' => $status,
             'message' => $message,
         ];
+    }
+    public function getPoints($user)
+    {
+        return  UserPointBalance::where('user_id', $user['id'])->value('balance') ?? 0;
+    }
+    private function returnMessage($promotion, $menualPrizeCount, $selectedPrizes, $lang, &$action, &$status, &$message, &$encouragementPoints)
+    {
+        $status = "success";
+
+        if ($menualPrizeCount == 0 && count($selectedPrizes) == 0) {
+            $encouragementPoints = config('services.constants.encouragement_points');
+            $message[] = "Siz {$encouragementPoints} promobal oldingiz. yana Skanerlang va promobalarni yig'ishda davom eting!";
+            $action = "points_vote";
+        } else {
+            $action = "won";
+            if ($selectedPrizes) {
+                foreach ($selectedPrizes as $selectedPrize) {
+                    $prize = $selectedPrize['prize'];
+                    $message[] = $this->getPrizeMessage($prize, $lang);
+                }
+            }
+            if ($menualPrizeCount > 0) {
+                $message[] =  $this->getPromotionMessage(
+                    $promotion->id,
+                    $lang,
+                    'manual_win',
+                    ['{count}' => $menualPrizeCount]
+                );;
+            }
+        }
     }
     private function giveEncouragementPoints($userId, $shopName)
     {
@@ -176,9 +203,12 @@ class ReceiptService
         $prize = null;
         $message = $this->getPromotionMessage($promotion->id, $lang, 'fail');
     }
-    private function getPromotionMessage($promotionId, $lang, $type): string
+    private function getPromotionMessage($promotionId, $lang, $type, array $placeholders = []): string
     {
-        $message = $this->promotionMessageRepository->getMessageForPromotion($promotionId, 'mobile', $type);
-        return $message->getTranslation('message', $lang);
+        $message = $this->promotionMessageRepository
+            ->getMessageForPromotion($promotionId, 'mobile', $type)
+            ?->getTranslation('message', $lang) ?? '';
+
+        return strtr($message, $placeholders);
     }
 }

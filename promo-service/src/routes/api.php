@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\Mobil\ReceiptController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Mobil\PromoController;
-use App\Http\Controllers\ReceiptController;
 
 Route::controller(PromoController::class)->prefix('promotions')->group(function () {
     Route::get('/', 'index');
@@ -13,4 +13,5 @@ Route::controller(PromoController::class)->prefix('promotions')->group(function 
 });
 Route::controller(ReceiptController::class)->prefix('receipt')->group(function () {
     Route::post('/', 'index');
+    Route::post('/user_points', 'points');
 });

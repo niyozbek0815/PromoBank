@@ -30,5 +30,6 @@ Route::controller(PromoController::class)->prefix('promotions')->middleware(['gu
     Route::get('/{promotion}/participations', 'listParticipationHistory');
 });
 Route::controller(ReceiptController::class)->prefix('receipt')->middleware(['guestCheck'])->group(function () {
-    Route::get('/', 'index');
+    Route::post('/', 'index');
+    Route::get('/user_points', 'points');
 });

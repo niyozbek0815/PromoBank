@@ -108,7 +108,7 @@ class CreateReceiptAndProductJob implements ShouldQueue
         );
 
         // 2. So'ngra balansni oshirish
-        UserPointBalance::where('user_id', $user_id)->increment('balance', $encouragementPoints);
+        UserPointBalance::where(column: 'user_id', $user_id)->increment('balance', $encouragementPoints);
 
         // Log the awarded encouragement points
         EncouragementPoint::create([

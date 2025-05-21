@@ -17,4 +17,8 @@ class ReceiptController extends Controller
     {
         return $this->forwardRequest("POST", $this->url, '/receipt', $request);
     }
+    public function points(Request $request)
+    {
+        return $this->forwardRequest("POST", $this->url, '/receipt/user_points', $request);
+    }
 }
