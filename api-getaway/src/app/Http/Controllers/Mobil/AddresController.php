@@ -15,12 +15,19 @@ class AddresController extends Controller
 
     public function region(Request $request)
     {
-
-        return $this->forwardRequest("GET", $this->url, '/regions', $request);
+        $response = $this->forwardRequest("GET", $this->url, '/regions', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
 
     public function district(Request $request, $id)
     {
-        return $this->forwardRequest("GET", $this->url, '/regions/' . $id . '/districts', $request);
+        $response = $this->forwardRequest("GET", $this->url, '/regions/' . $id . '/districts', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
 }

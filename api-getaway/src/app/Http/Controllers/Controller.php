@@ -21,15 +21,13 @@ abstract class Controller
             $url = rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
             $http = Http::withHeaders($headers);
 
-            $response = match (strtoupper($method)) {
+            return  match (strtoupper($method)) {
                 'GET'    => $http->get($url, $request->query()),
                 'POST'   => $http->post($url, $request->all()),
                 'PUT'    => $http->put($url, $request->all()),
                 'DELETE' => $http->delete($url, $request->all()),
                 default  => throw new \InvalidArgumentException("Unsupported HTTP method: $method"),
             };
-
-            return $response;
         } catch (\Exception $e) {
             return $this->errorResponse(
                 'Internal error from external service',

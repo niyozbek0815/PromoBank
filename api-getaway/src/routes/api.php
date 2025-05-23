@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Mobil\AddresController;
 use App\Http\Controllers\Mobil\AuthController;
+use App\Http\Controllers\Mobil\CardGameController;
+use App\Http\Controllers\Mobil\GameController;
+use App\Http\Controllers\Mobil\GetawayGameController;
 use App\Http\Controllers\Mobil\PromoController;
 use App\Http\Controllers\Mobil\ReceiptController;
 use Illuminate\Support\Facades\Route;
@@ -32,4 +35,8 @@ Route::controller(PromoController::class)->prefix('promotions')->middleware(['gu
 Route::controller(ReceiptController::class)->prefix('receipt')->middleware(['guestCheck'])->group(function () {
     Route::post('/', 'index');
     Route::get('/user_points', 'points');
+});
+Route::prefix('games')->middleware(['guestCheck'])->group(function () {
+    Route::get('/',  [GameController::class, 'listAllGames']);
+    Route::any('/{game}/{action}', [GetawayGameController::class, 'handle']);
 });

@@ -15,34 +15,63 @@ class AuthController extends Controller
     }
     public function guest(Request $request)
     {
-        return $this->forwardRequest("POST", $this->url, '/guest-login', $request);
+        $response = $this->forwardRequest("POST", $this->url, '/guest-login', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
     public function login(Request $request)
     {
-        return $this->forwardRequest("POST", $this->url, '/login', $request);
+        $response = $this->forwardRequest("POST", $this->url, '/login', $request);
+
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
 
     public function register(Request $request)
     {
 
-        return $this->forwardRequest("POST", $this->url, '/register', $request);
+        $response = $this->forwardRequest("POST", $this->url, '/register', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
     public function check(Request $request, $id)
     {
-        return $this->forwardRequest("POST", $this->url, '/verifications/' . $id, $request);
+        $response = $this->forwardRequest("POST", $this->url, '/verifications/' . $id, $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
     public function userupdate(Request $request)
     {
-        return $this->forwardRequest("PUT", $this->url, '/me', $request);
+        $response = $this->forwardRequest("PUT", $this->url, '/me', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
     public function checkUpdate(Request $request)
     {
-        return $this->forwardRequest("POST", $this->url, '/me/verify-update', $request);
+        $response = $this->forwardRequest("POST", $this->url, '/me/verify-update', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
 
     public function user(Request $request)
     {
-        return $this->forwardRequest("GET", $this->url, '/me', $request);
+        $response = $this->forwardRequest("GET", $this->url, '/me', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
     // public function logout(Request $request)
     // {

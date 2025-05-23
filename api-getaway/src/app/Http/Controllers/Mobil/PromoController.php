@@ -15,25 +15,45 @@ class PromoController extends Controller
 
     public  function index(Request $request)
     {
-        return $this->forwardRequest("GET", $this->url, '/promotions', $request);
+        $response = $this->forwardRequest("GET", $this->url, '/promotions', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
 
     public function viaPromocode(Request $request, $promotionId)
     {
-        return $this->forwardRequest("POST", $this->url, '/promotions/' . $promotionId . '/participate/promocode', $request);
+        $response = $this->forwardRequest("POST", $this->url, '/promotions/' . $promotionId . '/participate/promocode', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
 
     public function viaReceipt(Request $request, $promotionId)
     {
-        return $this->forwardRequest("POST", $this->url, '/promotions/' . $promotionId . '/participate/receipt', $request);
+        $response = $this->forwardRequest("POST", $this->url, '/promotions/' . $promotionId . '/participate/receipt', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
 
     public function checkStatus(Request $request, $promotionId)
     {
-        return $this->forwardRequest("GET", $this->url, '/promotions/' . $promotionId . '/participation-status', $request);
+        $response = $this->forwardRequest("GET", $this->url, '/promotions/' . $promotionId . '/participation-status', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
     public function listParticipationHistory(Request $request, $promotionId)
     {
-        return $this->forwardRequest("POST", $this->url, '/promotions/' . $promotionId . '/participations', $request);
+        $response = $this->forwardRequest("POST", $this->url, '/promotions/' . $promotionId . '/participations', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return $response;
     }
 }

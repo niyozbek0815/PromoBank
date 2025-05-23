@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('game_sessions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('game_id')->constrained()->cascadeOnDelete();
-            $table->uuid('user_id'); // Auth service-dan kelgan UUID
+            $table->integer('user_id'); // Auth service-dan kelgan UUID
             $table->enum('status', [
                 'in_progress',
                 'stage1_complete',

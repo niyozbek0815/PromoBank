@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             GameSeeder::class,
             GameCardSeeder::class,
+            GameStage1StepSeeder::class
         ]);
     }
 }

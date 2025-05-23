@@ -14,9 +14,9 @@ class GameSeeder extends Seeder
     public function run(): void
     {
         Game::create([
-            'name' => json_encode(['en' => 'Treasure Hunt', 'uz' => 'Xazina Qidiruvi']),
-            'title' => json_encode(['en' => 'Find the Hidden Rewards', 'uz' => 'Yashirin Sovg‘alarni Toping']),
-            'about' => json_encode(['en' => 'Choose wisely and find treasures in 2 stages.', 'uz' => 'Ikkita bosqichda donolik bilan tanlab, xazinani toping.']),
+            'name' => json_encode(['en' => 'Treasure Hunt', 'uz' => 'Xazina Qidiruvi', 'kr' => 'Xazina Qidiruvi']),
+            'title' => json_encode(['en' => 'Find the Hidden Rewards', 'uz' => 'Yashirin Sovg‘alarni Toping', 'kr' => 'Xazina Qidiruvi']),
+            'about' => json_encode(['en' => 'Choose wisely and find treasures in 2 stages.', 'uz' => 'Ikkita bosqichda donolik bilan tanlab, xazinani toping.', 'kr' => 'Xazina Qidiruvi']),
             'slug' => 'treasure-hunt',
             'stage1_card_count' => 30,
             'stage2_card_count' => 10,

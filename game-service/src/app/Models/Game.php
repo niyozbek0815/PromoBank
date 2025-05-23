@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use Spatie\Translatable\HasTranslations;
 use Str;
 use App\Models\GameCard;
 use App\Models\Leaderboard;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\LaravelPackageTools\Concerns\Package\HasTranslations;
 
 class Game extends Model
 {
@@ -30,7 +30,7 @@ class Game extends Model
         'stage2_card_count',
     ];
 
-    public $translatable = [
+    public array $translatable = [
         'name',
         'title',
         'about',
@@ -48,5 +48,9 @@ class Game extends Model
     public function sessions()
     {
         return $this->hasMany(GameSession::class);
+    }
+    public function stage1Steps()
+    {
+        return $this->hasMany(related: GameStage1Step::class);
     }
 }
