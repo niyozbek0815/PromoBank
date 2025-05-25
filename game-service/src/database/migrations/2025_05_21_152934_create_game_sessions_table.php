@@ -25,6 +25,7 @@ return new class extends Migration
             $table->unsignedInteger('stage1_score')->default(0);
             $table->unsignedInteger('stage2_score')->default(0);
             $table->tinyInteger('stage1_success_steps')->default(0); // 0-5
+            $table->boolean('stage2_confirmed')->nullable()->after('stage2_attempted');
             $table->boolean('stage2_attempted')->default(false);
             $table->timestamps();
         });

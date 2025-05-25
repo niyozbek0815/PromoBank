@@ -25,6 +25,8 @@ return new class extends Migration
             $table->boolean('is_success')->default(false);
             // Whether the user selected this card or it was shown automatically
             $table->boolean('selected_by_user')->default(false);
+            $table->integer('etap')->default(1); // 1 or 2
+
             $table->timestamps();
         });
     }
