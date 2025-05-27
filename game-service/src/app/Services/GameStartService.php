@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Game;
 use App\Models\GameSession;
 use App\Models\GameSessionCard;
-use App\Models\GameStage1Step;
 
 class GameStartService
 {
@@ -62,7 +61,7 @@ class GameStartService
             ->where('selected_by_user', true)
             ->where('is_revealed', true)
             ->where('is_success', true)
-            ->get();
+            ->count();
         $stepConfig = ['step_number' => 1, 'all_step_count' => 1, 'card_count' => $selectedCount, 'etap' => 2];
         $promoball = 0;
         $session->update([
@@ -154,9 +153,9 @@ class GameStartService
             }
         }
 
-        if (count($expanded) > $game->stage1_card_count) {
-            shuffle($expanded);
-        }
+
+        shuffle($expanded);
+
 
         $selectedCards = array_slice($expanded, 0, $game->stage1_card_count);
 
