@@ -17,7 +17,6 @@ return new class extends Migration
             $table->tinyInteger('step_number')->unsigned(); // 1–5
             $table->tinyInteger('card_count')->unsigned();  // 1–5
             $table->timestamps();
-
             $table->unique(['game_id', 'step_number']);
         });
     }

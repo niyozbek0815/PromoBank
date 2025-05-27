@@ -15,6 +15,7 @@ class GameSession extends Model
         'stage2_score',
         'stage1_success_steps',
         'stage2_attempted',
+        'stage2_confirmed',
     ];
 
     public function game()
