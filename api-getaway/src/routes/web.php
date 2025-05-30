@@ -31,6 +31,6 @@ Route::get('/media/uploads/{context}/{fileName}', function ($context, $fileName)
 
 
 Route::get('/test-rabbitmq', function () {
-    Queue::connection('redis')->push(new TestRabbitMQJob);
+    Queue::connection(name: 'redis')->push(new TestRabbitMQJob);
     return 'Job queue ga qo‘shildi!';
 });

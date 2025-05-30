@@ -45,6 +45,7 @@ RUN apt-get update \
         mbstring \
         bcmath \
         sockets \
+        pcntl \
     && docker-php-ext-enable exif
 
 # 3. Redis extension o‘rnatish (phpredis)
@@ -62,4 +63,6 @@ RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 WORKDIR /var/www/html
 
 # 7. PHP-FPM servisini ishga tushurish
-CMD ["php-fpm"]
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["entrypoint.sh"]

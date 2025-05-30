@@ -74,7 +74,7 @@ return [
 
         'rabbitmq' => [
             'driver' => 'rabbitmq',
-
+            'queue' => env('RABBITMQ_QUEUE', 'default'),
             'connection' => PhpAmqpLib\Connection\AMQPStreamConnection::class,
 
             'hosts' => [
@@ -86,8 +86,6 @@ return [
                     'vhost' => env('RABBITMQ_VHOST', '/'),
                 ],
             ],
-
-            'queue' => env('RABBITMQ_QUEUE', 'default'), // optional
 
             'options' => [
                 'exchange' => [

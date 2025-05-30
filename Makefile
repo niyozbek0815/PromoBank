@@ -1,7 +1,7 @@
 # Docker settings
 DOCKER_NETWORK=promobank
-SERVICES=  api-getaway  auth-service  game-service
-#  payment-service notification-service profile-service web-service vote-service auth-service  media-service promo-service 
+SERVICES=  api-getaway  auth-service promo-service
+#  payment-service notification-service profile-service web-service vote-service auth-service  media-service   game-service
 INFRA_COMPOSE=docker-compose/infrastructure.yml
 
 # Helper
@@ -59,6 +59,18 @@ network:
 docker-global:
 	docker compose -f $(INFRA_COMPOSE) up -d
 
+
+.PHONY: rebuild
+rebuild:
+	@if [ -z "$(s)" ]; then \
+		echo "❌ Please specify service(s) with: make rebuild s=\"service-name\""; \
+	else \
+		for service in $(s); do \
+			echo "♻️ Rebuilding $$service..."; \
+			docker compose -f $$service/docker-compose.yml build; \
+			docker compose -f $$service/docker-compose.yml up -d; \
+		done; \
+	fi
 # Build services
 .PHONY: build
 build:

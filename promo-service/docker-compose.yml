@@ -1,5 +1,4 @@
 services:
-
   # Web Server Service
   promo_nginx:
     image: nginx:alpine
@@ -13,7 +12,7 @@ services:
       - promo_app
       - promo_db
     networks:
-    - promobank
+      - promobank
 
   #Database Service
   # db:
@@ -33,16 +32,16 @@ services:
       - ./postgresql/data:/var/lib/postgresql/data
     ports:
       - "5434:5432"
-    environment:  
+    environment:
       POSTGRES_DB: promo_db
-      POSTGRES_USER: root 
-      POSTGRES_PASSWORD: password 
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
     networks:
-    - promobank
+      - promobank
   # Application Service
   promo_app:
     container_name: promo_app
-    build: 
+    build:
       context: ./php
       dockerfile: Dockerfile
     volumes:

@@ -7,6 +7,7 @@ use App\Http\Controllers\Mobil\GameController;
 use App\Http\Controllers\Mobil\GetawayGameController;
 use App\Http\Controllers\Mobil\PromoController;
 use App\Http\Controllers\Mobil\ReceiptController;
+use App\Http\Controllers\Sms\PromoSmsGatewayController;
 use Illuminate\Support\Facades\Route;
 
 Route::controller(AuthController::class)->prefix('auth')->group(function () {
@@ -32,6 +33,8 @@ Route::controller(PromoController::class)->prefix('promotions')->middleware(['gu
     Route::post('/{promotion}/participate/receipt', 'viaReceipt');
     Route::get('/{promotion}/participations', 'listParticipationHistory');
 });
+
+
 Route::controller(ReceiptController::class)->prefix('receipt')->middleware(['guestCheck'])->group(function () {
     Route::post('/', 'index');
     Route::get('/user_points', 'points');
@@ -40,3 +43,9 @@ Route::prefix('games')->middleware(['guestCheck'])->group(function () {
     Route::get('/',  [GameController::class, 'listAllGames']);
     Route::any('/{game}/{action}', [GetawayGameController::class, 'handle']);
 });
+
+
+
+
+// Sms orqali promocode jo'natish uchun api
+Route::post('/sms/promo/receive-sms', [PromoSmsGatewayController::class, 'receive']);

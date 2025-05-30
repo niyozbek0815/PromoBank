@@ -1,5 +1,4 @@
 services:
-
   api_nginx:
     image: nginx:alpine
     container_name: api_nginx
@@ -12,7 +11,7 @@ services:
       - api_app
       - api_db
     networks:
-    - promobank
+      - promobank
 
   #Database Service
   # db:
@@ -32,20 +31,21 @@ services:
       - ./postgresql/data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    environment:  
+    environment:
       POSTGRES_DB: api_db
-      POSTGRES_USER: root 
-      POSTGRES_PASSWORD: password 
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
     networks:
-    - promobank
+      - promobank
   # Application Service
   api_app:
     container_name: api_app
-    build: 
+    build:
       context: ./php
       dockerfile: Dockerfile
     volumes:
       - ./src:/var/www
+      - ../common:/var/www/common
     ports:
       - "9000:9000"
     working_dir: /var/www
@@ -80,12 +80,12 @@ services:
   #   ports:
   #     - "5050:80"
   #   depends_on:
-  #     - api_db 
+  #     - api_db
   #   environment:
   #     PGADMIN_DEFAULT_EMAIL: qadar@gmail.com
   #     PGADMIN_DEFAULT_PASSWORD: password
   #   networks:c
-  #     - promobank 
+  #     - promobank
 networks:
   promobank:
     external: true
