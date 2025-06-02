@@ -72,6 +72,12 @@ class Promotions extends Model
     {
         return $this->hasMany(PromotionParticipationType::class, 'promotion_id')->with('participationType');
     }
+    public function participationTypesSms()
+    {
+        return $this->hasMany(PromotionParticipationType::class, 'promotion_id')->with('participationType')->whereHas('participationType', function ($query) {
+            $query->where('slug', 'sms');
+        });
+    }
     public function platformPromotions()
     {
         return $this->hasMany(PlatformPromotion::class, 'promotions_id');

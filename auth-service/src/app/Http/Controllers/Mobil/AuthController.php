@@ -223,4 +223,28 @@ class AuthController extends Controller
             "User Get Successfully!!!"
         );
     }
+
+    public function userForSms(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|string|max:50',
+        ]);
+        $phone = $request->input('phone');
+        $user = User::where('phone', $phone)->first();
+        if (!$user) {
+            $user = User::create([
+                'name' => 'Guest',
+                'phone' => $phone,
+                'is_guest' => false,
+                'status' => false,
+            ]);
+            $status = 'created';
+        } else {
+            $status = 'found';
+        }
+        return $this->successResponse([
+            'status' => $status,
+            'user' => $user
+        ]);
+    }
 }

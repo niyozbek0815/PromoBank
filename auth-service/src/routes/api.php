@@ -16,6 +16,9 @@ Route::controller(AuthController::class)->group(function () {
     Route::put('/me', 'userupdate');
     Route::post('/me/verify-update', 'checkUpdate');
 
+
+    Route::post('/users_for_sms', 'userForSms');
+
     // Route::post('/verifications/{id}/resend', 'resendsms')->middleware('guestCheck'); // POST /auth/verifications/{id}/resend
     // Route::post('/logout', 'logout')->middleware('guestCheck'); // POST /auth/logout
 });

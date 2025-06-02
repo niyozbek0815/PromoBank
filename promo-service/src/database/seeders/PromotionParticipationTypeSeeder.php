@@ -27,12 +27,23 @@ class PromotionParticipationTypeSeeder extends Seeder
             $types = Arr::random($participationTypes->pluck('id')->toArray(), rand(2, 3));
 
             foreach ($types as $typeId) {
-                PromotionParticipationType::create([
+                $type = $participationTypes->firstWhere('id', $typeId);
+
+                $data = [
                     'promotion_id' => $promotion->id,
                     'participation_type_id' => $typeId,
-                    'is_enabled' => true, // yoki kerakli holatda
-                    'additional_rules' => json_encode(['limit' => rand(1, 5)]), // misol uchun qo‘shimcha qoidalar
-                ]);
+                    'is_enabled' => true,
+                    'additional_rules' => json_encode(['limit' => rand(1, 5)]),
+                ];
+
+                // Agar participation turi 'sms' bo‘lsa, qo‘shimcha phone field qo‘shamiz
+                if (strtolower($type->slug ?? '') === 'sms') {
+                    $data['additional_rules'] = json_encode(['phone' => '1112']);
+                } else {
+                    $data['additional_rules'] = json_encode(['limit' => rand(1, 5)]);
+                }
+
+                PromotionParticipationType::create($data);
             }
         }
     }

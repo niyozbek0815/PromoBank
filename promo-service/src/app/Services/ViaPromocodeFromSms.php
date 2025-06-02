@@ -5,127 +5,137 @@ namespace App\Services;
 use App\Jobs\CreatePromoActionJob;
 use App\Jobs\PrizePromoUpdateJob;
 use App\Jobs\PromoCodeConsumeJob;
+use App\Models\Platform;
 use App\Models\Prize;
 use App\Models\PrizePromo;
-use App\Repositories\PlatformRepository;
-use App\Repositories\PrizeMessageRepository;
-use App\Repositories\PromoCodeRepository;
-use App\Repositories\PromotionMessageRepository;
-use App\Repositories\PromotionRepository;
-use Illuminate\Support\Carbon;
+use App\Models\PromoCode;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 
-class ViaPromocodeService
+class ViaPromocodeFromSms
 {
-    public function __construct(
-        private PromotionRepository $promotionRepository,
-        private PromoCodeRepository $promoCodeRepository,
-        private PlatformRepository $platformRepository,
-        private PromotionMessageRepository $promotionMessageRepository,
-        private PrizeMessageRepository $prizeMessageRepository
-    ) {
-        $this->promotionRepository = $promotionRepository;
-        $this->promoCodeRepository = $promoCodeRepository;
-        $this->platformRepository = $platformRepository;
-        $this->promotionMessageRepository = $promotionMessageRepository;
-        $this->prizeMessageRepository = $prizeMessageRepository;
-    }
-
-
-    public function getPromotionById($id)
+    public function __construct(private FromServiceRequest $forwarder)
     {
-        $cacheKey = 'HasPromotion:mobile' . $id;
-        $ttl = now()->addMinutes(5); // 5 daqiqa kesh
-        return Cache::store('redis')->remember($cacheKey, $ttl, function () use ($id) {
-            return  $this->promotionRepository->getPromotionByIdforVia($id, ['text_code', 'qr_code']);
-        });
+        $this->forwarder = $forwarder;
     }
-
-    public function proccess($req, $user, $id)
+    public function viaPromocode($data)
     {
-        $promocodeInput = $req['promocode'];
-        $lang = $req['lang'];
-        $today = Carbon::today();
+        $promocode = $this->data['promo_code'] ?? null;
+        $shortPhone = $this->data['short_phone'] ?? null;
+        $baseUrl = config('services.urls.auth_service');
+        $message = null;
         $action = "vote";
         $status = "failed";
-
+        $today = Carbon::today();
         $platformId = $this->getPlatforms();
-        $data = [];
-        $promotion = $this->getPromotionById($id);
-        if (!$promotion) {
-            return $data['promotion'] == true;
-        }
-        $promocode = $this->promoCodeRepository->getPromoCodeByPromotionIdAndByPromocode($id, $promocodeInput);
 
-        if (!$promocode) {
-            return $data['promocode'] ==  true;
-        }
-        // return $this->successResponse(['promotions' => $promocode], "success");
 
-        if ($promocode->is_used) {
-            $action = "claim";
-            $status = "blocked";
-            $message = $this->getPromotionMessage($promotion->id, $lang, 'claim');
+        $promo = PromoCode::with('promotion.participationTypesSms')->where('promocode', $promocode)->first();
+        $promotion = $promo?->promotion;
+        $phone = null;
+
+        if ($promotion && $promotion->participationTypesSms->isNotEmpty()) {
+            $rules = json_decode($promotion->participationTypesSms->first()->additional_rules, true);
+            $phone = $rules['phone'] ?? null;
+        }
+        if (!$promo) {
+            $message = 'Promo code topilmadi';
+            logger()->warning($message, ['promocode' => $promocode]);
+            return $data['promocode'] = true;
+        } elseif ($phone !== $shortPhone) {
+            $message = 'Promo code noto\'g\'ri yoki mos kelmaydi';
+            logger()->warning($message, [
+                'promocode' => $promocode,
+                'short_phone' => $shortPhone,
+            ]);
         } else {
-            if ($promotion->is_prize) {
-                $prizeId = $this->handlePrizeEvaluation($promocode, $promotion, $today, $lang, $action, $status, $message);
-            }
-            if (!$promotion->is_prize || !$prizeId) {
-                $action = "vote";
-                $status = "pending";
-                $message = $this->getPromotionMessage($promotion->id, $lang, 'success');
-            }
-
-            Queue::connection('rabbitmq')->push(new PromoCodeConsumeJob(
-                promoCodeId: $promocode->id,
-                userId: $user['id'],
-                platformId: $platformId,
-                receiptId: $receiptId ?? null,
-                promotionProductId: $promotionProductId ?? null,
-                prizeId: $prizeId ?? null,
-                subPrizeId: $subPrizeId ?? null,
-                promotionId: $id
-            ));
+         return   $this->proocessPromoCode($baseUrl, $phone, $promocode, $promotion, $platformId, $today, $action, $status, $message);
         }
+    }
+    private function proocessPromoCode($baseUrl, $phone, $promocode, $promotion, $platformId, $today, &$action, &$status, &$message)
+    {
+        $response = $$this->forwarder->forward(
+            'POST',
+            $baseUrl,
+            '/users_for_sms',
+            ['phone' => $phone]
+        );
 
-        Queue::connection('rabbitmq')->push(new CreatePromoActionJob([
-            'promotion_id' => $promotion->id,
-            'promo_code_id' => $promocode->id,
-            'user_id' => $user['id'],
-            'prize_id' => $prizeId,
-            'action' => $action,
-            'status' => $status,
-            'attempt_time' => now(),
-            'message' => null,
-        ]));
-        return  [
-            'action' => $action,
-            'status' => $status,
-            'message' => $message,
-        ];
+        if ($response->successful()) {
+            $user = $response->json();
+
+            if (!$user) {
+                logger()->error('User ID mavjud emas, lekin response successful', [
+                    'response' => $response->json(),
+                    'base_url' => $baseUrl,
+                ]);
+                return;
+            }
+
+            logger()->info('User topildi yoki yaratildi', ['user' => $user]);
+
+            if ($promocode->is_used) {
+                $action = "claim";
+                $status = "blocked";
+                $message = "Kechirasiz, bu promocode avval ishlatilgan.";
+            } else {
+                if ($promotion->is_prize) {
+                    $prizeId = $this->handlePrizeEvaluation($promocode, $promotion, $today,  $action, $status, $message);
+                }
+                if (!$promotion->is_prize || !$prizeId) {
+                    $action = "vote";
+                    $status = "pending";
+                    $message = " Sizning ovozingiz qabul qilindi. Natijalar keyinroq e'lon qilinadi.";
+                }
+
+                Queue::connection('rabbitmq')->push(new PromoCodeConsumeJob(
+                    promoCodeId: $promocode->id,
+                    userId: $user['id'],
+                    platformId: $platformId,
+                    receiptId: $receiptId ?? null,
+                    promotionProductId: $promotionProductId ?? null,
+                    prizeId: $prizeId ?? null,
+                    subPrizeId: $subPrizeId ?? null,
+                    promotionId: $promotion->id,
+                ));
+            }
+            Queue::connection('rabbitmq')->push(new CreatePromoActionJob([
+                'promotion_id' => $promotion->id,
+                'promo_code_id' => $promocode->id,
+                'user_id' => $user['id'],
+                'prize_id' => $prizeId,
+                'action' => $action,
+                'status' => $status,
+                'attempt_time' => now(),
+                'message' => null,
+            ]));
+            return  [
+                'action' => $action,
+                'status' => $status,
+                'message' => $message,
+            ];
+
+            // ➤ Shu yerda user_id bilan ishlashni davom ettir
+            // Misol:
+            // PromoRegistrationService::registerUser($userId, $this->data['promo_code']);
+
+        } else {
+            logger()->error('Userni olishda xatolik', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            return;
+        }
     }
     private function getPlatforms()
     {
-        return  Cache::store('redis')->remember('platform:mobile:id', now()->addMinutes(60), function () {
-            return $this->platformRepository->getPlatformGetId('mobile');
+        return  Cache::store('redis')->remember('platform:sms:id', now()->addMinutes(60), function () {
+            return Platform::where('name', 'sms')->value('id');
         });
     }
-
-
-    private function getPromotionMessage($promotionId, $lang, $type): string
-    {
-        $message = $this->promotionMessageRepository->getMessageForPromotion($promotionId, 'mobile', $type);
-        return $message->getTranslation('message', $lang);
-    }
-
-    private function getPrizeMessage($prize, $lang): string
-    {
-        $message = $this->prizeMessageRepository->getMessageForPrize($prize->id, 'mobile', 'success');
-        return $message ? $message->getTranslation('message', $lang) : "Tabriklaymiz siz {$prize->name} yutdingiz.";
-    }
-    private function handlePrizeEvaluation($promocode, $promotion, $today, $lang, &$action, &$status, &$message)
+    private function handlePrizeEvaluation($promocode, $promotion, $today, &$action, &$status, &$message)
     {
         // 1. Auto prize
         $prizePromo = PrizePromo::with(['prize.message', 'prize.prizeUsers'])
@@ -138,7 +148,7 @@ class ViaPromocodeService
         if ($prizePromo) {
             $action = "auto_win";
             $status = "won";
-            $message = $this->getPrizeMessage($prizePromo->prize, $lang);
+            $message = "Siz sovg'a yutib oldingiz";
             $prize = $prizePromo->prize;
             Queue::connection('rabbitmq')->push(new PrizePromoUpdateJob($prizePromo->id));
         }
@@ -151,7 +161,7 @@ class ViaPromocodeService
             if ($this->isValidSmartPrize($prize, $promocode->promocode)) {
                 $action = "auto_win";
                 $status = "won";
-                $message = $this->getPrizeMessage($prize, $lang);
+                $message = "Siz sovg'a yutib oldingiz";
                 break;
             }
         }
@@ -164,7 +174,7 @@ class ViaPromocodeService
             if ($hasManualPrize) {
                 $action = "vote";
                 $status = "pending";
-                $message = $this->getPromotionMessage($promotion->id, $lang, 'success');
+                $message = " Sizning ovozingiz qabul qilindi. Natijalar keyinroq e'lon qilinadi.";
             }
         }
 
@@ -176,7 +186,6 @@ class ViaPromocodeService
             'prize_name' => $prize ?? null,
         ];
     }
-
     private function isValidSmartPrize($prize, string $code): bool
     {
         foreach ($prize->smartRandomValues as $ruleValue) {
@@ -211,7 +220,6 @@ class ViaPromocodeService
 
         return true;
     }
-
     private function checkCodeLength(string $promocode, string $operator, array $values)
     {
         $length = strlen($promocode);

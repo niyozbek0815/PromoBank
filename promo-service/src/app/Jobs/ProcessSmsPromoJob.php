@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Services\ViaPromocodeFromSms;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -16,33 +17,23 @@ class ProcessSmsPromoJob implements ShouldQueue
         $this->data = $data;
     }
 
-
-    public function handle()
+    public function handle(ViaPromocodeFromSms $viaPromocodeFromSms)
     {
         $phone = $this->data['phone'] ?? null;
+
         if (!$phone) {
-            logger('Telefon raqam berilmagan');
+            logger()->warning('Telefon raqam topilmadi', $this->data);
             return;
         }
 
-        $authClient = new AuthServiceClient();
-
-        $user = $authClient->findUserByPhone($phone);
-
-        if (!$user) {
-            // User yo'q, yangi yaratamiz
-            $newUserData = [
-                'phone' => $phone,
-                // boshqa kerakli ma'lumotlar
-            ];
-            $user = $authClient->createUser($newUserData);
-            logger("Yangi user yaratildi: ", $user);
-        } else {
-            logger("Mavjud user topildi: ", $user);
+        try {
+            $message = $viaPromocodeFromSms->viaPromocode($this->data);
+            logger()->info('Promo code qabul qilindi', $message);
+        } catch (\Throwable $e) {
+            logger()->error('ProcessSmsPromoJob exception', [
+                'message' => $e->getMessage(),
+                'data' => $this->data,
+            ]);
         }
-        logger('Promo code qabul qilindi: ', $this->data);
-
-
-        // User bilan keyingi logika shu yerda bajariladi
     }
 }

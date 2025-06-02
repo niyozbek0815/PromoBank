@@ -36,10 +36,10 @@ class PromoCode extends Model
     {
         return $this->belongsTo(Platform::class, 'platform_id');
     }
-    public function claims()
-    {
-        return $this->hasMany(PromoCodeClaim::class);
-    }
+    // public function claims()
+    // {
+    //     return $this->hasMany(PromoCodeClaim::class);
+    // }
     public function prizePromos()
     {
         return $this->hasMany(PrizePromo::class);

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('promotion_id')->constrained()->onDelete('cascade');
             $table->foreignId('participation_type_id')->constrained()->onDelete('cascade');
+            $table->string('phone')->nullable(); // optional: phone number for SMS participation
             $table->boolean('is_enabled')->default(true);
             $table->json('additional_rules')->nullable(); // optional: limit, constraints
             $table->timestamps();

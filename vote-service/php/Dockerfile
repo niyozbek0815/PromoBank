@@ -45,6 +45,7 @@ RUN apt-get update \
         mbstring \
         bcmath \
         sockets \
+        pcntl \
     && docker-php-ext-enable exif
 
 # 3. Redis extension o‘rnatish (phpredis)
