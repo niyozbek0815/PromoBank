@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Mobil\PromoController;
 
 Route::controller(PromoController::class)->prefix('promotions')->group(function () {
-    Route::get('/', 'index');
+    // Route::get('/', 'index');
+    Route::get('/', 'sms');
     Route::post('/{promotion}/participate/promocode', 'viaPromocode');
     Route::post('/{promotion}/participate/receipt', 'viaReceipt');
     Route::post('/{promotion}/participations', 'listParticipationHistory');

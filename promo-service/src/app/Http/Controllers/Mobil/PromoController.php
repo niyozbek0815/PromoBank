@@ -10,6 +10,8 @@ use App\Repositories\PromotionRepository;
 use App\Http\Requests\SendPromocodeRequest;
 use App\Http\Resources\PromoHistoryRecource;
 use App\Models\PromoCodeUser;
+use App\Models\Promotions;
+use App\Services\ViaPromocodeFromSms;
 use Illuminate\Support\Facades\Cache;
 
 class PromoController extends Controller
@@ -17,9 +19,53 @@ class PromoController extends Controller
     public function __construct(
         private ViaPromocodeService $viaPromocodeService,
         private PromotionRepository $promotionRepository,
+        private ViaPromocodeFromSms $viaPromocodeFromSms
     ) {
         $this->viaPromocodeService = $viaPromocodeService;
         $this->promotionRepository = $promotionRepository;
+        $this->viaPromocodeFromSms = $viaPromocodeFromSms;
+    }
+    public function sms(Request $request)
+    {
+        // return Promotions::with('participationTypesSms', 'promoCodes')
+        //     ->whereHas('participationTypesSms')->get();
+        $data = [
+            'phone' => "+998900191098",
+            'promo_code' => "6L3V8PGU1D",
+            'short_phone' => "1112",
+        ];
+
+
+        $phone = $data['phone'] ?? null;
+        if (!$phone) {
+            logger()->warning('Telefon raqam topilmadi', $request->all());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Telefon raqam topilmadi',
+            ]);
+        }
+
+
+        try {
+
+            return $this->viaPromocodeFromSms->viaPromocode($data);
+            return response()->json($result);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Promo code muvaffaqiyatli qabul qilindi',
+                'data' => $data,
+            ]);
+        } catch (\Throwable $e) {
+            // logger()->error('ProcessSmsPromoJob exception', [
+            //     'message' => $e->getMessage(),
+            //     'data' => $request->all(), // faqat array yuboriladi
+            // ]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Xatolik yuz berdi: ' . $e->getMessage(),
+            ]);
+        }
     }
     public function index()
     {

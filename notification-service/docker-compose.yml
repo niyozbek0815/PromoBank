@@ -1,5 +1,4 @@
 services:
-
   # Web Server Service
   notification_nginx:
     image: nginx:alpine
@@ -13,7 +12,7 @@ services:
       - notification_app
       - notification_db
     networks:
-    - promobank
+      - promobank
 
   #Database Service
   # db:
@@ -33,16 +32,16 @@ services:
       - ./postgresql/data:/var/lib/postgresql/data
     ports:
       - "5437:5432"
-    environment:  
+    environment:
       POSTGRES_DB: notification_db
-      POSTGRES_USER: root 
-      POSTGRES_PASSWORD: password 
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
     networks:
-    - promobank
+      - promobank
   # Application Service
   notification_app:
     container_name: notification_app
-    build: 
+    build:
       context: ./php
       dockerfile: Dockerfile
     volumes:

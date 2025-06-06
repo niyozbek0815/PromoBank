@@ -1,4 +1,3 @@
-
 services:
   nginx:
     image: nginx:latest
@@ -42,6 +41,12 @@ services:
     build:
       context: ./media-service/php
     container_name: media_app
+    networks:
+      - promobank
+  notification_app:
+    build:
+      context: ./notification-service/php
+    container_name: notification_app
     networks:
       - promobank
 

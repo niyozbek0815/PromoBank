@@ -45,23 +45,43 @@ class PromoCodeConsumeJob implements ShouldQueue
 
     public function handle()
     {
+        try {
+            logger()->info('PromoCodeConsumeJob started', [
+                'promo_code_id' => $this->promoCodeId,
+                'user_id' => $this->userId,
+                'platform_id' => $this->platformId,
+                'receipt_id' => $this->receiptId,
+                'promotion_product_id' => $this->promotionProductId,
+                'prize_id' => $this->prizeId,
+                'sub_prize_id' => $this->subPrizeId,
+                'promotion_id' => $this->promotionId,
+            ]);
 
+            // Faqat kerakli qiymatlar bilan to'ldiriladi, null'lar saqlanadi
+            PromoCodeUser::create([
+                'promo_code_id' => $this->promoCodeId,
+                'user_id' => $this->userId,
+                'platform_id' => $this->platformId,
+                'receipt_id' => $this->receiptId,
+                'promotion_product_id' => $this->promotionProductId,
+                'prize_id' => $this->prizeId,
+                'sub_prize_id' => $this->subPrizeId,
+                'promotion_id' => $this->promotionId,
+            ]);
 
-        // Faqat kerakli qiymatlar bilan to'ldiriladi, null'lar saqlanadi
-        PromoCodeUser::create([
-            'promo_code_id' => $this->promoCodeId,
-            'user_id' => $this->userId,
-            'platform_id' => $this->platformId,
-            'receipt_id' => $this->receiptId,
-            'promotion_product_id' => $this->promotionProductId,
-            'prize_id' => $this->prizeId,
-            'sub_prize_id' => $this->subPrizeId,
-            'promotion_id' => $this->promotionId,
-        ]);
-        if ($this->promoCodeId !== null) {
-            PromoCode::where('id', $this->promoCodeId)->update([
-                'is_used' => true,
-                'used_at' => now(),
+            logger()->info('PromoCodeUser record created');
+
+            if ($this->promoCodeId !== null) {
+                PromoCode::where('id', $this->promoCodeId)->update([
+                    'is_used' => true,
+                    'used_at' => now(),
+                ]);
+                logger()->info('PromoCode marked as used', ['promo_code_id' => $this->promoCodeId]);
+            }
+        } catch (\Throwable $e) {
+            logger()->error('PromoCodeConsumeJob failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
