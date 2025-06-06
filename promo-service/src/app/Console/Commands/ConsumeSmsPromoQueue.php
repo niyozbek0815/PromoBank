@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use App\Jobs\ProcessSmsPromoJob;
+use Illuminate\Support\Facades\Queue;
 
 class ConsumeSmsPromoQueue extends Command
 {
@@ -34,7 +35,7 @@ class ConsumeSmsPromoQueue extends Command
 
         $callback = function ($msg) {
             $data = json_decode($msg->body, true);
-            dispatch(new ProcessSmsPromoJob($data));
+            Queue::connection('rabbitmq')->push(new ProcessSmsPromoJob($data));
             $msg->ack();
         };
 

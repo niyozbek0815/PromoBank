@@ -10,7 +10,8 @@ use App\Repositories\PromotionRepository;
 use App\Http\Requests\SendPromocodeRequest;
 use App\Http\Resources\PromoHistoryRecource;
 use App\Models\PromoCodeUser;
-use App\Models\Promotions;
+use Illuminate\Support\Facades\Log;
+use App\Services\SendToQueue;
 use App\Services\ViaPromocodeFromSms;
 use Illuminate\Support\Facades\Cache;
 
@@ -48,13 +49,17 @@ class PromoController extends Controller
 
         try {
 
-            return $this->viaPromocodeFromSms->viaPromocode($data);
-            return response()->json($result);
+            $response = $this->viaPromocodeFromSms->viaPromocode($data);
+
+            new SendToQueue()->send([
+                'phone' => $phone,
+                'message' => $response['message']
+            ], 'sms_message_sender');
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Promo code muvaffaqiyatli qabul qilindi',
-                'data' => $data,
+                'data' => $response,
             ]);
         } catch (\Throwable $e) {
             // logger()->error('ProcessSmsPromoJob exception', [

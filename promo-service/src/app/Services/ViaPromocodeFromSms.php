@@ -53,13 +53,8 @@ class ViaPromocodeFromSms
                 'short_phone' => $shortPhone,
             ]);
         } else {
-            if ($promo->is_used) {
-                $action = "claim";
-                $status = "blocked";
-                $message = "Kechirasiz, bu promocode avval ishlatilgan.";
-            } else {
-                return   $this->proocessPromoCode($baseUrl, $phone, $promo, $promotion, $platformId, $today, $action, $status, $message);
-            }
+
+            return   $this->proocessPromoCode($baseUrl, $phone, $promo, $promotion, $platformId, $today, $action, $status, $message);
         }
         return [
             'action' => $action,
@@ -86,21 +81,26 @@ class ViaPromocodeFromSms
             }
 
             logger()->info('User topildi yoki yaratildi', ['user' => $user]);
-            if ($promotion->is_prize) {
-                $prize = $this->handlePrizeEvaluation($promo, $promotion, $today,  $action, $status, $message);
+            if ($promo->is_used) {
+                $action = "claim";
+                $status = "blocked";
+                $message = "Kechirasiz, bu promocode avval ishlatilgan.";
+            } else {
+                if ($promotion->is_prize) {
+                    $prize = $this->handlePrizeEvaluation($promo, $promotion, $today, $action, $status, $message);
+                }
+
+                Queue::connection('rabbitmq')->push(new PromoCodeConsumeJob(
+                    promoCodeId: $promo->id,
+                    userId: $user['id'],
+                    platformId: $platformId,
+                    receiptId: $receiptId ?? null,
+                    promotionProductId: $promotionProductId ?? null,
+                    prizeId: $prize['id'] ?? null,
+                    subPrizeId: $subPrizeId ?? null,
+                    promotionId: $promotion->id,
+                ));
             }
-
-            Queue::connection('rabbitmq')->push(new PromoCodeConsumeJob(
-                promoCodeId: $promo->id,
-                userId: $user['id'],
-                platformId: $platformId,
-                receiptId: $receiptId ?? null,
-                promotionProductId: $promotionProductId ?? null,
-                prizeId: $prize['id'] ?? null,
-                subPrizeId: $subPrizeId ?? null,
-                promotionId: $promotion->id,
-            ));
-
 
             Queue::connection('rabbitmq')->push(new CreatePromoActionJob([
                 'promotion_id' => $promotion->id,
