@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Sms;
 
-use App\Events\PromoSmsReceived;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sms\SmsPromocodeRequest;
+use App\Jobs\ProcessSmsPromoJob;
 use App\Services\SmsPromoSender;
 use Illuminate\Support\Str;
 
@@ -18,14 +18,9 @@ class PromoSmsGatewayController extends Controller
     public function receive(SmsPromocodeRequest $request)
     {
         $req = $request->validated();
-        $correlationId = (string) Str::uuid(); // for tracing
-        $this->smsPromoSender->send([
-            'phone' => $req['phone'],
-            'promocode' => $req['promocode'],
-            'short_phone' => $req['short_phone'],
-            'correlation_id' => $correlationId,
-            'received_at' => now()->toISOString(),
-        ]);
+        $correlationId = (string) Str::uuid();
+        ProcessSmsPromoJob::dispatch($req['phone'], $req['promocode'], $req['short_phone'], $correlationId, now())
+            ->onQueue('promo_queue');
         return response()->json([
             'status' => 'accepted',
             'correlation_id' => $correlationId

@@ -45,10 +45,8 @@ class AuthService
         }
 
         $userOtp = $this->generateOtp($user, $user['phone']);
-        // $result = $this->smsService->sendMessage($userOtp['otp'], $phone, $userOtp['id']);
-        // if ($result['status'] == 'failed') {
-        //     return ["message" => "Iltimos birozdan so'ng qayta urinib ko'ring!!!", "code" => 422];
-        // }
+        $this->smsService->sendMessage($userOtp['otp'], $phone);
+
         return [
             'is_new' => $is_new,
             'token' => $userOtp['token'],
@@ -125,10 +123,8 @@ class AuthService
     {
         $userOtp = $this->generateOtp($user, $data['phone']);
 
-        // $result = $this->smsService->sendMessage($userOtp['otp'], $data['phone'], $userOtp['id']);
-        // if ($result['status'] == 'failed') {
-        //     return ["message" => "Iltimos birozdan so'ng qayta urinib ko'ring!!!", "code" => 422];
-        // }
+        $this->smsService->sendMessage($userOtp['otp'], $data['phone']);
+
         return [
             "error_type" => null,
             'token' => $userOtp['token'],

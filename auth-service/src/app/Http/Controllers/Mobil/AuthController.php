@@ -18,7 +18,6 @@ use App\Jobs\UploadUserAvatarJob;
 use App\Jobs\UserSessionJob;
 use App\Jobs\UserUpdateAvatarJob;
 use App\Services\AuthService;
-use App\Services\SmsSendService;
 use Illuminate\Support\Facades\Queue;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
@@ -27,10 +26,9 @@ use function PHPUnit\Framework\returnCallback;
 class AuthController extends Controller
 {
     protected $authService, $smsSend;
-    public function __construct(AuthService $authService, SmsSendService $smsSendService)
+    public function __construct(AuthService $authService)
     {
         $this->authService = $authService;
-        $this->smsSend = $smsSendService;
     }
     public function guest(GuestRequest $request)
     {
