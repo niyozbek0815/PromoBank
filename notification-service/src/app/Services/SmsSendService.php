@@ -17,9 +17,9 @@ class SmsSendService
         $this->password = config('services.promobanksms.password');
         $this->endpoint = config('services.promobanksms.endpoint');
     }
-    public function sendMessage(string $message, string $phone, int $message_id)
+    public function sendMessage(string $message, string $phone, int $message_id): bool
     {
-        Log::warning(message: 'Sms service ishladi');
+        Log::info('Sms service ishladi');
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->withBasicAuth($this->username, $this->password)
@@ -38,10 +38,13 @@ class SmsSendService
                     ],
                 ],
             ]);
-        if ($response->successful()) {
-            Log::info('Sms yuborildi', ['phone' => $phone, 'message' => $message]);
-        } else {
-            Log::warning(message: 'Sms yuborilmadi');
+
+        if (!$response->successful()) {
+            Log::warning('Sms yuborilmadi', ['phone' => $phone]);
+            throw new \Exception('Sms provider failed: ' . $response->body());
         }
+
+        Log::info('Sms yuborildi', ['phone' => $phone, 'message' => $message]);
+        return true;
     }
 }

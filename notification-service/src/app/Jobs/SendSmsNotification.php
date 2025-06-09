@@ -33,7 +33,25 @@ class SendSmsNotification implements ShouldQueue
     public function handle(SmsSendService $smsSendService)
     {
         Log::info('SMS message received Sms Sender Job:', ['phone' => $this->phone, 'message' => $this->message]);
-        $message_id = 1;
-        $smsSendService->sendMessage($this->message, $this->phone, $message_id);
+        $smsMessage = \App\Models\SmsMessage::create([
+            'phone' => $this->phone,
+            'message' => $this->message,
+            'status' => 'pending',
+        ]);
+        try {
+            $success = $smsSendService->sendMessage($this->message, $this->phone, $smsMessage->id);
+
+            $smsMessage->update([
+                'status' => $success ? 'sent' : 'failed',
+                'sent_at' => $success ? now() : null,
+            ]);
+        } catch (\Throwable $e) {
+            $smsMessage->update([
+                'status' => 'failed',
+                'error_message' => $e->getMessage(),
+            ]);
+            Log::error('SMS send failed', ['exception' => $e]);
+            throw $e; // Queue retry mexanizmi ishlasin
+        }
     }
 }

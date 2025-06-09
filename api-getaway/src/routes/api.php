@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Mobil\AddresController;
 use App\Http\Controllers\Mobil\AuthController;
-use App\Http\Controllers\Mobil\CardGameController;
 use App\Http\Controllers\Mobil\GameController;
 use App\Http\Controllers\Mobil\GetawayGameController;
 use App\Http\Controllers\Mobil\PromoController;
@@ -48,4 +47,4 @@ Route::prefix('games')->middleware(['guestCheck'])->group(function () {
 
 
 // Sms orqali promocode jo'natish uchun api
-Route::post('/sms/promo/receive-sms', [PromoSmsGatewayController::class, 'receive']);
+Route::post('/sms/promo/receive-sms', [PromoSmsGatewayController::class, 'receive'])->middleware(['smsProvider']);

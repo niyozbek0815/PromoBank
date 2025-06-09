@@ -21,9 +21,9 @@ class PromoSmsGatewayController extends Controller
         $correlationId = (string) Str::uuid();
         ProcessSmsPromoJob::dispatch($req['phone'], $req['promocode'], $req['short_phone'], $correlationId, now())
             ->onQueue('promo_queue');
-        return response()->json([
+        return $this->successResponse([
             'status' => 'accepted',
             'correlation_id' => $correlationId
-        ]);
+        ], 'accepted');
     }
 }

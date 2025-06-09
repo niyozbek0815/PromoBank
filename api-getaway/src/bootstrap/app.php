@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'guestCheck' => \App\Http\Middleware\CheckGuestToken::class,
+            'smsProvider' => \App\Http\Middleware\SmsProviderMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

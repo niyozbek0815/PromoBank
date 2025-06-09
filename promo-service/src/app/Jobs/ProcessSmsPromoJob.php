@@ -14,14 +14,12 @@ use Illuminate\Support\Facades\Log;
 class ProcessSmsPromoJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    /**
-     * Create a new job instance.
-     */
+
     public $phone;
     public $promocode;
     public $shortphone;
-    public $correlationId;
-    public $created_at;
+    public $correlationId, $created_at;
+
 
     public function __construct(string $phone, $promocode, $shortphone, $correlationId, $created_at)
     {
@@ -34,7 +32,7 @@ class ProcessSmsPromoJob implements ShouldQueue
 
     public function handle(ViaPromocodeFromSms $viaPromocodeFromSms)
     {
-        Log::info(message: 'ProccesSmsPromoJob ishladi Promo-service ichida');
+        Log::info('ProcessSmsPromoJob started in promo-service', ['phone' => $this->phone]);
 
         $data = [
             'phone' => $this->phone,
@@ -42,27 +40,24 @@ class ProcessSmsPromoJob implements ShouldQueue
             'short_phone' => $this->shortphone,
         ];
 
-
-        $phone = $this->phone ?? null;
-        if (!$phone) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Telefon raqam topilmadi',
-            ]);
-        }
-
-
         try {
-
             $response = $viaPromocodeFromSms->viaPromocode($data);
-            SendSmsNotification::dispatch($phone, $response['message'])
-                ->onQueue('notification_queue');
-            Log::info('SendSmsNotificationga data yuborildi Promo-service ichidan:', ['phone' => $this->phone, 'message' => $this->message]);
+
+            if (!empty($response['message'])) {
+                SendSmsNotification::dispatch($this->phone, $response['message'])
+                    ->onQueue('notification_queue');
+                Log::info('SendSmsNotification dispatched from promo-service', [
+                    'phone' => $this->phone,
+                    'message' => $response['message'],
+                ]);
+            }
         } catch (\Throwable $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Xatolik yuz berdi: ' . $e->getMessage(),
+            Log::error('Error in ProcessSmsPromoJob', [
+                'error' => $e->getMessage(),
+                'phone' => $this->phone,
+                'promo_code' => $this->promocode,
             ]);
+            throw $e;
         }
     }
 }
