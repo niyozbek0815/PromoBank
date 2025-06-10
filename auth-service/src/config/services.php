@@ -45,6 +45,8 @@ return [
         'auth_service' => env('AUTH_SERVICE_URL'),
         'promo_service' => env('PROMO_SERVICE_URL'),
         'game_service' => env('GAME_SERVICE_URL'),
+        'telegram_service' => env('TELEGRAM_SERVICE_URL'),
+        'notification_service' => env('NOTIFICATION_SERVICE_URL'),
     ],
 
 ];

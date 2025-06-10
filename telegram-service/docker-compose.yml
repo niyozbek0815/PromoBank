@@ -1,19 +1,18 @@
 services:
-
-  # vote Server Service
-  vote_nginx:
+  # telegram Server Service
+  telegram_nginx:
     image: nginx:alpine
-    container_name: vote_nginx
+    container_name: telegram_nginx
     ports:
       - "8089:80"
     volumes:
       - ./src:/var/www
       - ./nginx/conf.d/:/etc/nginx/conf.d/
     depends_on:
-      - vote_app
-      - vote_db
+      - telegram_app
+      - telegram_db
     networks:
-    - promobank
+      - promobank
 
   #Database Service
   # db:s
@@ -26,23 +25,23 @@ services:
   #   environment:
   #     MYSQL_DATABASE: blog
   #     MYSQL_ROOT_PASSWORD: password
-  vote_db:
+  telegram_db:
     image: postgres
-    container_name: vote_db
+    container_name: telegram_db
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
     ports:
       - "5441:5432"
-    environment:  
-      POSTGRES_DB: vote_db
-      POSTGRES_USER: root 
-      POSTGRES_PASSWORD: password 
+    environment:
+      POSTGRES_DB: telegram_db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
     networks:
-    - promobank
+      - promobank
   # Application Service
-  vote_app:
-    container_name: vote_app
-    build: 
+  telegram_app:
+    container_name: telegram_app
+    build:
       context: ./php
       dockerfile: Dockerfile
     volumes:
@@ -53,13 +52,13 @@ services:
     networks:
       - promobank
 
-  vote_horizon:
-    container_name: vote_horizon
+  telegram_horizon:
+    container_name: telegram_horizon
     build:
       context: ./php
       dockerfile: Dockerfile
     depends_on:
-      - vote_app
+      - telegram_app
     command: php artisan horizon
     volumes:
       - ./src:/var/www

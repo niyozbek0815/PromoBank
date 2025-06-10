@@ -34,5 +34,17 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'telegram-bot-api' => [
+        'token' => env('TELEGRAM_BOT_TOKEN'),
+    ],
+    'urls' => [
+        'api_getaway' => env('API_GETAWAY_URL'),
+        'media_service' => env('MEDIA_SERVICE_URL'),
+        'auth_service' => env('AUTH_SERVICE_URL'),
+        'promo_service' => env('PROMO_SERVICE_URL'),
+        'game_service' => env('GAME_SERVICE_URL'),
+        'telegram_service' => env('TELEGRAM_SERVICE_URL'),
+        'notification_service' => env('NOTIFICATION_SERVICE_URL'),
+    ],
 
 ];

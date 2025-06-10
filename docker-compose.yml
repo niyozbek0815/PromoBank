@@ -49,6 +49,12 @@ services:
     container_name: notification_app
     networks:
       - promobank
+  telegram_app:
+    build:
+      context: ./telegram-service/php
+    container_name: telegram_app
+    networks:
+      - promobank
 
 networks:
   promobank:
