@@ -28,9 +28,3 @@ Route::get('/media/uploads/{context}/{fileName}', function ($context, $fileName)
     // Agar fayl topilmasa, 404 xatosi
     abort(404, 'File not found.');
 });
-
-
-Route::get('/test-rabbitmq', function () {
-    Queue::connection(name: 'redis')->push(new TestRabbitMQJob);
-    return 'Job queue ga qo‘shildi!';
-});
