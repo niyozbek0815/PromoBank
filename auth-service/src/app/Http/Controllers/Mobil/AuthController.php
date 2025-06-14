@@ -1,27 +1,24 @@
 <?php
-
 namespace App\Http\Controllers\Mobil;
 
-use App\Http\Requests\Mobil\RegisterRequest;
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Mobil\CheckUpdateRequest;
 use App\Http\Requests\Mobil\GuestRequest;
 use App\Http\Requests\Mobil\LoginCheckRequest;
 use App\Http\Requests\Mobil\LoginRequuest;
+use App\Http\Requests\Mobil\RegisterRequest;
 use App\Http\Requests\Mobil\UserUpdateRequest;
 use App\Http\Resources\Mobil\UserResource;
 use App\Jobs\UploadUserAvatarJob;
 use App\Jobs\UserSessionJob;
 use App\Jobs\UserUpdateAvatarJob;
+use App\Models\User;
 use App\Services\AuthService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
-
-use function PHPUnit\Framework\returnCallback;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -32,21 +29,21 @@ class AuthController extends Controller
     }
     public function guest(GuestRequest $request)
     {
-        $req = $request->validated();
+        $req  = $request->validated();
         $user = User::firstOrCreate(
             ['phone' => $req['uuid'], 'is_guest' => true],
             [
-                'name' => 'User' . rand(0, 100000),
-                'phone' => $req['uuid'],
-                'is_guest' => true
+                'name'     => 'User' . rand(0, 100000),
+                'phone'    => $req['uuid'],
+                'is_guest' => true,
             ]
         );
         JWTAuth::factory()->setTTL(60);
         $token = JWTAuth::claims([
-            'ip' => $request->header('User-Ip')
+            'ip' => $request->header('User-Ip'),
         ])->fromUser($user);
 
-        Queue::connection('redis')->push(new UserSessionJob($user['id'],  $request->header('User-Ip'), $req, $request->header('User-Agent')));
+        Queue::connection('redis')->push(new UserSessionJob($user['id'], $request->header('User-Ip'), $req, $request->header('User-Agent')));
 
         // $session = DB::table('sessions')->insert([
         //     'id' => Str::random(32), // Random id
@@ -64,7 +61,7 @@ class AuthController extends Controller
         return $this->successResponse(
             [
                 'token' => $token,
-                'user' => $user
+                'user'  => $user,
             ],
             "Guest token created saccecfully"
         );
@@ -73,20 +70,20 @@ class AuthController extends Controller
     {
         $token = $request->bearerToken();
 
-        if (!$token) {
+        if (! $token) {
             return $this->errorResponse('Token not provided', ['error' => 'Token not provided'], 401);
         }
         try {
             JWTAuth::factory()->setTTL(60);
             $newToken = JWTAuth::setToken($token)->refresh();
-            $payload = JWTAuth::setToken($newToken)->getPayload();
+            $payload  = JWTAuth::setToken($newToken)->getPayload();
             return $this->successResponse(
                 [
-                    'token' => $newToken,
-                    'id' => $payload->get('user_id'),
-                    'phone' => $payload->get('phone'),
+                    'token'    => $newToken,
+                    'id'       => $payload->get('user_id'),
+                    'phone'    => $payload->get('phone'),
                     'is_guest' => $payload->get('is_guest'),
-                    'ip' => $payload->get('ip')
+                    'ip'       => $payload->get('ip'),
                 ],
                 "Guest token created saccecfully"
             );
@@ -99,17 +96,17 @@ class AuthController extends Controller
     public function login(LoginRequuest $request)
     {
         $phone = $request->input('phone');
-        $data = $this->authService->login($phone);
+        $data  = $this->authService->login($phone);
         if ($data['code'] == 422) {
             return $this->errorResponse($data["message"], $data["message"], 422);
         } else {
             // return response()->json($data["result"]);
             return $this->successResponse(
                 [
-                    'phone' => $phone,
+                    'phone'   => $phone,
                     'user_id' => $data['user_id'],
-                    'token' => $data['token'],
-                    'is_new' => $data['is_new']
+                    'token'   => $data['token'],
+                    'is_new'  => $data['is_new'],
                 ],
                 "Sms muofaqiyatli jo'natildi"
             );
@@ -120,7 +117,7 @@ class AuthController extends Controller
         $req = $request->validated();
 
         return DB::transaction(function () use ($req, $request, $id) {
-            $user = User::findOrFail($id)->load('userOtps');
+            $user    = User::findOrFail($id)->load('userOtps');
             $userOld = User::where('phone', $req['uuid'])->latest()->first();
 
             $data = $this->authService->check($user, $userOld, $req, $request->header('User-Ip'));
@@ -143,49 +140,48 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
 
-
-        $user_req =  $request['auth_user'];
-        $id = $user_req['id'];
-        $user = User::findOrFail($id);
-        $user->region_id = $request['region_id'];
+        $user_req          = $request['auth_user'];
+        $id                = $user_req['id'];
+        $user              = User::findOrFail($id);
+        $user->region_id   = $request['region_id'];
         $user->district_id = $request['district_id'];
-        $user->name = $request->input('name');
-        $user->phone2 = $request['phone2'];
-        $user->gender = $request['gender'];
+        $user->name        = $request->input('name');
+        $user->phone2      = $request['phone2'];
+        $user->gender      = $request['gender'];
         $user->save();
         if ($request->filled('avatar')) {
-            Queue::connection('redis')->push(new UploadUserAvatarJob($id,  $request['avatar']));
+            Queue::connection('redis')->push(new UploadUserAvatarJob($id, $request['avatar']));
         }
-        return $this->successResponse(['user' => new UserResource($user->load(['media', 'district', 'region'])),], "User muvaffaqiyatli ro‘yxatdan o‘tdi");
+        return $this->successResponse(['user' => new UserResource($user->load(['media', 'district', 'region']))], "User muvaffaqiyatli ro‘yxatdan o‘tdi");
     }
     public function userupdate(UserUpdateRequest $request)
     {
-        $data = $request->validated();
+        $data     = $request->validated();
         $user_req = $request['auth_user'];
-        $user = User::with('media')->findOrFail($user_req['id']);
+        $user     = User::with('media')->findOrFail($user_req['id']);
         if ($user->phone === $data['phone']) {
             $user->update([
-                'name' => $data['name'],
-                'phone' => $data['phone'],
-                'region_id' => $data['region_id'],
+                'name'        => $data['name'],
+                'phone'       => $data['phone'],
+                'region_id'   => $data['region_id'],
                 'district_id' => $data['district_id'],
-                'phone2' => $data['phone2'],
-                'gender' => $data['gender'],
+                'phone2'      => $data['phone2'],
+                'gender'      => $data['gender'],
             ]);
             if ($request->filled('avatar')) {
                 Queue::connection('redis')->push(new UserUpdateAvatarJob($user_req['id'], $user, $request['avatar']));
             }
             return $this->successResponse(['user' => new UserResource($user->load(['media', 'district', 'region']))], "User data updated Successfully!!!");
         } else {
-            $return = $this->authService->update($user,  $data);
+            $return = $this->authService->update($user, $data);
             if ($return['error_type'] == 422) {
                 return $this->errorResponse($return["result"], 422);
             } else {
                 return $this->successResponse(
                     [
-                        'token' => $return['token'],
-                        'user_id' => $return['user_id'],
-                        "response" => $data
+                        'token'    => $return['token'],
+                        'user_id'  => $return['user_id'],
+                        "response" => $data,
                     ],
                     "Updated Code Sended!!!"
                 );
@@ -195,11 +191,11 @@ class AuthController extends Controller
 
     public function checkUpdate(CheckUpdateRequest $request)
     {
-        $req = $request->validated();
+        $req      = $request->validated();
         $user_req = $request['auth_user'];
-        $id = $user_req['id'];
-        $user = User::with(['userOtps'])->findOrFail($id);
-        $data = $this->authService->checkUpdate($user, $req,);
+        $id       = $user_req['id'];
+        $user     = User::with(['userOtps'])->findOrFail($id);
+        $data     = $this->authService->checkUpdate($user, $req, );
 
         if ($data['error_type'] == 422) {
 
@@ -214,8 +210,8 @@ class AuthController extends Controller
     public function user(Request $request)
     {
         $user_req = $request['auth_user'];
-        $id = $user_req['id'];
-        $user = User::with(['media', 'district', 'region'])->findOrFail($id);
+        $id       = $user_req['id'];
+        $user     = User::with(['media', 'district', 'region'])->findOrFail($id);
         return $this->successResponse(
             ['user' => new UserResource($user)],
             "User Get Successfully!!!"
@@ -228,13 +224,13 @@ class AuthController extends Controller
             'phone' => 'required|string|max:50',
         ]);
         $phone = $request->input('phone');
-        $user = User::where('phone', $phone)->first();
-        if (!$user) {
+        $user  = User::where('phone', $phone)->first();
+        if (! $user) {
             $user = User::create([
-                'name' => 'Guest',
-                'phone' => $phone,
+                'name'     => 'Guest',
+                'phone'    => $phone,
                 'is_guest' => false,
-                'status' => false,
+                'status'   => false,
             ]);
             $status = 'created';
         } else {
@@ -242,7 +238,29 @@ class AuthController extends Controller
         }
         return $this->successResponse([
             'status' => $status,
-            'user' => $user
+            'user'   => $user,
         ]);
+    }
+    public function userCheckBot(Request $request)
+    {
+        $data = $request->validate([
+            'phone'   => ['required', 'string', 'regex:/^\+998\d{9}$/'],
+            'chat_id' => ['required', 'string'],
+        ]);
+
+        $user = User::firstOrCreate(
+            ['phone' => $data['phone']],
+            [
+                'chat_id' => $data['chat_id'],
+                'name'    => 'User' . random_int(100000, 999999),
+            ]
+        );
+
+        if (! $user->wasRecentlyCreated && $user->chat_id !== $data['chat_id']) {
+            $user->chat_id = $data['chat_id'];
+            $user->save();
+        }
+
+        return response()->json(['created' => $user->wasRecentlyCreated]);
     }
 }

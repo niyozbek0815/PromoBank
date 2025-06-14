@@ -1,6 +1,5 @@
 <?php
-
-namespace App\Telegram\Handlers;
+namespace App\Telegram\Handlers\Start;
 
 use Telegram\Bot\Laravel\Facades\Telegram;
 
@@ -15,17 +14,17 @@ class StartHandler
     protected function sendLanguageSelection(int $chatId)
     {
         Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text' => "Iltimos, tilni tanlang:\nПожалуйста, выберите язык:\nИлтимос, тилни танланг:",
+            'chat_id'      => $chatId,
+            'text'         => "Iltimos, tilni tanlang:\nПожалуйста, выберите язык:\nИлтимос, тилни танланг:",
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
                         ['text' => "🇺🇿 O‘zbekcha", 'callback_data' => 'lang_uz'],
                         ['text' => "🇷🇺 Русский", 'callback_data' => 'lang_ru'],
                         ['text' => "🇺🇿 Кирилл", 'callback_data' => 'lang_kr'],
-                    ]
-                ]
-            ])
+                    ],
+                ],
+            ]),
         ]);
     }
 }

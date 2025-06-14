@@ -20,6 +20,7 @@ return new class extends Migration
             // $table->string('password');
             $table->string('phone', 50)->unique();
             $table->string('phone2', 50)->nullable();
+            $table->string('chat_id', 50)->unique();
             $table->char('gender', 1)->nullable(); // M, F, U
             $table->boolean('is_guest')->default(false);
             $table->boolean('status')->default(false);

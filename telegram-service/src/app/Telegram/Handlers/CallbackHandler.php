@@ -1,16 +1,14 @@
 <?php
-
 namespace App\Telegram\Handlers;
 
-use Illuminate\Support\Facades\Cache;
-use Telegram\Bot\Laravel\Facades\Telegram;
+use App\Telegram\Handlers\Start\LangCallbackHandler;
 
 class CallbackHandler
 {
     public function handle($callback)
     {
         $chatId = $callback->getMessage()->getChat()->getId();
-        $data = $callback->getData();
+        $data   = $callback->getData();
 
         if (str_starts_with($data, 'lang_')) {
             if (str_starts_with($data, 'lang_')) {

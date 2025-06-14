@@ -1,9 +1,7 @@
 <?php
-
 namespace App\Telegram\Services;
 
 use App\Http\Controllers\TelegramBotController;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Telegram\Bot\Objects\Chat;
@@ -21,13 +19,13 @@ class PendingCommandRunner
         // Yangi update yasaymiz
         $message = new Message([
             'message_id' => time(),
-            'chat' => ['id' => $chatId],
-            'text' => $text,
-            'date' => time(),
+            'chat'       => ['id' => $chatId],
+            'text'       => $text,
+            'date'       => time(),
         ]);
         $update = new Update([
             'update_id' => time(),
-            'message' => $message,
+            'message'   => $message,
         ]);
 
         Telegram::addUpdate($update);
