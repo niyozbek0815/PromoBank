@@ -1,34 +1,64 @@
 <?php
-
 namespace App\Telegram\Handlers\Register;
 
-use Illuminate\Support\Facades\Cache;
+use App\Telegram\Services\RegisterService;
+use App\Telegram\Services\Translator;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
 class GenderStepHandler
 {
+    protected Translator $translator;
+
+    public function __construct(Translator $translator)
+    {
+        $this->translator = $translator;
+    }
+
     public function ask($chatId)
     {
-        Cache::store('redis')->put("tg_reg_state:$chatId", 'waiting_for_gender', now()->addDays(7));
 
         Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text' => "👫 Iltimos, jinsingizni tanlang",
+            'chat_id'      => $chatId,
+            'text'         => $this->translator->get($chatId, 'ask_gender'),
             'reply_markup' => json_encode([
-                'keyboard' => [
-                    [['text' => 'Erkak'], ['text' => 'Ayol']]
+                'keyboard'          => [
+                    [['text' => $this->translator->get($chatId, 'gender_male')], ['text' => $this->translator->get($chatId, 'gender_female')]],
                 ],
-                'resize_keyboard' => true,
-                'one_time_keyboard' => true
-            ])
+                'resize_keyboard'   => true,
+                'one_time_keyboard' => true,
+            ]),
         ]);
     }
 
-    public function handle($chatId, $gender)
+    public function handle(string $chatId, string $text)
     {
-        $genderCode = strtolower($gender) === 'erkak' ? 'M' : (strtolower($gender) === 'ayol' ? 'F' : 'U');
-        Cache::store('redis')->put("tg_reg_data:$chatId:gender", $genderCode);
+        $genderMap = [
+            $this->translator->get($chatId, 'gender_male')   => 'male',
+            $this->translator->get($chatId, 'gender_female') => 'female',
+        ];
 
-        return app(CompleteRegistrationHandler::class)->handle($chatId);
+        if (! isset($genderMap[$text])) {
+            return Telegram::sendMessage([
+                'chat_id' => $chatId,
+                'text'    => $this->translator->get($chatId, 'invalid_gender'),
+            ]);
+        }
+        Telegram::sendMessage([
+            'chat_id'      => $chatId,
+            'text'         => $this->translator->get($chatId, 'gender_received'),
+            'reply_markup' => json_encode([
+                'remove_keyboard' => true,
+            ]),
+        ]);
+
+        $gender = $genderMap[$text];
+
+        // Redisga yozish
+        app(RegisterService::class)->mergeToCache($chatId, [
+            'gender' => $gender,
+            'state'  => 'waiting_for_region',
+        ]);
+
+        return app(RegionStepHandler::class)->ask($chatId); // keyingi step
     }
 }

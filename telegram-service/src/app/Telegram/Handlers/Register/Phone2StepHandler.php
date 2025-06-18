@@ -1,26 +1,88 @@
 <?php
-
 namespace App\Telegram\Handlers\Register;
 
+use App\Telegram\Services\RegisterService;
+use App\Telegram\Services\Translator;
 use Illuminate\Support\Facades\Cache;
 use Telegram\Bot\Laravel\Facades\Telegram;
+use Telegram\Bot\Objects\Update;
 
 class Phone2StepHandler
 {
-    public function ask($chatId)
-    {
-        Cache::store('redis')->put("tg_reg_state:$chatId", 'waiting_for_phone2', now()->addDays(7));
+    protected Translator $translator;
 
-        Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text' => "📞 Ixtiyoriy qo‘shimcha telefon raqam kiriting yoki ‘Yo‘q’ deb yozing"
-        ]);
+    public function __construct(Translator $translator)
+    {
+        $this->translator = $translator;
     }
 
-    public function handle($chatId, $phone2)
+    public function ask($chatId)
     {
-        if (strtolower($phone2) === 'yo‘q') $phone2 = null;
-        Cache::store('redis')->put("tg_reg_data:$chatId:phone2", $phone2);
+
+        $response = Telegram::sendMessage([
+            'chat_id'      => $chatId,
+            'text'         => $this->translator->get($chatId, 'ask_phone2'),
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [
+                        ['text' => $this->translator->get($chatId, 'next'), 'callback_data' => 'next:phone2'],
+                    ],
+                ],
+            ]),
+        ]);
+
+        $messageId = $response->getMessageId();
+        Cache::store('redis')->put("tg_phone2_msg:$chatId", $messageId, now()->addMinutes(10));
+    }
+
+    public function handle(Update $update)
+    {
+        $callback = $update->getCallbackQuery();
+        $message  = $update->getMessage();
+        $chatId   = $message?->getChat()?->getId() ?? $callback?->getMessage()?->getChat()?->getId();
+        $phone2   = null;
+        // Tugma bosilganda (callback)
+        // 📌 Callback tugma bosilgan holat
+        if ($callback) {
+            $data   = $callback->getData();
+            $phone2 = $data === 'next:phone2' ? null : $data;
+
+            // Callback orqali kelgan eski tugmani o‘chirish
+            if ($msgId = $callback->getMessage()?->getMessageId()) {
+                Telegram::deleteMessage([
+                    'chat_id'    => $chatId,
+                    'message_id' => $msgId,
+                ]);
+            }
+        }
+
+        // Foydalanuvchi matn yuborgan holat
+        elseif ($text = $message?->getText()) {
+            // Telefon raqam validatsiyasi: faqat +998XXXXXXXXX
+            if (! preg_match('/^\+998\d{9}$/', $text)) {
+                Telegram::sendMessage([
+                    'chat_id' => $chatId,
+                    'text'    => $this->translator->get($chatId, 'invalid_phone2_format'),
+                ]);
+                return;
+            }
+
+            $phone2 = $text;
+
+// Oldingi step tugmasini (inline keyboard) o‘chirish
+            if ($storedMsgId = Cache::store('redis')->pull("tg_phone2_msg:$chatId")) {
+                Telegram::deleteMessage([
+                    'chat_id'    => $chatId,
+                    'message_id' => $storedMsgId,
+                ]);
+            }
+        }
+
+        app(RegisterService::class)->mergeToCache($chatId, [
+            'phone2' => $phone2,
+            'state'  => 'waiting_for_gender',
+        ]);
+
         return app(GenderStepHandler::class)->ask($chatId);
     }
 }

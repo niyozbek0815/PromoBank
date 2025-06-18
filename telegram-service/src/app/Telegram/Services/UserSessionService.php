@@ -5,6 +5,7 @@ namespace App\Telegram\Services;
 
 use App\Services\FromServiceRequest;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class UserSessionService
 {
@@ -38,59 +39,47 @@ class UserSessionService
         Cache::store('redis')->forget($this->prefix . $chatId);
     }
 
-    public function bindChatToUser(string $chatId, string $phone)
+    public function bindChatToUser(string $chatId, string $phone, $name)
     {
-        $baseUrl  = config('services.urls.auth_service');
+        $baseUrl = config('services.urls.auth_service');
+        Log::info("url=" . $baseUrl);
         $response = $this->forwarder->forward(
             'POST',
             $baseUrl,
-            '/users_for_sms',
+            '/user_check_bot',
             ['phone' => $phone, 'chat_id' => $chatId]
         );
 
-        if ($response->successful()) {
-            $user = data_get($response->json(), 'data.user');
-            if (! $user) {
-                logger()->error('User ID mavjud emas, lekin response successful', [
-                    'response' => $response->json(),
-                    'base_url' => $baseUrl,
-                ]);
-            }
-
-        } else {
+        if (! $response->successful()) {
             logger()->error('Userni olishda xatolik', [
                 'status' => $response->status(),
                 'body'   => $response->body(),
             ]);
             return;
         }
+        $data  = $response->json('data');
+        $user  = $data['user'] ?? null;
+        $exist = $data['exist'] ?? false;
+        if ($exist && $user && isset($user['id'])) {
+            // ✅ Mavjud user – Redisga yozamiz
+            $this->put($chatId, [
+                'user_id' => $user['id'],
+                'phone'   => $user['phone'],
+                'name'    => $user['name'],
+                'lang'    => $user['lang'],
+                'state'   => 'completed',
+            ]);
+            return true;
+        }
+        $initialData = [
+            'phone' => $phone,
+            'name'  => $name,
+            'state' => 'waiting_for_phone2', // birinchi step flag
+        ];
 
-        // $user = User::where('phone', $phone)->first();
+        Log::info("intial:", $initialData);
+        app(RegisterService::class)->mergeToCache($chatId, $initialData);
 
-        // if ($user) {
-        //     $user->chat_id = $chatId;
-        //     $user->save();
-        // } else {
-        //     $user = User::create([
-        //         'phone' => $phone,
-        //         'chat_id' => $chatId,
-        //         'name' => 'Telegram',
-        //         'lang' => 'uz',
-        //     ]);
-        // }
-
-        // $this->put($chatId, [
-        //     'user_id' => $user->id,
-        //     'phone' => $user->phone,
-        //     'lang' => $user->lang,
-        //     'state' => 'waiting_for_region',
-        // ]);
-        $this->put($chatId, [
-            'user_id' => "User",
-            'phone'   => $phone,
-            'lang'    => "uz",
-            'state'   => 'waiting_for_region',
-        ]);
         return false;
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Telegram\Handlers\Register;
 
 use Illuminate\Support\Facades\Cache;
@@ -9,11 +8,10 @@ class NameStepHandler
 {
     public function ask($chatId)
     {
-        Cache::store('redis')->put("tg_reg_state:$chatId", 'waiting_for_name', now()->addDays(7));
 
         Telegram::sendMessage([
             'chat_id' => $chatId,
-            'text' => "👤 Iltimos, ismingizni kiriting"
+            'text'    => "👤 Iltimos, ismingizni kiriting",
         ]);
     }
 

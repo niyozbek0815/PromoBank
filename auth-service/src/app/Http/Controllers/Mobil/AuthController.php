@@ -247,20 +247,17 @@ class AuthController extends Controller
             'phone'   => ['required', 'string', 'regex:/^\+998\d{9}$/'],
             'chat_id' => ['required', 'string'],
         ]);
-
-        $user = User::firstOrCreate(
-            ['phone' => $data['phone']],
-            [
-                'chat_id' => $data['chat_id'],
-                'name'    => 'User' . random_int(100000, 999999),
-            ]
-        );
-
-        if (! $user->wasRecentlyCreated && $user->chat_id !== $data['chat_id']) {
-            $user->chat_id = $data['chat_id'];
-            $user->save();
+        $message = "User Not found!!!";
+        $exist   = false;
+        $user    = User::where('chat_id', $data['chat_id'])->first();
+        if ($user) {
+            $message = "User already exists'!!!";
+            $exist   = true;
         }
-
-        return response()->json(['created' => $user->wasRecentlyCreated]);
+        return response()->json([
+            'exist'   => $exist,
+            'message' => $message,
+            'user'    => $user,
+        ]);
     }
 }

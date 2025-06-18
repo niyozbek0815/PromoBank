@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Telegram\Handlers;
 
 use App\Telegram\Services\Translator;
@@ -12,7 +11,7 @@ class Welcome
         $translator = app(Translator::class);
         Telegram::sendMessage([
             'chat_id' => $chatId,
-            'text' => $translator->get($chatId, 'welcome'),
+            'text'    => $translator->get($chatId, 'welcome'),
         ]);
     }
 }

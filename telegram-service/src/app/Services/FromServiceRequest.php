@@ -2,7 +2,6 @@
 namespace App\Services;
 
 use Illuminate\Http\Client\Response;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +15,7 @@ class FromServiceRequest
         string $path,
         Request | array $request,
         int $successCode = 200
-    ): Response | JsonResponse {
+    ) {
         $url = Str::of($baseUrl)->finish('/')->append(ltrim($path, '/'))->toString();
 
         $headers = ['Accept' => 'application/json'];
