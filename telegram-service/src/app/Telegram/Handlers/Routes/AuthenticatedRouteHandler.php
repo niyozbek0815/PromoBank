@@ -1,16 +1,62 @@
 <?php
 namespace App\Telegram\Handlers\Routes;
 
+use App\Telegram\Handlers\MainBack;
+use App\Telegram\Handlers\Menu;
+use App\Telegram\Handlers\ProfilSettings;
+use App\Telegram\Handlers\SocialMedia;
+use App\Telegram\Services\Translator;
 use Illuminate\Support\Facades\Log;
+use Telegram\Bot\Laravel\Facades\Telegram;
 
 class AuthenticatedRouteHandler
 {
 
+    public function __construct(protected Translator $translator)
+    {
+        // Constructor can be used for dependency injection if needed
+    }
     public function handle($update)
     {
-        $text   = $update->getMessage()?->getText() ?? $update->getCallbackQuery()?->getData();
-        $chatId = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
-        Log::info("data:" . $text);
+
+        $message = $update->getMessage()?->getText();
+        $getData = $update->getCallbackQuery()?->getData();
+        $chatId  = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
+        Log::info("AuthenticatedRouteHandler data=>", ['message' => $message, 'getData' => $getData]);
+        if ($message === $this->translator->get($chatId, 'menu_profile')) {
+            app(Menu::class)->handle($chatId);
+        }
+        if ($message === "/menu" || $message === $this->translator->get($chatId, 'open_main_menu')) {
+            app(Menu::class)->handle($chatId);
+        }
+        if ($getData === 'back_to_main_menu') {
+            app(MainBack::class)->handle($update);
+        }
+        if ($getData === 'menu_profile') {
+            app(abstract :ProfilSettings::class)->handle($update);
+        }
+        if ($getData === 'menu_social') {
+            app(abstract :SocialMedia::class)->handle($update);
+
+        }
+        if ($getData === 'menu_news') {
+            Telegram::sendMessage([
+                'chat_id' => $chatId,
+                'text'    => "Yangiliklar",
+            ]);
+        }
+        if ($getData === 'menu_games') {
+            Telegram::sendMessage([
+                'chat_id' => $chatId,
+                'text'    => "O'yinlar",
+            ]);
+        }
+        if ($getData === 'menu_promotions') {
+            Telegram::sendMessage([
+                'chat_id' => $chatId,
+                'text'    => "Aksiya",
+            ]);
+        }
 
     }
 }

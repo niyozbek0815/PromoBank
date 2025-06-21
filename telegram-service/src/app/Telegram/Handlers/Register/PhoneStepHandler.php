@@ -2,12 +2,13 @@
 namespace App\Telegram\Handlers\Register;
 
 use App\Telegram\Handlers\Welcome;
+use App\Telegram\Services\RegisterService;
 use App\Telegram\Services\Translator;
 use App\Telegram\Services\UserSessionService;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Telegram\Bot\Objects\Update;
 
-class SendPhoneRequest
+class PhoneStepHandler
 {
     public function __construct(
         protected Translator $translator,
@@ -56,7 +57,7 @@ class SendPhoneRequest
         ) ?: 'Telegram User';
 
         if ($this->userSession->bindChatToUser($chatId, $phone, $name)) {
-            // Cache::store('redis')->pull("tg_pending:$chatId"); // remove but don't use for now
+            app(RegisterService::class)->forget($chatId);
             return app(Welcome::class)->handle($chatId);
         }
 

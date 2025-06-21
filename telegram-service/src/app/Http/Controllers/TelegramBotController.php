@@ -31,13 +31,6 @@ class TelegramBotController extends Controller
         //     return app(StartHandler::class)->ask($chatId);
         // }
 
-        // if ($messageText === 'Salom') {
-        //     Telegram::sendMessage([
-        //         'chat_id' => $chatId,
-        //         'text'    => "Assalom alaykum",
-        //     ]);
-        // }
-
         return response()->noContent();
     }
 

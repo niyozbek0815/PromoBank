@@ -1,7 +1,7 @@
 <?php
 namespace App\Telegram\Handlers\Routes;
 
-use App\Telegram\Handlers\Register\SendPhoneRequest;
+use App\Telegram\Handlers\Register\PhoneStepHandler;
 use App\Telegram\Handlers\Start\StartHandler;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -37,7 +37,7 @@ class StartRouteHandler
         if ($update->getMessage()->getContact()) {
             Log::info("getContaxt");
 
-            return app(SendPhoneRequest::class)->handle($update);
+            return app(PhoneStepHandler::class)->handle($update);
         }
 
         return response()->noContent();

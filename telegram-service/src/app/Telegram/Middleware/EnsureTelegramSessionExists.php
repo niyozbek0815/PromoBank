@@ -1,6 +1,7 @@
 <?php
 namespace App\Telegram\Middleware;
 
+use App\Telegram\Handlers\Routes\AuthenticatedRouteHandler;
 use App\Telegram\Handlers\Routes\RegisterRouteHandler;
 use App\Telegram\Handlers\Routes\StartRouteHandler;
 use App\Telegram\Services\RegisterService;
@@ -20,7 +21,6 @@ class EnsureTelegramSessionExists
 
         $isOpenRoute = $isLangRoute || $isStart || $isContact;
         $chatId      = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
-        // Cache::store('redis')->forget('tg_user_data:' . $chatId, );
 
         $status = app(RegisterService::class)->getSessionStatus($chatId);
         Log::info("Middlewarega kirish: status-> " . $status . ". Message: " . $messageText);
@@ -39,11 +39,15 @@ class EnsureTelegramSessionExists
             return app(StartRouteHandler::class)->handle($update);
         }
 
-        // if ($status == 'authenticated') {
-        //     Log::info("in_progress");
-        //     app(RegisterRoutehandler::class)->handle($update);
+        if ($status == 'authenticated') {
+            Log::info("Middleware authenticated");
+            app(AuthenticatedRouteHandler::class)->handle($update);
+        }
+        if ($status == 'none') {
+            Log::info("Middleware none");
+            app(AuthenticatedRouteHandler::class)->handle($update);
+        }
 
-        // }
         return response()->noContent();
 
     }

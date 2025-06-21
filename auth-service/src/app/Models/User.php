@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use App\Traits\HasMedia;
@@ -21,13 +20,15 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'phone',
         'phone2',
+        'chat_id',
         'region_id',
         'district_id',
         'gender',
+        'birthdate',
         "status",
-        "is_guest"
+        "is_guest",
+        "lang",
     ];
-
     /**
      * Hidden fields during serialization (like API responses)
      *
@@ -55,8 +56,8 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims(): array
     {
         return [
-            'user_id' => $this->id,
-            'phone' => $this->phone,
+            'user_id'  => $this->id,
+            'phone'    => $this->phone,
             'is_guest' => $this->is_guest,
         ];
     }

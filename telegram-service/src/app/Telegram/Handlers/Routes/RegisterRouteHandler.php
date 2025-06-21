@@ -5,8 +5,8 @@ use App\Telegram\Handlers\Register\BirthdateStepHandler;
 use App\Telegram\Handlers\Register\DistrictStepHandler;
 use App\Telegram\Handlers\Register\GenderStepHandler;
 use App\Telegram\Handlers\Register\Phone2StepHandler;
+use App\Telegram\Handlers\Register\PhoneStepHandler;
 use App\Telegram\Handlers\Register\RegionStepHandler;
-use App\Telegram\Handlers\Register\SendPhoneRequest;
 use App\Telegram\Services\RegisterService;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Objects\Update;
@@ -22,9 +22,8 @@ class RegisterRouteHandler
         $data = app(RegisterService::class)->get($chatId);
 
         switch ($data['state']) {
-
             case 'waiting_for_phone':
-                return app(SendPhoneRequest::class)->handle($update);
+                return app(PhoneStepHandler::class)->handle($update);
             case 'waiting_for_phone2':
                 return app(Phone2StepHandler::class)->handle($update);
             case 'waiting_for_gender':
@@ -35,14 +34,10 @@ class RegisterRouteHandler
                 return app(DistrictStepHandler::class)->handle($update);
             case 'waiting_for_birthdate':
                 return app(BirthdateStepHandler::class)->handle($update);
-                // case 'waiting_for_name':
-                //     return app(NameStepHandler::class)->handle($chatId, $text);
-
-                // case 'completed':
-                //     return $this->sendMessage($chatId, "✅ Siz allaqachon ro'yxatdan o'tgansiz.");
-
-                // default:
-                //     return $this->sendMessage($chatId, "❗ Ro'yxatdan o'tish uchun /start ni bosing.");
+            case 'completed':
+                return app(abstract :RegisterService::class)->finalizeUserRegistration($update);
+            default:
+                return app(PhoneStepHandler::class)->handle($update);
         }
     }
 }

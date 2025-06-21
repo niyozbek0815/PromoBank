@@ -241,23 +241,4 @@ class AuthController extends Controller
             'user'   => $user,
         ]);
     }
-    public function userCheckBot(Request $request)
-    {
-        $data = $request->validate([
-            'phone'   => ['required', 'string', 'regex:/^\+998\d{9}$/'],
-            'chat_id' => ['required', 'string'],
-        ]);
-        $message = "User Not found!!!";
-        $exist   = false;
-        $user    = User::where('chat_id', $data['chat_id'])->first();
-        if ($user) {
-            $message = "User already exists'!!!";
-            $exist   = true;
-        }
-        return response()->json([
-            'exist'   => $exist,
-            'message' => $message,
-            'user'    => $user,
-        ]);
-    }
 }

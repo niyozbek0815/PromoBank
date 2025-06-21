@@ -1,7 +1,6 @@
 <?php
 namespace App\Services;
 
-use Illuminate\Http\Client\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -47,7 +46,7 @@ class FromServiceRequest
                 'error'  => $e->getMessage(),
             ]);
 
-            return response()->json([
+            return Http::response([
                 'message' => 'Internal error when calling external service.',
                 'error'   => $e->getMessage(),
             ], 503);

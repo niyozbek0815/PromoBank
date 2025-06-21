@@ -1,6 +1,4 @@
 <?php
-// Fayl: app/Telegram/Services/UserSessionService.php
-
 namespace App\Telegram\Services;
 
 use App\Services\FromServiceRequest;
@@ -25,7 +23,7 @@ class UserSessionService
         Cache::store('redis')->put(
             $this->prefix . $chatId,
             $data,
-            now()->addMinutes(1)
+            now()->addDays(7)
         );
     }
 
@@ -42,12 +40,13 @@ class UserSessionService
     public function bindChatToUser(string $chatId, string $phone, $name)
     {
         $baseUrl = config('services.urls.auth_service');
-        Log::info("url=" . $baseUrl);
+        $lang    = Cache::store('redis')->get("tg_lang:$chatId", 'uz');
+        Log::info("url=" . $lang);
         $response = $this->forwarder->forward(
             'POST',
             $baseUrl,
-            '/user_check_bot',
-            ['phone' => $phone, 'chat_id' => $chatId]
+            '/bot/user_check',
+            ['phone' => $phone, 'chat_id' => $chatId, 'lang' => $lang]
         );
 
         if (! $response->successful()) {
@@ -57,7 +56,7 @@ class UserSessionService
             ]);
             return;
         }
-        $data  = $response->json('data');
+        $data  = $response->json();
         $user  = $data['user'] ?? null;
         $exist = $data['exist'] ?? false;
         if ($exist && $user && isset($user['id'])) {
@@ -77,7 +76,7 @@ class UserSessionService
             'state' => 'waiting_for_phone2', // birinchi step flag
         ];
 
-        Log::info("intial:", $initialData);
+        // Log::info(message: "intial:", $initialData);
         app(RegisterService::class)->mergeToCache($chatId, $initialData);
 
         return false;

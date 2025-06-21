@@ -38,9 +38,14 @@ class BirthdateStepHandler
         ]);
 
         // Optionally send confirmation
+
         Telegram::sendMessage([
             'chat_id' => $chatId,
-            'text'    => $this->translator->get($chatId, 'birthdate_received')]);
+            'text'    => $this->translator->get($chatId, 'birthdate_received'),
+            // 'text'    => "✅ Ro'yxatdan muvaffaqiyatli o'tdingiz!",
+        ]);
+        app(abstract :RegisterService::class)->finalizeUserRegistration($update);
+
     }
 
     // Va oxirgi comlete funksiyani yozishim va user yaratishim kerak.

@@ -1,20 +1,34 @@
 <?php
 namespace App\Telegram\Handlers\Start;
 
-use App\Telegram\Handlers\Register\SendPhoneRequest;
+use App\Telegram\Handlers\Register\PhoneStepHandler;
 use App\Telegram\Services\RegisterRouteService;
 use App\Telegram\Services\RegisterService;
+use App\Telegram\Services\Translator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
 class StartHandler
 {
+    public function __construct(
+        protected Translator $translator
+    ) {
+        // Constructor can be used for dependency injection if needed
+    }
     public function ask($chatId)
     {
-        $tg_user_data = json_decode(Cache::store('redis')->get("tg_user_data:$chatId"), true) ?? [];
+        Telegram::sendMessage([
+            'chat_id'      => $chatId,
+            'text'         => $this->translator->get($chatId, 'welcome'),
+            'reply_markup' => json_encode([
+                'remove_keyboard' => true,
+            ]),
+        ]);
 
-        if (empty($tg_user_data)) {
+        $lang = json_decode(Cache::store('redis')->get("tg_lang:$chatId"), true) ?? [];
+
+        if (empty($lang)) {
             Telegram::sendMessage([
                 'chat_id'      => $chatId,
                 'text'         => "🌐 Iltimos, tilni tanlang:\n🌐 Пожалуйста, выберите язык:\n🌐 Илтимос, тилни танланг:",
@@ -52,12 +66,13 @@ class StartHandler
 
         $lang = str_replace('lang:', '', $messageText);
         Log::info("StartHandler handle ishladi: $lang");
-
+        Cache::store('redis')->put("tg_lang:$chatId", $lang, now()->addDays(7));
         app(RegisterService::class)->mergeToCache($chatId, [
             'chat_id' => $chatId,
             'lang'    => $lang,
-            'state'   => 'waiting_for_phone',
+            'state'   => 'waiting_for_name',
         ]);
-        return app(SendPhoneRequest::class)->ask($chatId);
+
+        return app(PhoneStepHandler::class)->ask($chatId);
     }
 }
