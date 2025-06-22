@@ -1,7 +1,7 @@
 <?php
 namespace App\Telegram\Handlers\Start;
 
-use App\Telegram\Handlers\Register\PhoneStepHandler;
+use App\Telegram\Handlers\Register\NameStepHandler;
 use App\Telegram\Services\RegisterRouteService;
 use App\Telegram\Services\RegisterService;
 use App\Telegram\Services\Translator;
@@ -73,6 +73,6 @@ class StartHandler
             'state'   => 'waiting_for_name',
         ]);
 
-        return app(PhoneStepHandler::class)->ask($chatId);
+        return app(NameStepHandler::class)->ask($chatId);
     }
 }

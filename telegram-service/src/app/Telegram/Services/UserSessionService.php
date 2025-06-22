@@ -37,7 +37,7 @@ class UserSessionService
         Cache::store('redis')->forget($this->prefix . $chatId);
     }
 
-    public function bindChatToUser(string $chatId, string $phone, $name)
+    public function bindChatToUser(string $chatId, string $phone)
     {
         $baseUrl = config('services.urls.auth_service');
         $lang    = Cache::store('redis')->get("tg_lang:$chatId", 'uz');
@@ -61,18 +61,14 @@ class UserSessionService
         $exist = $data['exist'] ?? false;
         if ($exist && $user && isset($user['id'])) {
             // ✅ Mavjud user – Redisga yozamiz
-            $this->put($chatId, [
-                'user_id' => $user['id'],
-                'phone'   => $user['phone'],
-                'name'    => $user['name'],
-                'lang'    => $user['lang'],
-                'state'   => 'completed',
-            ]);
+            Log::info("Qaytgan user malumotlari: ", ['user' => $user]);
+            $userData          = collect($user)->except(['created_at', 'updated_at'])->toArray();
+            $userData['state'] = 'completed';
+            $this->put($chatId, $userData);
             return true;
         }
         $initialData = [
             'phone' => $phone,
-            'name'  => $name,
             'state' => 'waiting_for_phone2', // birinchi step flag
         ];
 

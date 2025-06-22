@@ -11,7 +11,6 @@ use App\Telegram\Handlers\Start\StartHandler;
 use App\Telegram\Handlers\Welcome;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Telegram\Bot\Laravel\Facades\Telegram;
 use Telegram\Bot\Objects\Update;
 
 class RegisterService
@@ -109,22 +108,19 @@ class RegisterService
         $user = $response->json('user');
 
         if ($user && isset($user['id'])) {
-            app(UserSessionService::class)->put($chatId, [
-                'user_id' => $user['id'],
-                'phone'   => $user['phone'],
-                'name'    => $user['name'],
-                'lang'    => $user['lang'],
-                'state'   => 'completed',
-            ]);
+
+            Log::info("Qaytgan user malumotlari: ", ['user' => $user]);
+            $userData          = collect($user)->except(['created_at', 'updated_at'])->toArray();
+            $userData['state'] = 'completed';
+
+            app(UserSessionService::class)->put(
+                $chatId, $userData);
             $this->forget($chatId);
             Log::info("User session saqlandi va ro‘yxat yakunlandi", ['chat_id' => $chatId]);
             return app(Welcome::class)->handle($chatId);
         }
 
-        return Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text'    => "🎉 Ro‘yxatdan o‘tish yakunlandi!",
-        ]);
+        return;
     }
 
 }

@@ -30,13 +30,12 @@ class StartRouteHandler
         Log::info("StartRouteHandler data:" . $messageText);
         if ($messageText === '/start') {
             Log::info("start:");
-            Cache::store('redis')->forget('tg_user_data:' . $chatId, );
+            Cache::store('redis')->forget('tg_user_data:' . $chatId);
+            Cache::store('redis')->forget('tg_user:' . $chatId);
 
             return app(StartHandler::class)->ask($chatId);
         }
         if ($update->getMessage()->getContact()) {
-            Log::info("getContaxt");
-
             return app(PhoneStepHandler::class)->handle($update);
         }
 

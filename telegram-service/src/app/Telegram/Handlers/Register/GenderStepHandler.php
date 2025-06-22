@@ -40,7 +40,7 @@ class GenderStepHandler
         if (! isset($genderMap[$text])) {
             return Telegram::sendMessage([
                 'chat_id' => $chatId,
-                'text'    => $this->translator->get($chatId, 'invalid_gender'),
+                'text'    => $this->translator->get($chatId, 'invalid_gender_format'),
             ]);
         }
         Telegram::sendMessage([

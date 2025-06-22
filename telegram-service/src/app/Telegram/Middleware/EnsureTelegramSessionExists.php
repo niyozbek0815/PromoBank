@@ -12,12 +12,11 @@ class EnsureTelegramSessionExists
 {
     public function handle(Update $update)
     {
-        $messageText  = $update->getMessage()?->getText();
-        $callbackData = $update->getCallbackQuery()?->getData();
-        $messageText  = $update->getMessage()?->getText();
-        $isLangRoute  = $callbackData && str_starts_with($callbackData, 'lang:');
-        $isStart      = $messageText === '/start';
-        $isContact    = $update->getMessage()?->getContact();
+        $messageText = $update->getMessage()?->getText();
+        $messageText = $update->getMessage()?->getText();
+        $isLangRoute = $callbackData && str_starts_with($callbackData, 'lang:');
+        $isStart     = $messageText === '/start';
+        $isContact   = $update->getMessage()?->getContact();
 
         $isOpenRoute = $isLangRoute || $isStart || $isContact;
         $chatId      = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();

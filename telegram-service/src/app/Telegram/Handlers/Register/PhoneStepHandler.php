@@ -1,7 +1,6 @@
 <?php
 namespace App\Telegram\Handlers\Register;
 
-use App\Telegram\Handlers\Welcome;
 use App\Telegram\Services\RegisterService;
 use App\Telegram\Services\Translator;
 use App\Telegram\Services\UserSessionService;
@@ -40,7 +39,7 @@ class PhoneStepHandler
         if (! $contact) {
             Telegram::sendMessage([
                 'chat_id' => $chatId,
-                'text'    => $this->translator->get($chatId, 'only_contact_allowed'),
+                'text'    => $this->translator->get($chatId, 'invalid_phone_format'),
             ]);
             return;
         }
@@ -51,14 +50,20 @@ class PhoneStepHandler
             'text'         => $this->translator->get($chatId, 'phone_received'),
             'reply_markup' => json_encode(['remove_keyboard' => true]),
         ]);
-        $name = trim(
-            ($message?->getFrom()?->getFirstName() ?? '') . ' ' .
-            ($message?->getFrom()?->getLastName() ?? '')
-        ) ?: 'Telegram User';
 
-        if ($this->userSession->bindChatToUser($chatId, $phone, $name)) {
+        if ($this->userSession->bindChatToUser($chatId, $phone)) {
             app(RegisterService::class)->forget($chatId);
-            return app(Welcome::class)->handle($chatId);
+            return Telegram::sendMessage([
+                'chat_id'      => $chatId,
+                'text'         => $this->translator->get($chatId, 'already_registered'),
+                'reply_markup' => json_encode([
+                    'keyboard'          => [
+                        [['text' => $this->translator->get($chatId, 'open_main_menu')]],
+                    ],
+                    'resize_keyboard'   => true,
+                    'one_time_keyboard' => false,
+                ]),
+            ]);
         }
 
         return app(Phone2StepHandler::class)->ask($chatId);

@@ -10,7 +10,6 @@ use Telegram\Bot\Objects\Update;
 class Phone2StepHandler
 {
     protected Translator $translator;
-
     public function __construct(Translator $translator)
     {
         $this->translator = $translator;
@@ -41,8 +40,6 @@ class Phone2StepHandler
         $message  = $update->getMessage();
         $chatId   = $message?->getChat()?->getId() ?? $callback?->getMessage()?->getChat()?->getId();
         $phone2   = null;
-        // Tugma bosilganda (callback)
-        // 📌 Callback tugma bosilgan holat
         if ($callback) {
             $data   = $callback->getData();
             $phone2 = $data === 'next:phone2' ? null : $data;
@@ -58,8 +55,10 @@ class Phone2StepHandler
 
         // Foydalanuvchi matn yuborgan holat
         elseif ($text = $message?->getText()) {
-            // Telefon raqam validatsiyasi: faqat +998XXXXXXXXX
-            if (! preg_match('/^\+998\d{9}$/', $text)) {
+                                                         // Probellar va boshqa belgilarni olib tashlaymiz
+            $cleaned = preg_replace('/\D+/', '', $text); // faqat raqamlar qoldiriladi
+
+            if (! preg_match('/^998\d{9}$/', $cleaned)) {
                 Telegram::sendMessage([
                     'chat_id' => $chatId,
                     'text'    => $this->translator->get($chatId, 'invalid_phone2_format'),
@@ -67,15 +66,21 @@ class Phone2StepHandler
                 return;
             }
 
+            $phone2 = '+' . $cleaned;
+
             $phone2 = $text;
 
-// Oldingi step tugmasini (inline keyboard) o‘chirish
             if ($storedMsgId = Cache::store('redis')->pull("tg_phone2_msg:$chatId")) {
                 Telegram::deleteMessage([
                     'chat_id'    => $chatId,
                     'message_id' => $storedMsgId,
                 ]);
             }
+            Telegram::sendMessage([
+                'chat_id'      => $chatId,
+                'text'         => $this->translator->get($chatId, 'phone2_received'),
+                'reply_markup' => json_encode(['remove_keyboard' => true]),
+            ]);
         }
 
         app(RegisterService::class)->mergeToCache($chatId, [

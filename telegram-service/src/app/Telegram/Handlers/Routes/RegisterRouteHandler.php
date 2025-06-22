@@ -4,6 +4,8 @@ namespace App\Telegram\Handlers\Routes;
 use App\Telegram\Handlers\Register\BirthdateStepHandler;
 use App\Telegram\Handlers\Register\DistrictStepHandler;
 use App\Telegram\Handlers\Register\GenderStepHandler;
+use App\Telegram\Handlers\Register\NameStepHandler;
+use App\Telegram\Handlers\Register\OfertaStepHandler;
 use App\Telegram\Handlers\Register\Phone2StepHandler;
 use App\Telegram\Handlers\Register\PhoneStepHandler;
 use App\Telegram\Handlers\Register\RegionStepHandler;
@@ -22,6 +24,8 @@ class RegisterRouteHandler
         $data = app(RegisterService::class)->get($chatId);
 
         switch ($data['state']) {
+            case 'waiting_for_name':
+                return app(NameStepHandler::class)->handle($update);
             case 'waiting_for_phone':
                 return app(PhoneStepHandler::class)->handle($update);
             case 'waiting_for_phone2':
@@ -34,6 +38,8 @@ class RegisterRouteHandler
                 return app(DistrictStepHandler::class)->handle($update);
             case 'waiting_for_birthdate':
                 return app(BirthdateStepHandler::class)->handle($update);
+            case 'waiting_for_offer':
+                return app(OfertaStepHandler::class)->handle($update);
             case 'completed':
                 return app(abstract :RegisterService::class)->finalizeUserRegistration($update);
             default:

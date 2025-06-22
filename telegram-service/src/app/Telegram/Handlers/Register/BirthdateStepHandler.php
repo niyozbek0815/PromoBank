@@ -23,31 +23,56 @@ class BirthdateStepHandler
     {
         $message = $update->getMessage();
         $chatId  = $message?->getChat()?->getId();
-        $text    = $message?->getText();
+        $text    = trim($message?->getText());
 
-        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $text)) {
+        // 1 yoki 2 xonali kun va oyga moslash
+        if (preg_match('/^(\d{1,2})[.,\s\/\\-]?(\d{1,2})[.,\s\/\\-]?(\d{4})$/', $text, $matches)) {
+            $day   = (int) $matches[1];
+            $month = (int) $matches[2];
+            $year  = (int) $matches[3];
+
+            // Sanani tekshirish: real kun/oymi
+            if (! checkdate($month, $day, $year)) {
+                Telegram::sendMessage([
+                    'chat_id' => $chatId,
+                    'text'    => $this->translator->get($chatId, 'invalid_birthdate_format'),
+                ]);
+                return;
+            }
+
+            // Yil chegarasi: 1900-yildan katta va oxirgi 5 yildan oldingi bo'lishi kerak
+            $minYear = 1900;
+            $maxYear = (int) now()->subYears(5)->format('Y');
+
+            if ($year < $minYear || $year > $maxYear) {
+                Telegram::sendMessage([
+                    'chat_id' => $chatId,
+                    'text'    => $this->translator->get($chatId, 'invalid_birthdate_format'),
+                ]);
+                return;
+            }
+
+            // Formatlash: YYYY-MM-DD
+            $normalized = sprintf('%04d-%02d-%02d', $year, $month, $day);
+
+            app(RegisterService::class)->mergeToCache($chatId, [
+                'birthdate' => $normalized,
+                'state'     => 'waiting_for_offer',
+            ]);
+
             Telegram::sendMessage([
                 'chat_id' => $chatId,
-                'text'    => $this->translator->get($chatId, 'invalid_birthdate_format')]);
-            return;
+                'text'    => $this->translator->get($chatId, 'birthdate_received'),
+            ]);
+
+            return app(OfertaStepHandler::class)->ask($chatId);
+
+            // Optionally finalize registration
+        } else {
+            Telegram::sendMessage([
+                'chat_id' => $chatId,
+                'text'    => $this->translator->get($chatId, 'invalid_birthdate_format'),
+            ]);
         }
-
-        app(RegisterService::class)->mergeToCache($chatId, [
-            'birthdate' => $text,
-            'state'     => 'complete',
-        ]);
-
-        // Optionally send confirmation
-
-        Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text'    => $this->translator->get($chatId, 'birthdate_received'),
-            // 'text'    => "✅ Ro'yxatdan muvaffaqiyatli o'tdingiz!",
-        ]);
-        app(abstract :RegisterService::class)->finalizeUserRegistration($update);
-
     }
-
-    // Va oxirgi comlete funksiyani yozishim va user yaratishim kerak.
-
 }

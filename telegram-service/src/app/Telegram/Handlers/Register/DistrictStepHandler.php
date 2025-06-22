@@ -62,6 +62,11 @@ class DistrictStepHandler
                 'message_id' => $messageId,
             ]);
         }
+        Telegram::sendMessage([
+            'chat_id' => $chatId,
+            'text'    => $this->translator->get($chatId, 'district_received'),
+        ]);
+
         app(RegisterService::class)->mergeToCache($chatId, [
             'district_id' => $districtId,
             'state'       => 'waiting_for_birthdate',

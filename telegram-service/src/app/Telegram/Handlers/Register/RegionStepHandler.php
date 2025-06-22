@@ -64,6 +64,10 @@ class RegionStepHandler
                 'message_id' => $messageId,
             ]);
         }
+        Telegram::sendMessage([
+            'chat_id' => $chatId,
+            'text'    => $this->translator->get($chatId, 'region_received'),
+        ]);
 
         app(RegisterService::class)->mergeToCache($chatId, [
             'region_id' => $regionId,
