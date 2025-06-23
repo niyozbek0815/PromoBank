@@ -3,6 +3,7 @@ namespace App\Telegram\Handlers\Register;
 
 use App\Telegram\Services\RegisterService;
 use App\Telegram\Services\Translator;
+use App\Telegram\Services\UserUpdateService;
 use Illuminate\Support\Facades\Cache;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Telegram\Bot\Objects\Update;
@@ -10,6 +11,7 @@ use Telegram\Bot\Objects\Update;
 class Phone2StepHandler
 {
     protected Translator $translator;
+
     public function __construct(Translator $translator)
     {
         $this->translator = $translator;
@@ -17,7 +19,6 @@ class Phone2StepHandler
 
     public function ask($chatId)
     {
-
         $response = Telegram::sendMessage([
             'chat_id'      => $chatId,
             'text'         => $this->translator->get($chatId, 'ask_phone2'),
@@ -29,47 +30,35 @@ class Phone2StepHandler
                 ],
             ]),
         ]);
-
-        $messageId = $response->getMessageId();
-        Cache::store('redis')->put("tg_phone2_msg:$chatId", $messageId, now()->addMinutes(10));
+        Cache::store('redis')->put("tg_phone2_msg:$chatId", $response->getMessageId(), now()->addMinutes(10));
     }
 
-    public function handle(Update $update)
+    protected function process(Update $update, $cacheService)
     {
         $callback = $update->getCallbackQuery();
         $message  = $update->getMessage();
         $chatId   = $message?->getChat()?->getId() ?? $callback?->getMessage()?->getChat()?->getId();
         $phone2   = null;
+
         if ($callback) {
             $data   = $callback->getData();
             $phone2 = $data === 'next:phone2' ? null : $data;
-
-            // Callback orqali kelgan eski tugmani o‘chirish
             if ($msgId = $callback->getMessage()?->getMessageId()) {
                 Telegram::deleteMessage([
                     'chat_id'    => $chatId,
                     'message_id' => $msgId,
                 ]);
             }
-        }
-
-        // Foydalanuvchi matn yuborgan holat
-        elseif ($text = $message?->getText()) {
-                                                         // Probellar va boshqa belgilarni olib tashlaymiz
-            $cleaned = preg_replace('/\D+/', '', $text); // faqat raqamlar qoldiriladi
-
+        } elseif ($text = $message?->getText()) {
+            $cleaned = preg_replace('/\D+/', '', $text);
             if (! preg_match('/^998\d{9}$/', $cleaned)) {
                 Telegram::sendMessage([
                     'chat_id' => $chatId,
                     'text'    => $this->translator->get($chatId, 'invalid_phone2_format'),
                 ]);
-                return;
+                return null;
             }
-
             $phone2 = '+' . $cleaned;
-
-            $phone2 = $text;
-
             if ($storedMsgId = Cache::store('redis')->pull("tg_phone2_msg:$chatId")) {
                 Telegram::deleteMessage([
                     'chat_id'    => $chatId,
@@ -83,11 +72,20 @@ class Phone2StepHandler
             ]);
         }
 
-        app(RegisterService::class)->mergeToCache($chatId, [
+        app($cacheService)->mergeToCache($chatId, [
             'phone2' => $phone2,
             'state'  => 'waiting_for_gender',
         ]);
-
         return app(GenderStepHandler::class)->ask($chatId);
+    }
+
+    public function handle(Update $update)
+    {
+        return $this->process($update, RegisterService::class);
+    }
+
+    public function handleUpdate(Update $update)
+    {
+        return $this->process($update, UserUpdateService::class);
     }
 }

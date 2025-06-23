@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Cache;
 class Translator
 {
     protected array $messages = [
+        'start'                    => [
+            'uz' => "Assalomu alaykum, Promobank platformasining Telegramdagi rasmiy botiga xush kelibsiz!",
+            'ru' => "Здравствуйте, добро пожаловать в официальный бот платформы Promobank в Telegram!",
+            'kr' => "Ассалому алайкум, Promobank платформасининг Telegramдаги расмий ботига хуш келибсиз!",
+        ],
         'welcome'                  => [
             'uz' => "🎉 Promobank platformasiga xush kelibsiz! Endilikda siz bu platformadagi barcha loyihalarda qatnasha olasiz.",
             'ru' => "🎉 Добро пожаловать на платформу Promobank! Теперь вы можете участвовать во всех проектах на этой платформе.",
@@ -206,6 +211,62 @@ class Translator
             'uz' => "✅ Tasdiqlash",
             'ru' => "✅ Подтвердить",
             'kr' => "✅ Тасдиқлаш",
+        ],
+        // Profile section translations
+        'profile_title'            => [
+            'uz' => "Shaxsiy ma'lumotlaringiz:",
+            'ru' => "Ваши персональные данные:",
+            'kr' => "Шахсий маълумотларингиз:",
+        ],
+        'profile_name'             => [
+            'uz' => "Ism",
+            'ru' => "Имя",
+            'kr' => "Исм",
+        ],
+        'profile_phone'            => [
+            'uz' => "Telefon",
+            'ru' => "Телефон",
+            'kr' => "Телефон",
+        ],
+        'profile_phone2'           => [
+            'uz' => "Qo‘shimcha tel",
+            'ru' => "Доп. номер",
+            'kr' => "Қўшимча тел",
+        ],
+        'profile_region'           => [
+            'uz' => "Hudud",
+            'ru' => "Регион",
+            'kr' => "Ҳудуд",
+        ],
+        'profile_district'         => [
+            'uz' => "Tuman",
+            'ru' => "Район",
+            'kr' => "Туман",
+        ],
+        'profile_gender'           => [
+            'uz' => "Jinsi",
+            'ru' => "Пол",
+            'kr' => "Жинси",
+        ],
+        'profile_birthdate'        => [
+            'uz' => "Tug‘ilgan sana",
+            'ru' => "Дата рождения",
+            'kr' => "Туғилган сана",
+        ],
+        'profile_lang'             => [
+            'uz' => "Tizim tili",
+            'ru' => "Язык системы",
+            'kr' => "Тизим тили",
+        ],
+        'profile_update_welcome'   => [
+            'uz' => "✏️ Shaxsiy ma'lumotlarni tahrirlash boshlandi",
+            'ru' => "✏️ Редактирование личных данных началось",
+            'kr' => "✏️ Шахсий маълумотларни таҳрирлаш бошланди",
+        ],
+        "profile_update_success"   => [
+            'uz' => "✅ Shaxsiy ma'lumotlaringiz muvaffaqiyatli yangilandi.",
+            'ru' => "✅ Ваши персональные данные успешно обновлены.",
+            'kr' => "✅ Шахсий маълумотларингиз муваффақиятли янгиланди.",
         ],
     ];
 

@@ -20,9 +20,10 @@ Route::controller(AuthController::class)->group(function () {
     // Route::post('/verifications/{id}/resend', 'resendsms')->middleware('guestCheck'); // POST /auth/verifications/{id}/resend
     // Route::post('/logout', 'logout')->middleware('guestCheck'); // POST /auth/logout
 });
-Route::controller(BotAuthController::class)->prefix("bot")->group(function () {
+Route::controller(BotAuthController::class)->group(function () {
     Route::post('/user_check', 'check');
     Route::post('/user_create', 'create');
+    Route::post('/user_update', 'update');
 });
 
 Route::controller(AddresController::class)->group(function () {

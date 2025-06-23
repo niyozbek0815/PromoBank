@@ -2,6 +2,8 @@
 namespace App\Telegram\Handlers;
 
 use App\Telegram\Services\Translator;
+use App\Telegram\Services\UserSessionService;
+use Illuminate\Support\Facades\Cache;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Telegram\Bot\Objects\Update;
 
@@ -15,24 +17,44 @@ class ProfilSettings
     {
         $chatId    = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
         $messageId = $update->getCallbackQuery()?->getMessage()?->getMessageId();
+        $user      = app(UserSessionService::class)->get($chatId);
+        $lang      = Cache::store('redis')->get("tg_lang:$chatId", 'uz');
+
+        $text = "📋 <b>" . $this->translator->get($chatId, 'profile_title') . "</b>\n\n" .
+        "👤 <b>" . $this->translator->get($chatId, 'profile_name') . ":</b> {$user['name']}\n" .
+        "📞 <b>" . $this->translator->get($chatId, 'profile_phone') . ":</b> {$user['phone']}\n" .
+        ($user['phone2'] ? "📞 <b>" . $this->translator->get($chatId, 'profile_phone2') . ":</b> {$user['phone2']}\n" : '') .
+        "📍 <b>" . $this->translator->get($chatId, 'profile_region') . ":</b> {$user['region']}\n" .
+        "🏘 <b>" . $this->translator->get($chatId, 'profile_district') . ":</b> {$user['district']}\n" .
+        "⚧ <b>" . $this->translator->get($chatId, 'profile_gender') . ":</b> " . ($user['gender'] === 'M' ? $this->translator->get($chatId, 'gender_male') : $this->translator->get($chatId, 'gender_female')) . "\n" .
+        "📅 <b>" . $this->translator->get($chatId, 'profile_birthdate') . ":</b> " . date('d.m.Y', strtotime($user['birthdate'])) . "\n" .
+        "🌐 <b>" . $this->translator->get($chatId, 'profile_lang') . ":</b> " . match ($lang) {
+            'uz' => "O‘zbekcha",
+            'ru' => "Русский",
+            'kr' => "Кирилл",
+            default => "O‘zbekcha"
+        } . "\n";
+
+        $currentMessage = $update->getCallbackQuery()?->getMessage()?->getText();
+        if ($currentMessage === $text) {
+            return;
+        }
 
         Telegram::editMessageText([
             'chat_id'      => $chatId,
-            'message_id'   => $messageId, // You need to pass actual message_id from the callback
-            'text'         => "Proofile sozlamalari",
+            'message_id'   => $messageId,
+            'text'         => $text,
+            'parse_mode'   => 'HTML',
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
-                        ['text' => "Malumotlarni taxrirlash", 'callback_data' => 'edit_profile'],
-                    ], [
-                        ['text' => "Tilni o'zgartirish", 'callback_data' => 'change_language'],
+                        ['text' => "✏️ Ma'lumotlarni tahrirlash", 'callback_data' => 'edit_profile'],
                     ],
                     [
-                        ['text' => "Ortga", 'callback_data' => 'back_to_main_menu'],
+                        ['text' => "🔙 Ortga", 'callback_data' => 'back_to_main_menu'],
                     ],
                 ],
             ]),
         ]);
-
     }
 }

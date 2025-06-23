@@ -1,6 +1,7 @@
 <?php
 namespace App\Telegram\Handlers\Register;
 
+use App\Telegram\Services\RegisterRouteService;
 use App\Telegram\Services\RegisterService;
 use App\Telegram\Services\Translator;
 use App\Telegram\Services\UserSessionService;
@@ -53,20 +54,10 @@ class PhoneStepHandler
 
         if ($this->userSession->bindChatToUser($chatId, $phone)) {
             app(RegisterService::class)->forget($chatId);
-            return Telegram::sendMessage([
-                'chat_id'      => $chatId,
-                'text'         => $this->translator->get($chatId, 'already_registered'),
-                'reply_markup' => json_encode([
-                    'keyboard'          => [
-                        [['text' => $this->translator->get($chatId, 'open_main_menu')]],
-                    ],
-                    'resize_keyboard'   => true,
-                    'one_time_keyboard' => false,
-                ]),
-            ]);
+            return app(AlreadyRegisterStepHandler::class)->handle($chatId);
         }
 
-        return app(Phone2StepHandler::class)->ask($chatId);
+        return app(RegisterRouteService::class)->askNextStep($chatId);
     }
 
 }

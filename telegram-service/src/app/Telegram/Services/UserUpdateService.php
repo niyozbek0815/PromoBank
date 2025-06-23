@@ -8,14 +8,13 @@ use App\Telegram\Handlers\Register\GenderStepHandler;
 use App\Telegram\Handlers\Register\Phone2StepHandler;
 use App\Telegram\Handlers\Register\RegionStepHandler;
 use App\Telegram\Handlers\Start\StartHandler;
-use App\Telegram\Handlers\Welcome;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Objects\Update;
 
-class RegisterService
+class UserUpdateService
 {
-    protected string $prefix = 'tg_user_data:';
+    protected string $prefix = 'tg_user_update:';
     public function __construct(private FromServiceRequest $forwarder)
     {
         $this->forwarder = $forwarder;
@@ -49,23 +48,7 @@ class RegisterService
     }
     public function forget(string $chatId)
     {
-        Cache::store('redis')->forget($this->prefix . $chatId, );
-    }
-    public function getSessionStatus(string $chatId)
-    {
-        if (Cache::store('redis')->has('tg_user_data:' . $chatId)) {
-            return 'in_register';
-        }
-
-        if (Cache::store('redis')->has('tg_user_update:' . $chatId)) {
-            return 'in_update';
-        }
-
-        if (Cache::store('redis')->has('tg_user:' . $chatId)) {
-            return 'authenticated';
-        }
-
-        return 'none';
+        Cache::store('redis')->forget($this->prefix . $chatId);
     }
     public function finalizeUserRegistration(Update $update)
     {
@@ -74,7 +57,7 @@ class RegisterService
         $required = $this->get($chatId);
         $fields   = ['region_id', 'district_id', 'name', 'phone2', 'gender', 'birthdate'];
         $lang     = Cache::store('redis')->get("tg_lang:$chatId", 'uz');
-        $data     = ['lang' => $lang, 'chat_id' => (string) $chatId, 'phone' => $required['phone'], 'name' => $required['name']];
+        $data     = ['lang' => $lang, 'chat_id' => (string) $chatId, 'name' => $required['name']];
 
         foreach ($fields as $field) {
             $data[$field] = $required[$field];
@@ -93,11 +76,12 @@ class RegisterService
         };
     }protected function registerUserAndFinalize($chatId, $data)
     {
-        Log::info("User create request yuborilmoqda", ['chat_id' => $chatId, 'data' => $data]);
 
-        $baseUrl         = config('services.urls.auth_service');
+        $baseUrl = config('services.urls.auth_service');
+        Log::info("User create request yuborilmoqda", ['url' => $baseUrl, 'chat_id' => $chatId, 'data' => $data]);
+
         $data['chat_id'] = (string) $chatId;
-        $response        = $this->forwarder->forward('POST', $baseUrl, '/user_create', $data);
+        $response        = $this->forwarder->forward('POST', $baseUrl, '/user_update', $data);
 
         if (! $response instanceof \Illuminate\Http\Client\Response  || ! $response->successful()) {
             logger()->error('Userni olishda xatolik', [
@@ -118,7 +102,7 @@ class RegisterService
                 $chatId, $user);
             $this->forget($chatId);
             Log::info("User session saqlandi va ro‘yxat yakunlandi", ['chat_id' => $chatId]);
-            return app(Welcome::class)->handle($chatId);
+            // return app(Welcome::class)->handle($chatId);
         }
 
         return;

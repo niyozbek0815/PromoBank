@@ -1,7 +1,6 @@
 <?php
 namespace App\Telegram\Handlers\Start;
 
-use App\Telegram\Handlers\Register\NameStepHandler;
 use App\Telegram\Services\RegisterRouteService;
 use App\Telegram\Services\RegisterService;
 use App\Telegram\Services\Translator;
@@ -15,6 +14,25 @@ class StartHandler
         protected Translator $translator
     ) {
         // Constructor can be used for dependency injection if needed
+    }
+    public function startAsk($chatId)
+    {
+        Telegram::sendMessage([
+            'chat_id'      => $chatId,
+            'text'         => $this->translator->get($chatId, 'start'),
+            'reply_markup' => json_encode([
+                'remove_keyboard' => true,
+            ]),
+        ]);
+
+        app(RegisterService::class)->mergeToCache($chatId, [
+            'chat_id' => $chatId,
+            'state'   => 'waiting_for_language',
+        ]);
+
+        Log::info("StartHandler startAsk ishladi: $chatId");
+        return app(abstract :RegisterRouteService::class)->askNextStep($chatId);
+
     }
     public function ask($chatId)
     {
@@ -49,30 +67,4 @@ class StartHandler
 
     }
 
-    public function handle($update)
-    {
-        $messageText = $update->getCallbackQuery()?->getData();
-
-        $chatId = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
-
-        $callbackMessage = $update->getCallbackQuery()?->getMessage();
-
-        if ($callbackMessage) {
-            Telegram::deleteMessage([
-                'chat_id'    => $chatId,
-                'message_id' => $callbackMessage->getMessageId(),
-            ]);
-        }
-
-        $lang = str_replace('lang:', '', $messageText);
-        Log::info("StartHandler handle ishladi: $lang");
-        Cache::store('redis')->put("tg_lang:$chatId", $lang, now()->addDays(7));
-        app(RegisterService::class)->mergeToCache($chatId, [
-            'chat_id' => $chatId,
-            'lang'    => $lang,
-            'state'   => 'waiting_for_name',
-        ]);
-
-        return app(NameStepHandler::class)->ask($chatId);
-    }
 }

@@ -6,47 +6,42 @@ use App\Telegram\Handlers\Register\DistrictStepHandler;
 use App\Telegram\Handlers\Register\GenderStepHandler;
 use App\Telegram\Handlers\Register\LanguageHandler;
 use App\Telegram\Handlers\Register\NameStepHandler;
-use App\Telegram\Handlers\Register\OfertaStepHandler;
 use App\Telegram\Handlers\Register\Phone2StepHandler;
-use App\Telegram\Handlers\Register\PhoneStepHandler;
 use App\Telegram\Handlers\Register\RegionStepHandler;
-use App\Telegram\Services\RegisterService;
+use App\Telegram\Services\UserUpdateService;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Objects\Update;
 
-class RegisterRouteHandler
+class UpdateRouteHandler
 {
-
     public function handle(Update $update)
     {
         $text   = $update->getMessage()?->getText() ?? $update->getCallbackQuery()?->getData();
         $chatId = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
         Log::info("data:" . $text);
-        $data = app(RegisterService::class)->get($chatId);
+        $data = app(UserUpdateService::class)->get($chatId);
 
         switch ($data['state']) {
             case 'waiting_for_language':
-                return app(LanguageHandler::class)->handle($update);
+                return app(LanguageHandler::class)->handleUpdate($update);
             case 'waiting_for_name':
-                return app(NameStepHandler::class)->handle($update);
-            case 'waiting_for_phone':
-                return app(PhoneStepHandler::class)->handle($update);
+                return app(NameStepHandler::class)->handleUpdate($update);
+
             case 'waiting_for_phone2':
-                return app(Phone2StepHandler::class)->handle($update);
+                return app(Phone2StepHandler::class)->handleUpdate($update);
             case 'waiting_for_gender':
-                return app(GenderStepHandler::class)->handle($chatId, $text);
+                return app(GenderStepHandler::class)->handleUpdate($chatId, $text);
             case 'waiting_for_region':
-                return app(RegionStepHandler::class)->handle($update);
+                return app(RegionStepHandler::class)->handleUpdate($update);
             case 'waiting_for_district':
-                return app(DistrictStepHandler::class)->handle($update);
+                return app(DistrictStepHandler::class)->handleUpdate($update);
             case 'waiting_for_birthdate':
-                return app(BirthdateStepHandler::class)->handle($update);
-            case 'waiting_for_offer':
-                return app(OfertaStepHandler::class)->handle($update);
-            case 'completed':
-                return app(abstract :RegisterService::class)->finalizeUserRegistration($update);
+                return app(BirthdateStepHandler::class)->handleUpdate($update);
+
+            case 'complete':
+                return app(UserUpdateService::class)->finalizeUserRegistration($update);
             default:
-                return app(PhoneStepHandler::class)->handle($update);
+                return app(LanguageHandler::class)->ask($chatId);
         }
     }
 }

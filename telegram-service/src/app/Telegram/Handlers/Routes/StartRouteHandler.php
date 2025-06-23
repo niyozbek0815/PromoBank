@@ -1,7 +1,6 @@
 <?php
 namespace App\Telegram\Handlers\Routes;
 
-use App\Telegram\Handlers\Register\PhoneStepHandler;
 use App\Telegram\Handlers\Start\StartHandler;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -16,15 +15,6 @@ class StartRouteHandler
         $messageText = $update->getMessage()?->getText() ?? $update->getCallbackQuery()?->getData();
         $chatId      = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
 
-        if ($callback = $update->getCallbackQuery()) {
-            $messageText = $callback->getData();
-            Log::info("callback_data RouteHandler:" . $messageText);
-
-            if (str_starts_with($messageText, 'lang:')) {
-                Log::info("Start handlerga yo'naltirildi:" . $messageText);
-                return app(StartHandler::class)->handle($update);
-            }
-        }
         // $messageText = '/start';
 
         Log::info("StartRouteHandler data:" . $messageText);
@@ -32,12 +22,13 @@ class StartRouteHandler
             Log::info("start:");
             Cache::store('redis')->forget('tg_user_data:' . $chatId);
             Cache::store('redis')->forget('tg_user:' . $chatId);
+            Cache::store('redis')->forget('tg_user_update:' . $chatId);
 
-            return app(StartHandler::class)->ask($chatId);
+            return app(StartHandler::class)->startAsk($chatId);
         }
-        if ($update->getMessage()->getContact()) {
-            return app(PhoneStepHandler::class)->handle($update);
-        }
+        // if ($update->getMessage()->getContact()) {
+        //     return app(PhoneStepHandler::class)->handle($update);
+        // }
 
         return response()->noContent();
     }

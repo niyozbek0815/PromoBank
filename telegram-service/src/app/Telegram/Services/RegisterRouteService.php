@@ -4,6 +4,7 @@ namespace App\Telegram\Services;
 use App\Telegram\Handlers\Register\BirthdateStepHandler;
 use App\Telegram\Handlers\Register\DistrictStepHandler;
 use App\Telegram\Handlers\Register\GenderStepHandler;
+use App\Telegram\Handlers\Register\LanguageHandler;
 use App\Telegram\Handlers\Register\NameStepHandler;
 use App\Telegram\Handlers\Register\OfertaStepHandler;
 use App\Telegram\Handlers\Register\Phone2StepHandler;
@@ -17,8 +18,8 @@ class RegisterRouteService
     public function askNextStep($chatId)
     {
         $tg_user_data = json_decode(Cache::store('redis')->get("tg_user_data:$chatId"), true) ?? [];
-
         return match ($tg_user_data['state'] ?? null) {
+            'waiting_for_language' => app(LanguageHandler::class)->ask($chatId),
             'waiting_for_name' => app(NameStepHandler::class)->ask($chatId),
             'waiting_for_phone' => app(PhoneStepHandler::class)->ask($chatId),
             'waiting_for_phone2' => app(Phone2StepHandler::class)->ask($chatId),

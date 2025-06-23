@@ -29,7 +29,13 @@ class UserSessionService
 
     public function get(string $chatId)
     {
-        return Cache::store('redis')->get($this->prefix . $chatId);
+        $data = Cache::store('redis')->get($this->prefix . $chatId);
+        // ✅ Agar $data string bo‘lsa, decode qilamiz, aks holda o‘zini qaytaramiz
+        if (is_string($data)) {
+            return json_decode($data, true) ?? [];
+        }
+
+        return is_array($data) ? $data : [];
     }
 
     public function clear($chatId)
@@ -45,7 +51,7 @@ class UserSessionService
         $response = $this->forwarder->forward(
             'POST',
             $baseUrl,
-            '/bot/user_check',
+            '/user_check',
             ['phone' => $phone, 'chat_id' => $chatId, 'lang' => $lang]
         );
 
@@ -59,17 +65,16 @@ class UserSessionService
         $data  = $response->json();
         $user  = $data['user'] ?? null;
         $exist = $data['exist'] ?? false;
-        if ($exist && $user && isset($user['id'])) {
+        if ($exist && $user) {
             // ✅ Mavjud user – Redisga yozamiz
             Log::info("Qaytgan user malumotlari: ", ['user' => $user]);
-            $userData          = collect($user)->except(['created_at', 'updated_at'])->toArray();
-            $userData['state'] = 'completed';
-            $this->put($chatId, $userData);
+            $user['state'] = 'completed';
+            $this->put($chatId, $user);
             return true;
         }
         $initialData = [
             'phone' => $phone,
-            'state' => 'waiting_for_phone2', // birinchi step flag
+            'state' => 'waiting_for_name', // birinchi step flag
         ];
 
         // Log::info(message: "intial:", $initialData);
