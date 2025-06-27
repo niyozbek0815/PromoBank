@@ -12,6 +12,7 @@
         "mobiledetect/mobiledetectlib": "^4.8",
         "predis/predis": "^2.3",
         "spatie/laravel-activitylog": "^4.10",
+        "spatie/laravel-permission": "^6.20",
         "spatie/laravel-translatable": "^6.11",
         "tymon/jwt-auth": "^2.2",
         "vladimir-yuldashev/laravel-queue-rabbitmq": "^14.2"

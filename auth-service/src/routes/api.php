@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Bot\AuthController as BotAuthController;
+use App\Http\Controllers\FrontAuthController;
 use App\Http\Controllers\Mobil\AddresController;
 use App\Http\Controllers\Mobil\AuthController;
 use Illuminate\Support\Facades\Route;
@@ -29,4 +30,9 @@ Route::controller(BotAuthController::class)->group(function () {
 Route::controller(AddresController::class)->group(function () {
     Route::get('/regions', 'region');
     Route::get('/regions/{region_id}/districts', 'district');
+});
+Route::prefix('front')->group(function () {
+    Route::get('/me', [FrontAuthController::class, 'me']);
+    Route::post('/login', [FrontAuthController::class, 'login']);
+    Route::get('/verify', [FrontAuthController::class, 'verify']);
 });

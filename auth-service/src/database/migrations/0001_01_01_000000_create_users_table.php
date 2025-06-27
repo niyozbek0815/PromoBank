@@ -16,8 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('region_id')->nullable();
             $table->unsignedBigInteger('district_id')->nullable();
             $table->string('name');
-            // $table->string('email')->unique();
-            // $table->string('password');
+            $table->string('email')->unique()->nullable();
+            $table->string('password')->nullable();
             $table->string('phone', 50)->unique();
             $table->string('phone2', 50)->nullable();
             $table->string('chat_id', 50)->unique();
