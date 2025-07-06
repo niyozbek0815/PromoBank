@@ -1,7 +1,7 @@
 # Docker settings
 DOCKER_NETWORK=promobank
-SERVICES=  api-getaway  auth-service  telegram-service
-#  payment-service  profile-service web-service  auth-service  media-service   game-service promo-service notification-service
+SERVICES=  api-getaway  auth-service media-service promo-service
+#  payment-service  profile-service web-service  auth-service     game-service  notification-service telegram-service
 INFRA_COMPOSE=docker-compose/infrastructure.yml 
 
 # Helper

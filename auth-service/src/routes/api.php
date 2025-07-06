@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Bot\AuthController as BotAuthController;
 use App\Http\Controllers\FrontAuthController;
 use App\Http\Controllers\Mobil\AddresController;
@@ -35,4 +36,11 @@ Route::prefix('front')->group(function () {
     Route::get('/me', [FrontAuthController::class, 'me']);
     Route::post('/login', [FrontAuthController::class, 'login']);
     Route::get('/verify', [FrontAuthController::class, 'verify']);
+    Route::controller(UserController::class)->prefix('/users')->group(function () {
+        Route::get('/data', [UserController::class, 'data'])->name('admin.users.data');
+        Route::post('/{id}/edit', [UserController::class, 'edit']);
+        Route::post('/{id}/delete', [UserController::class, 'delete']);
+        Route::post('/{id}/status', [UserController::class, 'changeStatus']);
+        Route::put('/{id}/update', [UserController::class, 'update']);
+    });
 });

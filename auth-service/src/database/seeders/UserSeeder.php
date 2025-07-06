@@ -18,26 +18,28 @@ class UserSeeder extends Seeder
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        $miscPermission = Permission::create(['name' => 'N/A', 'guard_name' => 'web']);
+        // User roli
 
-        //UserModel1
-        $adminPermission1 = Permission::create(['name' => 'create:admin', 'guard_name' => 'web']);
-        $adminPermission2 = Permission::create(['name' => 'read:admin', 'guard_name' => 'web']);
-        $adminPermission3 = Permission::create(['name' => 'update:admin', 'guard_name' => 'web']);
-        $adminPermission4 = Permission::create(['name' => 'delete:admin', 'guard_name' => 'web']);
+        // User foydalanuvchisi
+
+        $userPermission   = Permission::firstOrCreate(['name' => 'read:own_data', 'guard_name' => 'web']);
+        $adminPermission1 = Permission::firstOrCreate(['name' => 'create:admin', 'guard_name' => 'web']);
+        $adminPermission2 = Permission::firstOrCreate(['name' => 'read:admin', 'guard_name' => 'web']);
+        $adminPermission3 = Permission::firstOrCreate(['name' => 'update:admin', 'guard_name' => 'web']);
+        $adminPermission4 = Permission::firstOrCreate(['name' => 'delete:admin', 'guard_name' => 'web']);
 
         //RoleModel
-        $rolePermission1 = Permission::create(['name' => 'create:role', 'guard_name' => 'web']);
-        $rolePermission2 = Permission::create(['name' => 'read:role', 'guard_name' => 'web']);
-        $rolePermission3 = Permission::create(['name' => 'update:role', 'guard_name' => 'web']);
-        $rolePermission4 = Permission::create(['name' => 'delete:role', 'guard_name' => 'web']);
+        $rolePermission1 = Permission::firstOrCreate(['name' => 'create:role', 'guard_name' => 'web']);
+        $rolePermission2 = Permission::firstOrCreate(['name' => 'read:role', 'guard_name' => 'web']);
+        $rolePermission3 = Permission::firstOrCreate(['name' => 'update:role', 'guard_name' => 'web']);
+        $rolePermission4 = Permission::firstOrCreate(['name' => 'delete:role', 'guard_name' => 'web']);
         //PermissionModel
-        $Permission1 = Permission::create(['name' => 'create:permission', 'guard_name' => 'web']);
-        $Permission2 = Permission::create(['name' => 'read:permission', 'guard_name' => 'web']);
-        $Permission3 = Permission::create(['name' => 'update:permission', 'guard_name' => 'web']);
-        $Permission4 = Permission::create(['name' => 'delete:permission', 'guard_name' => 'web']);
+        $Permission1 = Permission::firstOrCreate(['name' => 'create:permission', 'guard_name' => 'web']);
+        $Permission2 = Permission::firstOrCreate(['name' => 'read:permission', 'guard_name' => 'web']);
+        $Permission3 = Permission::firstOrCreate(['name' => 'update:permission', 'guard_name' => 'web']);
+        $Permission4 = Permission::firstOrCreate(['name' => 'delete:permission', 'guard_name' => 'web']);
 
-        $clientPermission = Permission::create(['name' => 'read:own_data', 'guard_name' => 'web']);
+        $clientPermission = Permission::firstOrCreate(['name' => 'read:own_data', 'guard_name' => 'web']);
 
         //Admins
         //Create Roles
@@ -93,6 +95,9 @@ class UserSeeder extends Seeder
         $clientRole = Role::create(['name' => 'client', 'guard_name' => 'web'])->syncPermissions([
             $clientPermission,
         ]);
+        $userRole = Role::create(['name' => 'user', 'guard_name' => 'web'])->syncPermissions([
+            $userPermission,
+        ]);
 
         User::create([
             'name'     => 'super admin',
@@ -143,5 +148,18 @@ class UserSeeder extends Seeder
             'is_guest' => false,
             'status'   => true,
         ])->assignRole($clientRole);
+        foreach (range(1, 30) as $i) {
+            User::create([
+                'name'     => 'oddiy foydalanuvchi',
+                'email'    => "user{$i}@admin.com",
+                'password' => Hash::make('password'),
+                'phone'    => "90000001{$i}",
+                'chat_id'  => "tg_90000001{$i}",
+                'is_guest' => false,
+                'status'   => true,
+            ])->assignRole($userRole);
+        }
+
     }
+
 }

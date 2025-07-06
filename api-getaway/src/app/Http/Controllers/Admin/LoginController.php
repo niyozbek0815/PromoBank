@@ -50,9 +50,13 @@ class LoginController extends Controller
             Session::put('jwt_token', $responseData['token']);
 
 // Optional: Save user role to session for permission checks
+            if (isset($responseData['user'])) {
+                Session::put('user', $responseData['user']);
+            }
             if (isset($responseData['roles'])) {
                 Session::put('user_roles', $responseData['roles']);
             }
+
             Session::put('token_last_verified_at', now());
 
             // $data = session()->all();

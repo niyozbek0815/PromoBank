@@ -14,24 +14,24 @@ return [
     |
     */
 
-    'postmark' => [
+    'postmark'   => [
         'token' => env('POSTMARK_TOKEN'),
     ],
 
-    'ses' => [
-        'key' => env('AWS_ACCESS_KEY_ID'),
+    'ses'        => [
+        'key'    => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'resend' => [
+    'resend'     => [
         'key' => env('RESEND_KEY'),
     ],
 
-    'slack' => [
+    'slack'      => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
-            'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
+            'channel'              => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
     'playmobile' => [
@@ -39,14 +39,15 @@ return [
         'password' => env('PLAYMOBILE_PASSWORD'),
         'endpoint' => env('PLAYMOBILE_ENDPOINT'),
     ],
-    'urls' => [
-        'api_getaway' => env('API_GETAWAY_URL'),
-        'media_service' => env('MEDIA_SERVICE_URL'),
-        'auth_service' => env('AUTH_SERVICE_URL'),
-        'promo_service' => env('PROMO_SERVICE_URL'),
-        'game_service' => env('GAME_SERVICE_URL'),
-        'telegram_service' => env('TELEGRAM_SERVICE_URL'),
+    'urls'       => [
+        'api_getaway'          => env('API_GETAWAY_URL'),
+        'media_service'        => env('MEDIA_SERVICE_URL'),
+        'auth_service'         => env('AUTH_SERVICE_URL'),
+        'promo_service'        => env('PROMO_SERVICE_URL'),
+        'game_service'         => env('GAME_SERVICE_URL'),
+        'telegram_service'     => env('TELEGRAM_SERVICE_URL'),
         'notification_service' => env('NOTIFICATION_SERVICE_URL'),
+        'global_url'           => env('GLOBAL_URL'),
     ],
 
 ];

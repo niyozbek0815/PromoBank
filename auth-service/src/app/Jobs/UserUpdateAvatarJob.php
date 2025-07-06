@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Jobs;
 
 use App\Models\Media;
@@ -18,10 +17,10 @@ class UserUpdateAvatarJob implements ShouldQueue
      * Create a new job instance.
      */
     protected $id, $base64image, $user;
-    public function __construct($id, User  $user, $base64Image)
+    public function __construct($id, User $user, $base64Image)
     {
-        $this->id = $id;
-        $this->user = $user;
+        $this->id          = $id;
+        $this->user        = $user;
         $this->base64image = $base64Image;
     }
 
@@ -30,7 +29,7 @@ class UserUpdateAvatarJob implements ShouldQueue
      */
     public function handle()
     {
-        if (!preg_match("/^data:image\/(\w+);base64,/", $this->base64image, $type)) {
+        if (! preg_match("/^data:image\/(\w+);base64,/", $this->base64image, $type)) {
             throw new \InvalidArgumentException('Rasm formati noto‘g‘ri');
         }
 
@@ -38,16 +37,16 @@ class UserUpdateAvatarJob implements ShouldQueue
 
         // Rasm turini aniqlash
         $imageType = strtolower($type[1]);
-        $fileName = Str::uuid() . '.' . $imageType;
+        $fileName  = Str::uuid() . '.' . $imageType;
         $base64Str = preg_replace('/^data:image\/\w+;base64,/', '', $this->base64image);
         $base64Str = str_replace(' ', '+', $base64Str);
 
         // Vaqtinchalik faylni saqlash
-        $tempDir = storage_path('app/temp');
+        $tempDir      = storage_path('app/temp');
         $tempFilePath = "{$tempDir}/{$fileName}";
 
         try {
-            if (!file_exists($tempDir)) {
+            if (! file_exists($tempDir)) {
                 mkdir($tempDir, 0755, true);
             }
 
@@ -59,7 +58,7 @@ class UserUpdateAvatarJob implements ShouldQueue
 
             file_put_contents($tempFilePath, $decoded);
 
-            if (!file_exists($tempFilePath) || !is_readable($tempFilePath)) {
+            if (! file_exists($tempFilePath) || ! is_readable($tempFilePath)) {
                 throw new \Exception('Vaqtinchalik fayl mavjud emas yoki o‘qib bo‘lmaydi: ' . $tempFilePath);
             }
 
@@ -69,20 +68,19 @@ class UserUpdateAvatarJob implements ShouldQueue
                 throw new \Exception('Faylni o‘qishda xatolik yuz berdi: ' . $tempFilePath);
             }
 
-
             // So‘rov uchun multipart tuzilmasi
             $multipart = [
                 [
-                    'name' => 'context',
-                    'contents' => 'user_avatar'
-                ]
+                    'name'     => 'context',
+                    'contents' => 'user_avatar',
+                ],
             ];
 
             // `image_urls[]` ni kiritish
             foreach ($image_urls as $url) {
                 $multipart[] = [
-                    'name' => 'image_urls[]',
-                    'contents' => $url
+                    'name'     => 'image_urls[]',
+                    'contents' => $url,
                 ];
             }
 
@@ -92,7 +90,7 @@ class UserUpdateAvatarJob implements ShouldQueue
                 ->post(config('services.urls.media_service') . '/api/media/upload', $multipart);
 
             // Media service tomonidan yuborilgan xatolikni tekshirish
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new \Exception('Media-service xato: ' . $response->body());
             }
             foreach ($this->user->media as $media) {
@@ -102,15 +100,15 @@ class UserUpdateAvatarJob implements ShouldQueue
             $mediaResponse = $response->json();
 
             Media::create([
-                'model_type' => \App\Models\User::class, // model class nomi (to'liq namespace bilan)
-                'model_id' => $this->id, // bog'lanadigan modelning IDsi
-                'uuid' => $mediaResponse['uuid'],
+                'model_type'      => User::class, // model class nomi (to'liq namespace bilan)
+                'model_id'        => $this->id,   // bog'lanadigan modelning IDsi
+                'uuid'            => $mediaResponse['uuid'],
                 'collection_name' => $mediaResponse['collection_name'],
-                'file_name' => $mediaResponse['file_name'],
-                'name' => $mediaResponse['name'],
-                'mime_type' => $mediaResponse['mime_type'],
-                'path' => $mediaResponse['path'],
-                'url' => $mediaResponse['url'],
+                'file_name'       => $mediaResponse['file_name'],
+                'name'            => $mediaResponse['name'],
+                'mime_type'       => $mediaResponse['mime_type'],
+                'path'            => $mediaResponse['path'],
+                'url'             => $mediaResponse['url'],
             ]);
         } catch (\Exception $e) {
             throw $e;

@@ -34,41 +34,42 @@
                     <i class="ph-dots-three sidebar-resize-show"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="index.html" class="nav-link active">
+                    <a href="{{ route('admin.dashboard') }}"
+                        class="nav-link{{ request()->routeIs('admin.dashboard') ? ' active' : '' }}">
                         <i class="ph-house"></i>
                         <span>
                             Dashboard
-                            <span class="d-block fw-normal opacity-50">No pending orders</span>
+                            {{-- <span class="d-block fw-normal opacity-50">No pending orders</span> --}}
                         </span>
                     </a>
+                </li>
+                <li
+                    class="nav-item nav-item-submenu {{ request()->routeIs('admin.users.index') ? ' nav-item-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('admin.users.index') ? ' active' : '' }}">
+                        <i class="ph-users"></i>
+                        <span>User pages</span>
+                    </a>
+                    <ul class="nav-group-sub collapse {{ request()->routeIs('admin.users.index') ? ' show' : '' }}">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.users.index') }}"
+                                class="nav-link{{ request()->routeIs('admin.users.index') ? ' active' : '' }}">
+                                User list
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item nav-item-submenu">
                     <a href="#" class="nav-link">
                         <i class="ph-layout"></i>
-                        <span>Layouts</span>
+                        <span>Companies</span>
                     </a>
                     <ul class="nav-group-sub collapse">
-                        <li class="nav-item"><a href="index.html" class="nav-link active">Default layout</a>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.company.index') }}"
+                                class="nav-link{{ request()->routeIs('admin.company.index') ? ' active' : '' }}">
+                                Kompaniyalar
+                            </a>
                         </li>
-                        <li class="nav-item"><a
-                                href="https://themes.kopyov.com/limitless/demo/template/html/layout_2/full/index.html"
-                                class="nav-link">Layout 2</a></li>
-                        <li class="nav-item"><a
-                                href="https://themes.kopyov.com/limitless/demo/template/html/layout_3/full/index.html"
-                                class="nav-link">Layout 3</a></li>
-                        <li class="nav-item"><a
-                                href="https://themes.kopyov.com/limitless/demo/template/html/layout_4/full/index.html"
-                                class="nav-link">Layout 4</a></li>
-                        <li class="nav-item"><a
-                                href="https://themes.kopyov.com/limitless/demo/template/html/layout_5/full/index.html"
-                                class="nav-link">Layout 5</a></li>
-                        <li class="nav-item"><a
-                                href="https://themes.kopyov.com/limitless/demo/template/html/layout_6/full/index.html"
-                                class="nav-link">Layout 6</a></li>
-                        <li class="nav-item"><a
-                                href="https://themes.kopyov.com/limitless/demo/template/html/layout_7/full/index.html"
-                                class="nav-link disabled">Layout 7 <span class="badge align-self-center ms-auto">Coming
-                                    soon</span></a></li>
                     </ul>
                 </li>
                 <li class="nav-item nav-item-submenu">
@@ -1021,23 +1022,7 @@
                         </li>
                     </ul>
                 </li>
-                <li class="nav-item nav-item-submenu">
-                    <a href="#" class="nav-link">
-                        <i class="ph-user-focus"></i>
-                        <span>User pages</span>
-                    </a>
-                    <ul class="nav-group-sub collapse">
-                        <li class="nav-item"><a href="user_pages_list.html" class="nav-link">User list</a></li>
-                        <li class="nav-item"><a href="user_pages_cards.html" class="nav-link">User cards</a>
-                        </li>
-                        <li class="nav-item"><a href="user_pages_profile.html" class="nav-link">Simple
-                                profile</a></li>
-                        <li class="nav-item"><a href="user_pages_profile_tabbed.html" class="nav-link">Tabbed
-                                profile</a></li>
-                        <li class="nav-item"><a href="user_pages_profile_cover.html" class="nav-link">Profile
-                                with cover</a></li>
-                    </ul>
-                </li>
+
                 <li class="nav-item nav-item-submenu">
                     <a href="#" class="nav-link">
                         <i class="ph-circles-four"></i>

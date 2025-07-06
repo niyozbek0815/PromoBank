@@ -1492,7 +1492,8 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     <a href="#" class="d-inline-block me-3">
-                                        <img src="assets/images/svg/1.svg" alt="" height="36">
+                                        <img src="{{ asset('adminpanel/assets/images/svg/1.svg') }}" alt=""
+                                            height="36">
                                     </a>
                                     <div>
                                         <a href="#" class="text-body fw-semibold letter-icon-title">Sigma

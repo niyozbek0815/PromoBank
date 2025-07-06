@@ -62,7 +62,4 @@ RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 # 6. Ishlash katalogi
 WORKDIR /var/www/html
 
-# 7. PHP-FPM servisini ishga tushurish
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-ENTRYPOINT ["entrypoint.sh"]
+CMD ["php-fpm"]

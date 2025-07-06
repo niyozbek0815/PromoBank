@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -15,10 +14,9 @@ class Media extends Model
         return $this->morphTo();
     }
 
-
     public function getFullUrlAttribute()
     {
-        $baseUrl = config('services.urls.api_getaway');
-        return $baseUrl  . $this->url;
+        $baseUrl = config('services.urls.global_url');
+        return $baseUrl . $this->url;
     }
 }

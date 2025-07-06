@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use App\Traits\HasMedia;
@@ -26,7 +25,7 @@ class Company extends Model
         'created_by_user_id',
     ];
     public $translatable = ['name', 'title', 'description'];
-    protected $casts = [
+    protected $casts     = [
         'settings' => 'array',
     ];
 

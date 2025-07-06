@@ -30,6 +30,7 @@ class User extends Authenticatable implements JWTSubject
         "is_guest",
         "lang",
     ];
+    protected $appends = ['avatar'];
     /**
      * Hidden fields during serialization (like API responses)
      *
@@ -52,6 +53,10 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTIdentifier()
     {
         return $this->getKey(); // returns the user id
+    }
+    public function getAvatarAttribute(): ?string
+    {
+        return $this->getMedia('user_profile'); // yoki 'avatar'
     }
 
     public function getJWTCustomClaims(): array

@@ -42,7 +42,8 @@
                              <button type="button"
                                  class="dropdown-item text-wrap h-100 align-items-start border-end-sm border-bottom p-3">
                                  <div>
-                                     <img src="assets/images/svg/1.svg" class="h-40px mb-2" alt="">
+                                     <img src="{{ asset('adminpanel/assets/images/svg/1.svg') }}" class="h-40px mb-2"
+                                         alt="">
                                      <div class="fw-semibold my-1">Customer data platform</div>
                                      <div class="text-muted">Unify customer data from multiple sources</div>
                                  </div>
@@ -53,7 +54,8 @@
                              <button type="button"
                                  class="dropdown-item text-wrap h-100 align-items-start border-bottom p-3">
                                  <div>
-                                     <img src="assets/images/svg/2.svg" class="h-40px mb-2" alt="">
+                                     <img src="{{ asset('adminpanel/assets/images/svg/2.svg') }}"" class="h-40px mb-2"
+                                         alt="">
                                      <div class="fw-semibold my-1">Data catalog</div>
                                      <div class="text-muted">Discover, inventory, and organize data assets</div>
                                  </div>
@@ -412,48 +414,48 @@
                          class="badge bg-yellow text-black position-absolute top-0 end-0 translate-middle-top zindex-1 rounded-pill mt-1 me-1">2</span>
                  </a>
              </li>
-
+             @php
+                 $user = Session::get('user');
+                 // Eng optimal usulda session ma'lumotlarini ko'rsatish (faqat dev uchun)
+             @endphp
              <li class="nav-item nav-item-dropdown-lg dropdown ms-lg-2">
                  <a href="#" class="navbar-nav-link align-items-center rounded-pill p-1"
                      data-bs-toggle="dropdown">
-                     <div class="status-indicator-container">
-                         <img src="https://themes.kopyov.com/limitless/demo/template/assets/images/demo/users/face11.jpg"
+                     @if (!empty($user['image']))
+                         <img src="{{ asset('uploads/users/' . $user['image']) }}" class="w-32px h-32px rounded-pill"
+                             alt="">
+                     @else
+                         <img src="{{ asset('adminpanel/assets/images/user.jpg') }}"
                              class="w-32px h-32px rounded-pill" alt="">
-                         <span class="status-indicator bg-success"></span>
-                     </div>
-                     <span class="d-none d-lg-inline-block mx-lg-2">Victoria</span>
-                 </a>
-
-                 <div class="dropdown-menu dropdown-menu-end">
-                     <a href="#" class="dropdown-item">
-                         <i class="ph-user-circle me-2"></i>
-                         My profile
-                     </a>
-                     <a href="#" class="dropdown-item">
-                         <i class="ph-currency-circle-dollar me-2"></i>
-                         My subscription
-                     </a>
-                     <a href="#" class="dropdown-item">
-                         <i class="ph-shopping-cart me-2"></i>
-                         My orders
-                     </a>
-                     <a href="#" class="dropdown-item">
-                         <i class="ph-envelope-open me-2"></i>
-                         My inbox
-                         <span class="badge bg-primary rounded-pill ms-auto">26</span>
-                     </a>
-                     <div class="dropdown-divider"></div>
-                     <a href="#" class="dropdown-item">
-                         <i class="ph-gear me-2"></i>
-                         Account settings
-                     </a>
-                     <a href="#" class="dropdown-item">
-                         <i class="ph-sign-out me-2"></i>
-                         Logout
-                     </a>
-                 </div>
-             </li>
-         </ul>
+                     @endif
+                     <span class="status-indicator bg-success"></span>
      </div>
+     <span class="d-none d-lg-inline-block mx-lg-2">{{ $user['name'] }}</span>
+     </a>
+
+     <div class="dropdown-menu dropdown-menu-end">
+         <a href="{{ url('/admin/profile/update') }}" class="dropdown-item">
+             <i class="ph-user-circle me-2"></i>
+             My profile
+         </a>
+         {{--
+         <a href="#" class="dropdown-item">
+             <i class="ph-envelope-open me-2"></i>
+             My inbox
+             <span class="badge bg-primary rounded-pill ms-auto">26</span>
+         </a> --}}
+         {{-- <a href="#" class="dropdown-item">
+             <i class="ph-gear me-2"></i>
+             Account settings
+         </a> --}}
+         <div class="dropdown-divider"></div>
+         <a href="#" class="dropdown-item">
+             <i class="ph-sign-out me-2"></i>
+             Logout
+         </a>
+     </div>
+     </li>
+     </ul>
+ </div>
  </div>
  <!-- /main navbar -->

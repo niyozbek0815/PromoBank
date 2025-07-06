@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('lang', 2)->nullable(); // uz, ru, kr
             $table->boolean('is_guest')->default(false);
             $table->boolean('status')->default(false);
+            $table->softDeletes();
             $table->timestamps();
         });
 
