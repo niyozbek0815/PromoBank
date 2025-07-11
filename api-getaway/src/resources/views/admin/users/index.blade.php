@@ -4,13 +4,11 @@
 
 @push('scripts')
     <!-- Toastr CSS -->
-    <script src="https://themes.kopyov.com/limitless/demo/template/assets/js/vendor/tables/datatables/datatables.min.js">
-    </script>
-    <script
-        src="https://themes.kopyov.com/limitless/demo/template/assets/js/vendor/tables/datatables/extensions/buttons.min.js">
-    </script>
-    <script src="https://themes.kopyov.com/limitless/demo/template/assets/demo/pages/datatables_extension_buttons_init.js">
-    </script>
+    <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
+
+    <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
+    <script src="{{ asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
+
     <script>
         $.ajaxSetup({
             headers: {
@@ -132,25 +130,7 @@
                 }
             });
         });
-        $(document).on('submit', '.delete-form', function(e) {
-            e.preventDefault();
-            let form = this;
 
-            Swal.fire({
-                title: 'Ishonchingiz komilmi?',
-                text: "Bu amal foydalanuvchini o‘chiradi!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ha, o‘chir!',
-                cancelButtonText: 'Bekor qilish'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
-            });
-        });
         $(document).on('click', '.delete-user', function(e) {
             e.preventDefault();
             const userId = $(this).data('id');

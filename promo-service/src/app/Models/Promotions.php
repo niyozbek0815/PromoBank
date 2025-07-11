@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use App\Traits\HasMedia;
@@ -27,14 +26,14 @@ class Promotions extends Model
         'status',
     ];
     public $translatable = ['name', 'title', 'description'];
-    protected $casts = [
-        'is_active' => 'boolean',
-        'is_public' => 'boolean',
-        'code_settings' => 'array',
-        'name' => "array",
+    protected $casts     = [
+        'is_active'        => 'boolean',
+        'is_public'        => 'boolean',
+        'code_settings'    => 'array',
+        'name'             => "array",
         'extra_conditions' => 'array',
-        'start_date' => 'datetime',
-        'end_date' => 'datetime',
+        'start_date'       => 'datetime',
+        'end_date'         => 'datetime',
     ];
 
     public function company()
@@ -66,7 +65,6 @@ class Promotions extends Model
     {
         return $this->hasMany(PrizePromo::class);
     }
-
 
     public function participationTypes()
     {

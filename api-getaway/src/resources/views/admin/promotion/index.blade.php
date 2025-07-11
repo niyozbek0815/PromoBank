@@ -4,13 +4,10 @@
 
 @push('scripts')
     <!-- Toastr CSS -->
-    <script src="https://themes.kopyov.com/limitless/demo/template/assets/js/vendor/tables/datatables/datatables.min.js">
-    </script>
-    <script
-        src="https://themes.kopyov.com/limitless/demo/template/assets/js/vendor/tables/datatables/extensions/buttons.min.js">
-    </script>
-    <script src="https://themes.kopyov.com/limitless/demo/template/assets/demo/pages/datatables_extension_buttons_init.js">
-    </script>
+    <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
+    <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
+    <script src="{{ asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
+
     <script>
         $.ajaxSetup({
             headers: {
@@ -186,6 +183,7 @@
     </script>
 @endpush
 @section('content')
+
     <div class="page-header-content d-lg-flex">
         <div class="d-flex">
             <h4 class="page-title mb-0">Promotions</h4>

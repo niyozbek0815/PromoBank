@@ -9,6 +9,9 @@
 </head>
 
 <body>
+    @php
+        $user = Session::get('user');
+    @endphp
     @include('admin.layouts.navbar')
 
     <div class="page-content">

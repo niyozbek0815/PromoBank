@@ -10,7 +10,23 @@ class PromotionController extends Controller
     protected $url;
     public function __construct()
     {
-        $this->url = config('services.urls.auth_service');
+        $this->url = config('services.urls.promo_service');
+    }
+    public function companydata(Request $request, $id)
+    {
+        $locale = app()->getLocale();
+        $request->merge(['locale' => $locale]);
+        $response = $this->forwardRequest("GET", $this->url, 'front/promotion/' . $id . '/data', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            Log::info("✅ [CompanyData] Javob qaytdi", [
+                'status'  => $response->status(),
+                'body'    => $response->json(), // yoki ->body() agar raw text kerak bo‘lsa
+                'headers' => $response->headers(),
+            ]);
+            return response()->json($response->json(), $response->status());
+        }
+        Log::error("❌ [CompanyData] Auth service javob bermadi");
+        return response()->json(['message' => 'Auth service error'], 500);
     }
     public function index()
     {

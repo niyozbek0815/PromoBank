@@ -25,18 +25,13 @@ class Company extends Model
         'created_by_user_id',
     ];
     public $translatable = ['name', 'title', 'description'];
+    protected $appends   = ['logo'];
     protected $casts     = [
         'settings' => 'array',
     ];
-
-    public function user()
+    public function getLogoAttribute()
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id');
+        return $this->getMedia('logo'); // yoki 'avatar'
     }
 
     public function socialMedia()

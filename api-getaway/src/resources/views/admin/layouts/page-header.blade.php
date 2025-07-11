@@ -96,6 +96,7 @@
                     <a href="#" class="btn btn-outline-primary btn-icon w-32px h-32px rounded-pill ms-3">
                         <i class="ph-plus"></i>
                     </a>
+                    @yield('header-actions')
                 </div>
             </div>
         </div>

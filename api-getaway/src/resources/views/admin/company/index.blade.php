@@ -3,12 +3,9 @@
 @section('title', 'Companies')
 
 @push('scripts')
-    <script src="https://themes.kopyov.com/limitless/demo/template/assets/js/vendor/tables/datatables/datatables.min.js">
-    </script>
-    <script
-        src="https://themes.kopyov.com/limitless/demo/template/assets/js/vendor/tables/datatables/extensions/buttons.min.js">
-    </script>
-    <script src="https://themes.kopyov.com/limitless/demo/template/assets/demo/pages/datatables_extension_buttons_init.js">
+    <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
+    <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
+    <script src="{{ asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
     </script>
     <script>
         $.ajaxSetup({
@@ -69,27 +66,40 @@
                 ],
             });
         });
-
-        // Delete and status change handlers (o'zgartirmasdan qoldirdim)
-        $(document).on('submit', '.delete-form', function(e) {
+        $(document).on('click', '.change-status', function(e) {
             e.preventDefault();
-            let form = this;
-            Swal.fire({
-                title: 'Ishonchingiz komilmi?',
-                text: "Bu amal kompaniyani o‘chiradi!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ha, o‘chir!',
-                cancelButtonText: 'Bekor qilish'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
+
+            let $this = $(this);
+            let userId = $this.data('id');
+            let status = $this.data('status');
+
+            $.ajax({
+                url: '/admin/company/' + userId + '/status',
+                method: 'POST',
+                data: {
+                    status: status
+                },
+                success: function(res) {
+                    toastr.success(res.message || 'Status yangilandi!');
+                    $('#companies-table').DataTable().ajax.reload(null, false);
+
+                    // Toggle status and text/icon
+                    let newStatus = status == 1 ? 0 : 1;
+                    $this.data('status', newStatus);
+                    if (status == 1) {
+                        $this.find('i').removeClass('ph-toggle-left').addClass('ph-toggle-right');
+                        $this.text('Nofaol qilish');
+                    } else {
+                        $this.find('i').removeClass('ph-toggle-right').addClass('ph-toggle-left');
+                        $this.text('Faollashtirish');
+                    }
+                },
+                error: function() {
+                    toastr.error('Statusni o‘zgartirishda xatolik yuz berdi!');
                 }
             });
         });
-        $(document).on('click', '.delete-company', function(e) {
+        $(document).on('click', '.delete-user', function(e) {
             e.preventDefault();
             const companyId = $(this).data('id');
             Swal.fire({
@@ -122,12 +132,14 @@
         });
     </script>
 @endpush
-
+@section('header-actions')
+    <a href="{{ route('admin.company.create') }}" class="btn btn-primary ms-3">
+        <i class="ph-plus-circle me-1"></i> Yangi Kompaniya
+    </a>
+@endsection
 @section('content')
-    <div class="page-header-content d-lg-flex">
-        <div class="d-flex">
-            <h4 class="page-title mb-0">Companies {{ app()->getLocale() }}</h4>
-        </div>
+    <div class="page-header-content d-flex justify-content-between align-items-center">
+        <h4 class="page-title mb-0">Companies</h4>
     </div>
     @php($locale = app()->getLocale())
     <div class="card">

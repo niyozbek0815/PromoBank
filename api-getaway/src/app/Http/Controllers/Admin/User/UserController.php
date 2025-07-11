@@ -10,7 +10,7 @@ class UserController extends Controller
     protected $url;
     public function __construct()
     {
-        $this->url = config('services.urls.auth_service');
+        $this->url = config(key: 'services.urls.auth_service');
     }
     public function index()
     {

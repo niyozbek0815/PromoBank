@@ -13,10 +13,7 @@ use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
-    public function __construct()
-    {
 
-    }
     public function data(Request $request)
     {
         $query = User::with(['roles', 'region:id,name', 'district:id,name'])->select('users.*');
@@ -118,5 +115,11 @@ class UserController extends Controller
             'message' => 'Status yangilandi',
             'status'  => $user->status,
         ]);
+    }
+    public function getClients()
+    {
+        $clients = User::role('client')->with(['roles', 'region:id,name', 'district:id,name'])->get();
+        Log::info('Clients fetched', ['clients' => $clients]);
+        return response()->json(['clients' => $clients]);
     }
 }

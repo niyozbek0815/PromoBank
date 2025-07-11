@@ -42,5 +42,7 @@ Route::prefix('front')->group(function () {
         Route::post('/{id}/delete', [UserController::class, 'delete']);
         Route::post('/{id}/status', [UserController::class, 'changeStatus']);
         Route::put('/{id}/update', [UserController::class, 'update']);
+        Route::post('/{id}/status', [UserController::class, 'changeStatus']);
+        Route::get('/clients', [UserController::class, 'getClients']);
     });
 });

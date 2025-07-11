@@ -18,7 +18,7 @@ return new class extends Migration
             $table->json('title');
             $table->json('description');
             $table->string('email');
-            $table->json('settings');
+            $table->json('settings')->nullable();
             $table->string('status');
             $table->string('region');
             $table->string('address');

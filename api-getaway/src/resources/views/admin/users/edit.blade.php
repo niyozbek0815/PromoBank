@@ -3,9 +3,8 @@
 @section('title', 'User Edit')
 
 @push('scripts')
-    <script src="https://themes.kopyov.com/limitless/demo/template/assets/js/jquery/jquery.min.js"></script>
-    <script src="https://themes.kopyov.com/limitless/demo/template/assets/js/vendor/forms/selects/select2.min.js"></script>
-    <script src="https://themes.kopyov.com/limitless/demo/template/assets/demo/pages/form_layouts.js"></script>
+    <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
+    <script src="{{ asset('adminpanel/assets/js/form_layouts.js') }}"></script>
     <script>
         $(document).ready(function() {
             $('#region').on('change', function() {

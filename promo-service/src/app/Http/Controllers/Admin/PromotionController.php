@@ -12,39 +12,39 @@ class PromotionController extends Controller
     {
 
     }
-    public function data(Request $request)
+    public function companydata(Request $request, $id)
     {
-        $query = Promotions::with(['roles', 'region:id,name', 'district:id,name'])->select('users.*');
+        $locale = $request->get('locale', app()->getLocale());
+
+        $query = Promotions::with('company')
+            ->where('company_id', $id)
+            ->select('promotions.*');
 
         return DataTables::of($query)
-            ->addColumn('region', fn($user) => optional($user->region)->name ?? '-')
-            ->addColumn('district', fn($user) => optional($user->district)->name ?? '-')
-            ->addColumn('roles', fn($user) => $user->roles->pluck('name')->join(', '))
-            ->addColumn('status', function ($user) {
-                switch ((int) $user->status) {
-                    case 1:
-                        return '<span class="badge bg-success bg-opacity-10 text-success">Faol</span>';
-                    case 0:
-                        return '<span class="badge bg-secondary bg-opacity-10 text-secondary">Nofaol</span>';
-                    default:
-                        return '<span class="badge bg-info bg-opacity-10 text-info">Kutilmoqda</span>';
-                }
+            ->addColumn('name', fn($item) => $item->getTranslation('name', $locale) ?? '-')
+            ->addColumn('title', fn($item) => $item->getTranslation('title', $locale) ?? '-')
+            ->addColumn('description', fn($item) => $item->getTranslation('description', $locale) ?? '-')
+            ->addColumn('is_active', fn($item) => $item->is_active
+                ? '<span class="badge bg-success">Faol</span>'
+                : '<span class="badge bg-danger">Nofaol</span>'
+            )
+            ->addColumn('is_public', fn($item) => $item->is_public
+                ? '<i class="ph ph-check-circle text-success"></i>'
+                : '<i class="ph ph-x-circle text-danger"></i>'
+            )
+            ->addColumn('start_date', fn($item) => optional($item->start_date)->format('d.m.Y') ?? '-')
+            ->addColumn('end_date', fn($item) => optional($item->end_date)->format('d.m.Y') ?? '-')
+            ->addColumn('actions', function ($row) {
+                return view('admin.actions', [
+                    'row'    => $row,
+                    'routes' => [
+                        'edit'   => "/admin/company/{$row->id}/edit",
+                        'delete' => "/admin/company/{$row->id}/delete",
+                        'status' => "/admin/company/{$row->id}/status",
+                    ],
+                ])->render();
             })
-            ->addColumn('actions', function ($user) {
-                return view('admin.actions', compact('user'))->render();
-            })
-            ->editColumn('gender', fn($user) => match ($user->gender) {
-                'M'                              => 'Erkak',
-                'F'     => 'Ayol',
-                default => 'Nomaʼlum'
-            })
-            ->editColumn('birthdate', function ($user) {
-                try {
-                    return $user->birthdate ? \Carbon\Carbon::parse($user->birthdate)->format('d.m.Y') : '-';
-                } catch (\Exception $e) {
-                    return '-';
-                }
-            })->rawColumns(['actions', 'status']) // HTML ustunlar
+            ->rawColumns(['is_active', 'is_public', 'actions'])
             ->make(true);
     }
     // public function edit($id)

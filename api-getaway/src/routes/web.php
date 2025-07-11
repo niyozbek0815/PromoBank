@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\Promo\PromotionController;
+use App\Http\Controllers\Admin\SocialMediaController;
 use App\Http\Controllers\Admin\User\UserController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Response;
@@ -50,22 +51,37 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
 
     Route::get('region/{regionId}/districts', [UserController::class, 'getDistricts'])->name('admin.region.districts');
 
-    Route::prefix('/company')->group(function () {
-        Route::get('/', [CompanyController::class, 'index'])->name('admin.company.index');
-        Route::get('/data', [CompanyController::class, 'data'])->name('admin.company.data');
-        Route::get('{id}/edit', [CompanyController::class, 'edit']);
-        Route::post('{id}/delete', [CompanyController::class, 'delete'])->name('admin.company.delete');
-        Route::post('{id}/status', [CompanyController::class, 'changeStatus'])->name('admin.company.status');
-        Route::put('{id}/update', [CompanyController::class, 'update'])->name('admin.company.update');
+    Route::prefix('company')->name('admin.company.')->controller(CompanyController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/data', 'data')->name('data');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/store', 'store')->name('store');
+        Route::get('/{id}/edit', 'edit')->name('edit');
+        Route::put('/{id}/update', 'update')->name('update');
+        Route::post('/{id}/delete', 'delete')->name('delete');
+        Route::post('/{id}/status', 'changeStatus')->name('status');
     });
+    Route::prefix('socialcompany')
+        ->controller(SocialMediaController::class)
+        ->as('admin.socialcompany.')
+        ->group(function () {
+            Route::get('/{id}/data', 'data')->name('data');       // admin.socialcompany.data
+            Route::post('/{id}', 'store')->name('store');         // admin.socialcompany.store
+            Route::post('{id}/delete', 'delete')->name('delete'); // admin.socialcompany.delete
+        });
 
-    Route::prefix('/promotion')->group(function () {
-        Route::get('/', [PromotionController::class, 'index'])->name('admin.promotion.index');
-        Route::get('/data', [PromotionController::class, 'data'])->name('admin.promotion.data');
-        Route::get('{id}/edit', [PromotionController::class, 'edit']);
-        Route::post('{id}/delete', [PromotionController::class, 'delete'])->name('admin.promotion.delete');
-        Route::post('{id}/status', [PromotionController::class, 'changeStatus'])->name('admin.promotion.status');
-        Route::put('{id}/update', [PromotionController::class, 'update'])->name('admin.promotion.update');
+    // PromotionController uchun to'liq RESTful API route'lari
+    Route::prefix('promotion')->name('admin.promotion.')->controller(PromotionController::class)->group(function () {
+        Route::get('/{id}/data', 'companydata')->name('companydata'); // AJAX uchun server-side table
+        Route::get('/', 'index')->name('index');                      // GET /promotion
+        Route::get('/create', 'create')->name('create');              // GET /promotion/create
+        Route::post('/', 'store')->name('store');                     // POST /promotion
+        Route::get('/{id}', 'show')->name('show');                    // GET /promotion/{id}
+        Route::get('/{id}/edit', 'edit')->name('edit');               // GET /promotion/{id}/edit
+        Route::put('/{id}', 'update')->name('update');                // PUT /promotion/{id}
+        Route::delete('/{id}', 'destroy')->name('destroy');
+        Route::get('/data', 'data')->name('data');                   // AJAX uchun server-side table
+        Route::post('/{id}/status', 'changeStatus')->name('status'); // Status toggle
     });
 
 });
