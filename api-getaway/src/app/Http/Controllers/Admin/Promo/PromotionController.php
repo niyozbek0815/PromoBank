@@ -12,103 +12,127 @@ class PromotionController extends Controller
     {
         $this->url = config('services.urls.promo_service');
     }
+    public function index()
+    {
+        return view('admin.promotion.index');
+    }
+
+    public function create(Request $request)
+    {
+        $response = $this->forwardRequest("GET", $this->url, "front/promotion/create", $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            $companies         = $response->json('companies');
+            $platforms         = $response->json('platforms');
+            $partisipants_type = $response->json('partisipants_type');
+            // dd($companies);
+            return view('admin.promotion.create', compact(var_name: ['companies', 'platforms', 'partisipants_type']));
+        }
+
+    }
     public function companydata(Request $request, $id)
     {
         $locale = app()->getLocale();
         $request->merge(['locale' => $locale]);
         $response = $this->forwardRequest("GET", $this->url, 'front/promotion/' . $id . '/data', $request);
         if ($response instanceof \Illuminate\Http\Client\Response) {
-            Log::info("✅ [CompanyData] Javob qaytdi", [
-                'status'  => $response->status(),
-                'body'    => $response->json(), // yoki ->body() agar raw text kerak bo‘lsa
-                'headers' => $response->headers(),
-            ]);
             return response()->json($response->json(), $response->status());
         }
-        Log::error("❌ [CompanyData] Auth service javob bermadi");
-        return response()->json(['message' => 'Auth service error'], 500);
+        return response()->json(['message' => 'Promo service error'], 500);
     }
-    public function index()
-    {
-        return view('admin.promotion.index');
-    }
-    public function update(Request $request, $id)
-    {
-        $response = $this->forwardRequest("PUT", $this->url, "front/promo/{$id}/update", $request);
 
-        if ($response instanceof \Illuminate\Http\Client\Response  && $response->ok()) {
-            return redirect()->route('admin.users.index')->with('success', 'Foydalanuvchi yangilandi.');
+    public function changeStatus(Request $request, $id)
+    {
+        $response = $this->forwardRequest("POST", $this->url, "front/promotion/{$id}/status", $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
         }
+        return response()->json(['message' => 'Promo service error'], 500);
+    }
+    public function changePublic(Request $request, $id)
+    {
+        $response = $this->forwardRequest("POST", $this->url, "front/promotion/{$id}/public", $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return response()->json(['message' => 'Promo service error'], 500);
+    }
+    public function delete(Request $request, $id)
+    {
+        Log::info(message: "so'rov keldi delete");
 
+        $response = $this->forwardRequest("POST", $this->url, "front/promotion/{$id}/delete", $request);
+        if ($response->ok()) {
+            return redirect()->back()->with('success', 'Promo aksiya o‘chirildi.');
+        }
+        return redirect()->back()->with('error', 'Promo aksiyani o‘chirishda xatolik.');
+    }
+    public function data(Request $request)
+    {
+        $response = $this->forwardRequest("GET", $this->url, 'front/promotion/data', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return response()->json(['message' => 'Promo service error'], 500);
+    }
+
+    public function edit(Request $request, $id)
+    {
+        $response = $this->forwardRequest("GET", $this->url, "front/promotion/{$id}/edit", $request);
+
+        if ($response->ok()) {
+            $data = $response->json();
+            dd($data);
+            // return view('admin.users.edit', compact('data'));
+        }
+        return redirect()->back()->with('error', 'Foydalanuvchi topilmadi.');
+    }
+    public function store(Request $request)
+    {
+        Log::info("Store ishladi");
+        $response = $this->forwardRequestMedias(
+            'POST',
+            $this->url,
+            'front/promotion',
+            $request,
+            ['media_preview', 'media_gallery', 'offer_file']// Fayl nomlari (formdagi `name=""`)
+        );
+        dd($response->json());
+        if ($response->ok()) {
+            return redirect()->route('admin.promotion.index')
+                ->with('success', 'Promoaksiya muvaffaqiyatli saqlandi.');
+        }
         if ($response->status() === 422) {
-            // Validation error response from auth-service
-            $errors    = $response->json('errors') ?? [];
-            $errorJson = json_encode($response->json(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-            Log::error('Auth service validation error', ['response' => $errorJson]);
             return redirect()->back()
-                ->withErrors($errors)
+                ->withErrors($response->json('errors'))
                 ->withInput();
         }
-
-        // Log other errors from auth service
-        $errorJson = json_encode($response->json(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        Log::error('Auth service update error', ['response' => $errorJson]);
-
-        return redirect()->back()->with('error', 'Foydalanuvchini yangilashda xatolik.');
+        Log::error('Promo saqlashda xatolik', ['response' => $response->body()]);
+        return redirect()->back()->with('error', 'Promoaksiya saqlanmadi.');
     }
 
-    // public function getDistricts(Request $request, $regionId)
+    // public function update(Request $request, $id)
     // {
+    //     $response = $this->forwardRequest("PUT", $this->url, "front/promo/{$id}/update", $request);
 
-    //     try {
-    //         $response = $this->forwardRequest("GET", $this->url, "/regions/{$regionId}/districts", $request);
-    //         return response()->json($response->json(), $response->status());
-
-    //     } catch (\Throwable $e) {
-    //         Log::error("getDistricts exception", [
-    //             'region_id' => $regionId,
-    //             'error'     => $e->getMessage(),
-    //             'trace'     => $e->getTraceAsString(),
-    //         ]);
+    //     if ($response instanceof \Illuminate\Http\Client\Response  && $response->ok()) {
+    //         return redirect()->route('admin.users.index')->with('success', 'Foydalanuvchi yangilandi.');
     //     }
 
-    //     return response()->json(['message' => 'Auth service error'], 500);
-    // }
-    // public function data(Request $request)
-    // {
-    //     $response = $this->forwardRequest("GET", $this->url, 'front/users/data', $request);
-    //     if ($response instanceof \Illuminate\Http\Client\Response) {
-    //         return response()->json($response->json(), $response->status());
+    //     if ($response->status() === 422) {
+    //         // Validation error response from auth-service
+    //         $errors    = $response->json('errors') ?? [];
+    //         $errorJson = json_encode($response->json(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    //         Log::error('Auth service validation error', ['response' => $errorJson]);
+    //         return redirect()->back()
+    //             ->withErrors($errors)
+    //             ->withInput();
     //     }
-    //     return response()->json(['message' => 'Auth service error'], 500);
+
+    //     // Log other errors from auth service
+    //     $errorJson = json_encode($response->json(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    //     Log::error('Auth service update error', ['response' => $errorJson]);
+
+    //     return redirect()->back()->with('error', 'Foydalanuvchini yangilashda xatolik.');
     // }
 
-    // public function edit(Request $request, $id)
-    // {
-    //     $response = $this->forwardRequest("POST", $this->url, "front/users/{$id}/edit", $request);
-    //     if ($response->ok()) {
-    //         $data = $response->json();
-    //         return view('admin.users.edit', compact('data'));
-    //     }
-    //     return redirect()->back()->with('error', 'Foydalanuvchi topilmadi.');
-    // }
-
-    // public function delete(Request $request, $id)
-    // {
-    //     $response = $this->forwardRequest("POST", $this->url, "front/users/{$id}/delete", $request);
-    //     if ($response->ok()) {
-    //         return redirect()->back()->with('success', 'Foydalanuvchi o‘chirildi.');
-    //     }
-    //     return redirect()->back()->with('error', 'Foydalanuvchini o‘chirishda xatolik.');
-    // }
-
-    // public function changeStatus(Request $request, $id)
-    // {
-    //     $response = $this->forwardRequest("POST", $this->url, "front/users/{$id}/status", $request);
-
-    //     if ($response instanceof \Illuminate\Http\Client\Response) {
-    //         return response()->json($response->json(), $response->status());
-    //     }
-    //     return response()->json(['message' => 'Auth service error'], 500);
-    // }
 }

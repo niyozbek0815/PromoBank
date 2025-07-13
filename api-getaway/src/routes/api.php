@@ -17,7 +17,6 @@ Route::controller(AuthController::class)->prefix('auth')->group(function () {
     Route::get('/me', 'user')->middleware(['guestCheck']);
     Route::put('/me', 'userupdate')->middleware(['guestCheck']);
     Route::post('/me/verify-update', 'checkUpdate')->middleware(['guestCheck']);
-
     // Route::post('/verifications/{id}/resend', 'resendsms')->middleware('guestCheck'); // POST /auth/verifications/{id}/resend
     // Route::post('/logout', 'logout')->middleware('guestCheck'); // POST /auth/logout
 });
@@ -33,18 +32,14 @@ Route::controller(PromoController::class)->prefix('promotions')->middleware(['gu
     Route::get('/{promotion}/participations', 'listParticipationHistory');
 });
 
-
 Route::controller(ReceiptController::class)->prefix('receipt')->middleware(['guestCheck'])->group(function () {
     Route::post('/', 'index');
     Route::get('/user_points', 'points');
 });
 Route::prefix('games')->middleware(['guestCheck'])->group(function () {
-    Route::get('/',  [GameController::class, 'listAllGames']);
+    Route::get('/', [GameController::class, 'listAllGames']);
     Route::any('/{game}/{action}', [GetawayGameController::class, 'handle']);
 });
-
-
-
 
 // Sms orqali promocode jo'natish uchun api
 Route::post('/sms/promo/receive-sms', [PromoSmsGatewayController::class, 'receive'])->middleware(['smsProvider']);

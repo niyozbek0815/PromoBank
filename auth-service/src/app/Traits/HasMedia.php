@@ -27,8 +27,7 @@ trait HasMedia
         if ($media) {
             return $media->full_url; // faqat to'liq URL
         }
-        $baseUrl = config('services.urls.global_url');
-        return $baseUrl . '/media/upload/user_avate/default-avatar.png';
+        return null;
     }
     /**
      * Hamma media'ni olish va har biri uchun faqat full_url qaytarish

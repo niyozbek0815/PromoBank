@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->string('phone', 50)->unique();
             $table->string('phone2', 50)->nullable();
-            $table->string('chat_id', 50)->unique();
+            $table->string('chat_id', 50)->unique()->nullable();
             $table->char('gender', 1)->nullable(); // M, F, U
             $table->date('birthdate')->nullable();
             $table->string('lang', 2)->nullable(); // uz, ru, kr

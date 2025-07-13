@@ -74,14 +74,14 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
     Route::prefix('promotion')->name('admin.promotion.')->controller(PromotionController::class)->group(function () {
         Route::get('/{id}/data', 'companydata')->name('companydata'); // AJAX uchun server-side table
         Route::get('/', 'index')->name('index');                      // GET /promotion
-        Route::get('/create', 'create')->name('create');              // GET /promotion/create
-        Route::post('/', 'store')->name('store');                     // POST /promotion
-        Route::get('/{id}', 'show')->name('show');                    // GET /promotion/{id}
         Route::get('/{id}/edit', 'edit')->name('edit');               // GET /promotion/{id}/edit
-        Route::put('/{id}', 'update')->name('update');                // PUT /promotion/{id}
-        Route::delete('/{id}', 'destroy')->name('destroy');
-        Route::get('/data', 'data')->name('data');                   // AJAX uchun server-side table
-        Route::post('/{id}/status', 'changeStatus')->name('status'); // Status toggle
+        Route::post('{id}/delete', 'delete')->name('delete');         // admin.socialcompany.delete
+        Route::post('/{id}/status', 'changeStatus')->name('status');  // Status toggle
+        Route::post('/{id}/public', 'changePublic')->name('public');
+        Route::get('/data', 'data')->name('data');       // AJAX uchun server-side table
+        Route::get('/create', 'create')->name('create'); // GET /promotion/create
+        Route::post('/', 'store')->name('store');        // POST /promotion                                                 // Route::get('/{id}', 'show')->name('show');                    // GET /promotion/{id}
+        Route::put('/{id}', 'update')->name('update');   // PUT /promotion/{id}
     });
 
 });

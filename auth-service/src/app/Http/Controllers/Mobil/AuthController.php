@@ -61,7 +61,7 @@ class AuthController extends Controller
         return $this->successResponse(
             [
                 'token' => $token,
-                'user'  => $user,
+                // 'user'  => $user,
             ],
             "Guest token created saccecfully"
         );
@@ -103,10 +103,11 @@ class AuthController extends Controller
             // return response()->json($data["result"]);
             return $this->successResponse(
                 [
-                    'phone'   => $phone,
-                    'user_id' => $data['user_id'],
-                    'token'   => $data['token'],
-                    'is_new'  => $data['is_new'],
+                    'phone'            => $phone,
+                    'user_id'          => $data['user_id'],
+                    'token'            => $data['token'],
+                    'is_new'           => $data['is_new'],
+                    'default_sms_code' => "Code: 111111. bu o'zaruvchi olib tashlanadi sms xizmat ulanganda.",
                 ],
                 "Sms muofaqiyatli jo'natildi"
             );
@@ -171,7 +172,9 @@ class AuthController extends Controller
             if ($request->filled('avatar')) {
                 Queue::connection('redis')->push(new UserUpdateAvatarJob($user_req['id'], $user, $request['avatar']));
             }
-            return $this->successResponse(['user' => new UserResource($user->load(['media', 'district', 'region']))], "User data updated Successfully!!!");
+            return $this->successResponse([
+                "is_verification" => true,
+                'user'            => new UserResource($user->load(['media', 'district', 'region']))], "User data updated Successfully!!!");
         } else {
             $return = $this->authService->update($user, $data);
             if ($return['error_type'] == 422) {
@@ -179,9 +182,10 @@ class AuthController extends Controller
             } else {
                 return $this->successResponse(
                     [
-                        'token'    => $return['token'],
-                        'user_id'  => $return['user_id'],
-                        "response" => $data,
+                        'token'           => $return['token'],
+                        'user_id'         => $return['user_id'],
+                        "is_verification" => true,
+                        "response"        => $data,
                     ],
                     "Updated Code Sended!!!"
                 );

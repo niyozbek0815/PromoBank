@@ -15,7 +15,6 @@ class CompanyController extends Controller
     }
     public function index()
     {
-
         return view('admin.company.index');
     }
     public function create(Request $request)
@@ -91,10 +90,6 @@ class CompanyController extends Controller
 
     public function changeStatus(Request $request, $id)
     {
-        Log::info('Sending changeStatus request', [
-            'id'      => $id,
-            'payload' => $request->all(),
-        ]);
 
         $response = $this->forwardRequest("POST", $this->url, "front/company/{$id}/status", $request);
 
@@ -102,6 +97,12 @@ class CompanyController extends Controller
             return response()->json($response->json(), $response->status());
         }
         return response()->json(['message' => 'Auth service error'], 500);
+    }
+    public function forpromotion(Request $request)
+    {
+        $authResponse = $this->forwardRequest("GET", $this->url, "front/company/forpromotion", $request);
+        $clients      = $authResponse->json();
+        return view('admin.company.create', compact('clients'));
     }
 
 }

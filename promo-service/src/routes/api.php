@@ -47,8 +47,10 @@ Route::prefix('front')->group(function () {
             Route::get('/{id}/edit', 'edit')->name('edit');              // GET — edit form
             Route::post('/', 'store')->name('store');                    // POST — create
             Route::put('/{id}', 'update')->name('update');               // PUT — update
-            Route::delete('/{id}', 'delete')->name('delete');            // DELETE — delete
+            Route::post('{id}/delete', 'delete')->name('delete');        // admin.socialcompany.delete
             Route::post('/{id}/status', 'changeStatus')->name('status'); // POST — toggle status
+            Route::post('/{id}/public', 'changePublic')->name('public'); // POST — toggle status
+            Route::get('/create', 'create')->name('create');             // GET /promotion/create
         });
 
 });

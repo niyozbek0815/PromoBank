@@ -4,18 +4,19 @@ namespace App\Models;
 use App\Traits\HasMedia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
 class Promotions extends Model
 {
-    use HasFactory, HasTranslations, HasMedia;
+    use HasFactory, HasTranslations, HasMedia, SoftDeletes;
 
     protected $fillable = [
         'name',
         'company_id',
         'title',
         'description',
-        'is_active',
+        'status',
         'is_public',
         'is_prize',
         'code_settings',
@@ -27,7 +28,7 @@ class Promotions extends Model
     ];
     public $translatable = ['name', 'title', 'description'];
     protected $casts     = [
-        'is_active'        => 'boolean',
+        'status'           => 'boolean',
         'is_public'        => 'boolean',
         'code_settings'    => 'array',
         'name'             => "array",
@@ -38,9 +39,8 @@ class Promotions extends Model
 
     public function company()
     {
-        return $this->belongsTo(Company::class)->with(['media', 'socialMedia', 'socialMedia.type']);
+        return $this->belongsTo(Company::class)->select(['id', 'name']);
     }
-
     public function promoGenerations()
     {
         return $this->hasMany(PromoGeneration::class);

@@ -38,17 +38,29 @@
             const allPanels = document.querySelectorAll('.table-panel');
             let currentlyOpen = document.querySelector('#collapse-promos');
 
-            // Sahifa yuklanganda collapse-promos ni ko‘rsatamiz
+            // Sahifa yuklanganda collapse-promos ni ko‘rsatamiz va unga tegishli tugmani active qilamiz
             if (currentlyOpen) {
                 const defaultInstance = bootstrap.Collapse.getOrCreateInstance(currentlyOpen);
                 defaultInstance.show();
+
+                // Default aktiv tugma topiladi va unga active qo‘yiladi
+                document.querySelectorAll('.collapse-toggler').forEach(btn => {
+                    const targetId = btn.getAttribute('data-target');
+                    if (targetId === '#collapse-promos') {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
             }
 
+            // Collapse togglerlar uchun event
             document.querySelectorAll('.collapse-toggler').forEach(button => {
                 button.addEventListener('click', function() {
                     const targetId = this.getAttribute('data-target');
                     const target = document.querySelector(targetId);
 
+                    // Boshqa panel ochiq bo‘lsa, yopiladi
                     if (currentlyOpen && currentlyOpen !== target) {
                         const currentInstance = bootstrap.Collapse.getOrCreateInstance(
                             currentlyOpen);
@@ -56,12 +68,19 @@
                     }
 
                     const targetInstance = bootstrap.Collapse.getOrCreateInstance(target);
+
                     if (!target.classList.contains('show')) {
                         targetInstance.show();
                         currentlyOpen = target;
+
+                        // Barcha tugmalardan active olib tashlaymiz
+                        document.querySelectorAll('.collapse-toggler').forEach(btn => btn.classList
+                            .remove('active'));
+                        this.classList.add('active');
                     } else {
                         targetInstance.hide();
                         currentlyOpen = null;
+                        this.classList.remove('active');
                     }
                 });
             });
@@ -130,7 +149,7 @@
                 }
             });
         });
-        $(document).on('click', '.delete-user', function(e) {
+        $(document).on('click', '#social-table .delete-user', function(e) {
             e.preventDefault();
             const companyId = $(this).data('id');
             Swal.fire({
@@ -201,8 +220,8 @@
                         name: 'description'
                     },
                     {
-                        data: 'is_active',
-                        name: 'is_active',
+                        data: 'status',
+                        name: 'status',
                         orderable: false,
                         searchable: false
                     },
@@ -227,6 +246,98 @@
                         searchable: false
                     }
                 ],
+            });
+        });
+        // 1 marta ro'yxatdan o'tgan click handler
+        $(document).on('click', '#promo-table .change-status', function(e) {
+            e.preventDefault();
+
+            let $this = $(this);
+            let userId = $this.data('id');
+            let status = $this.data('status');
+            let url = $this.data('url') || '/admin/promotion/' + userId + '/status';
+
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    status: status
+                },
+                success: function(res) {
+                    toastr.success(res.message || 'Status yangilandi!');
+                    $('#promo-table').DataTable().ajax.reload(null, false);
+
+                    let newStatus = status == 1 ? 0 : 1;
+                    $this.data('status', newStatus);
+                    $this.find('i').toggleClass('ph-toggle-left ph-toggle-right');
+                    $this.text(newStatus == 1 ? 'Nofaol qilish' : 'Faollashtirish');
+                },
+                error: function() {
+                    toastr.error('Statusni o‘zgartirishda xatolik yuz berdi!');
+                }
+            });
+        });
+        $(document).on('click', '#promo-table .change-public', function(e) {
+            e.preventDefault();
+
+            let $this = $(this);
+            let userId = $this.data('id');
+            let isPublic = $this.data('public'); // <-- BU YERNI TO‘G‘RILADIK
+            let url = $this.data('url') || '/admin/promotion/' + userId + '/public';
+
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    is_public: isPublic
+                },
+                success: function(res) {
+                    toastr.success(res.message || 'Ommaviylik yangilandi!');
+                    $('#promo-table').DataTable().ajax.reload(null, false);
+
+                    // Status toggle
+                    let newPublic = isPublic == 1 ? 0 : 1;
+                    $this.data('public', newPublic);
+
+                    $this.find('i')
+                        .toggleClass('ph-eye ph-eye-slash');
+
+                    $this.text(newPublic == 1 ? 'Maxfiy qilish' : 'Ommaviy qilish');
+                },
+                error: function() {
+                    toastr.error('Ommaviylikni o‘zgartirishda xatolik yuz berdi!');
+                }
+            });
+        });
+        $(document).on('click', '#promo-table .delete-user', function(e) {
+            e.preventDefault();
+            const companyId = $(this).data('id');
+            Swal.fire({
+                title: 'Ishonchingiz komilmi?',
+                text: "Bu amal promoaksiyani o‘chiradi!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ha, o‘chir!',
+                cancelButtonText: 'Bekor qilish'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/admin/promotion/' + companyId + '/delete',
+                        method: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(res) {
+                            toastr.success(res.message || 'promoaksiya o‘chirildi!');
+                            $('#promo-table').DataTable().ajax.reload(null, false);
+                        },
+                        error: function(xhr) {
+                            toastr.error('O‘chirishda xatolik yuz berdi!');
+                        }
+                    });
+                }
             });
         });
     </script>
@@ -360,15 +471,15 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">social link ma'lumotlari</h5>
                     <div class="btn-group">
-                        <button type="button" class="btn btn-outline-primary collapse-toggler"
+                        <button type="button" class="btn btn-outline-success collapse-toggler"
                             data-target="#collapse-social">
                             <i class="ph ph-share-network me-1"></i> Ijtimoiy tarmoqlar
                         </button>
-                        <button type="button" class="btn btn-outline-primary collapse-toggler"
+                        <button type="button" class="btn btn-outline-success collapse-toggler"
                             data-target="#collapse-promos">
                             <i class="ph ph-ticket me-1"></i> Promoaksiyalar
                         </button>
-                        <button type="button" class="btn btn-outline-primary collapse-toggler"
+                        <button type="button" class="btn btn-outline-success collapse-toggler"
                             data-target="#collapse-settings">
                             <i class="ph ph-gear me-1"></i> Sozlamalar
                         </button>

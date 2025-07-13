@@ -18,7 +18,14 @@
                     {{ $row->status ? 'Nofaol qilish' : 'Faollashtirish' }}
                 </a>
             @endif
-
+            {{-- Ommaviylikni o‘zgartirish --}}
+            @isset($routes['public'])
+                <a href="#" class="dropdown-item change-public" data-id="{{ $row->id }}"
+                    data-public="{{ $row->is_public ? 0 : 1 }}" data-url="{{ $routes['public'] }}">
+                    <i class="ph-eye{{ $row->is_public ? '-slash' : '' }} me-2"></i>
+                    {{ $row->is_public ? 'Maxfiy qilish' : 'Ommaviy qilish' }}
+                </a>
+            @endisset
             @if (!empty($routes['delete']))
                 <a href="#" class="dropdown-item text-danger delete-user" data-id="{{ $row->id }}"
                     data-url="{{ $routes['delete'] }}">

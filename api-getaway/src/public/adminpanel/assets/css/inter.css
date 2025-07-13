@@ -82,7 +82,7 @@
 /* -------------------------------------------------------
   Variable font.
   Usage:
-  
+
     html { font-family: 'Inter', sans-serif; }
     @supports (font-variation-settings: normal) {
       html { font-family: 'Inter var', sans-serif; }

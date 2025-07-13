@@ -78,4 +78,99 @@ abstract class Controller
             );
         }
     }
+
+    protected function forwardRequestMedias(
+        string $method,
+        string $baseUrl,
+        string $path,
+        Request $request,
+        array $fileKeys = ['image'],
+        int $successCode = 200
+    ) {
+        try {
+            $headers = [
+                'Accept'     => 'application/json',
+                'User-Ip'    => $request->ip(),
+                'User-Agent' => $request->userAgent(),
+            ];
+
+            $url    = rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
+            $http   = Http::withHeaders($headers);
+            $method = strtoupper($method);
+
+            $hasFiles = collect($fileKeys)->some(fn($key) => $request->hasFile($key));
+
+            if (in_array($method, ['POST', 'PUT']) && $hasFiles) {
+                $http = $http->asMultipart();
+
+                // Form-data (text) tayyorlash
+                $multipartData = collect($request->except($fileKeys))
+                    ->flatMap(function ($value, $key) {
+                        if (is_array($value)) {
+                            return collect($value)->map(function ($subValue, $subKey) use ($key) {
+                                return [
+                                    'name'     => is_numeric($subKey) ? "{$key}[]" : "{$key}[{$subKey}]",
+                                    'contents' => $subValue,
+                                ];
+                            })->values();
+                        }
+                        return [[
+                            'name'     => $key,
+                            'contents' => $value,
+                        ]];
+                    })->values();
+
+                // Fayllarni qo‘shish (bir dona yoki array)
+                foreach ($fileKeys as $fileKey) {
+                    if ($request->hasFile($fileKey)) {
+                        $files = $request->file($fileKey);
+
+                        if ($files instanceof UploadedFile) {
+                            // Bitta fayl
+                            $multipartData->push([
+                                'name'     => $fileKey,
+                                'contents' => fopen($files->getPathname(), 'r'),
+                                'filename' => $files->getClientOriginalName(),
+                            ]);
+                        } elseif (is_array($files)) {
+                            // Ko‘p fayl
+                            foreach ($files as $file) {
+                                $multipartData->push([
+                                    'name'     => "{$fileKey}[]",
+                                    'contents' => fopen($file->getPathname(), 'r'),
+                                    'filename' => $file->getClientOriginalName(),
+                                ]);
+                            }
+                        }
+                    }
+                }
+
+                // Agar method PUT bo‘lsa, _method ni berish kerak
+                if ($method === 'PUT') {
+                    $multipartData->push([
+                        'name'     => '_method',
+                        'contents' => 'PUT',
+                    ]);
+                    return $http->post($url, $multipartData->all());
+                }
+
+                return $http->post($url, $multipartData->all());
+            }
+
+            // Faylsiz GET/POST/PUT/DELETE
+            return match ($method) {
+                'GET' => $http->get($url, $request->query()),
+                'POST' => $http->post($url, $request->all()),
+                'PUT' => $http->put($url, $request->all()),
+                'DELETE' => $http->delete($url, $request->all()),
+                default => throw new \InvalidArgumentException("Unsupported HTTP method: $method"),
+            };
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                'Internal error from external service',
+                $e->getMessage(),
+                503
+            );
+        }
+    }
 }
