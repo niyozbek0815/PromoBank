@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Mobil;
 
 use App\Http\Controllers\Controller;
@@ -23,7 +22,7 @@ class GameController extends Controller
 
     public function index(Request $request)
     {
-        $games =  new GameResource(Game::select('id', 'name', 'title', 'about')->first());
+        $games = new GameResource(Game::select('id', 'name', 'title', 'about')->first());
         return $this->successResponse(
             $games,
             "GameController index method",
@@ -34,7 +33,7 @@ class GameController extends Controller
     {
         return DB::transaction(function () use ($request) {
             $user = $request['auth_user'];
-            $req = $request->validate([
+            $req  = $request->validate([
                 'session_id' => 'required|integer|exists:game_sessions,id',
             ]);
             $session = GameSession::where('game_id', 1)
@@ -45,7 +44,7 @@ class GameController extends Controller
             $session->fill([
                 'stage2_attempted' => false,
                 'stage2_confirmed' => false,
-                'status' => 'finished',
+                'status'           => 'finished',
             ])->save();
             return $this->successResponse([], "Stage 2 rejected successfully", 200);
         });
@@ -55,9 +54,9 @@ class GameController extends Controller
     {
         return DB::transaction(function () use ($request) {
             $user = $request['auth_user'];
-            $now = now();
+            $now  = now();
 
-            $game = $this->gameStartService->getGameWithRelations();
+            $game    = $this->gameStartService->getGameWithRelations();
             $session = $this->gameStartService->getActiveSession($game->id, $user['id']);
             // return [
             //     'game' => $game,
@@ -79,7 +78,7 @@ class GameController extends Controller
     {
         return DB::transaction(function () use ($request) {
             $user = $request['auth_user'];
-            $req = $request->validated();
+            $req  = $request->validated();
 
             $session = $this->openCardsService->getActiveSession(
                 $req['session_id'],
@@ -88,7 +87,7 @@ class GameController extends Controller
             );
 
             $gameStep = $session->stage1_success_steps + 1;
-            $maxStep = GameStage1Step::where('game_id', $session->game_id)->max('step_number');
+            $maxStep  = GameStage1Step::where('game_id', $session->game_id)->max('step_number');
 
             $stepConfig = GameStage1Step::where('game_id', $session->game_id)
                 ->where('step_number', $gameStep)
@@ -103,6 +102,7 @@ class GameController extends Controller
             if ($data['message']) {
                 return $this->errorResponse(
                     $data['message'],
+                    ['error' => $data['message']],
                     422
                 );
             }

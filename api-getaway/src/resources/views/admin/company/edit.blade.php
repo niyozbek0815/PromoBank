@@ -512,12 +512,13 @@
 
                     <div class="collapse table-panel" id="collapse-promos">
                         <div class="border rounded p-3">
+
                             <div class="page-header-content d-flex justify-content-between align-items-center">
                                 <h4 class="page-title mb-0">PromoAksiyalar</h4>
-                                <button type="button" class="btn btn-outline-success ms-3" data-bs-toggle="modal"
-                                    data-bs-target="#socialMediaModal">
-                                    <i class="ph-plus-circle me-1"></i> Create or Update
-                                </button>
+                                <a href="{{ route('admin.promotion.create', ['company_id' => $data['id']]) }}"
+                                    class="btn btn-outline-success ms-3">
+                                    <i class="ph-plus-circle me-1"></i> Yangi promoaksiya
+                                </a>
                             </div>
                             <table id="promo-table" class="table datatable-button-init-basic">
                                 <thead>

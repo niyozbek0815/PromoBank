@@ -78,10 +78,10 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
         Route::post('{id}/delete', 'delete')->name('delete');         // admin.socialcompany.delete
         Route::post('/{id}/status', 'changeStatus')->name('status');  // Status toggle
         Route::post('/{id}/public', 'changePublic')->name('public');
-        Route::get('/data', 'data')->name('data');       // AJAX uchun server-side table
-        Route::get('/create', 'create')->name('create'); // GET /promotion/create
-        Route::post('/', 'store')->name('store');        // POST /promotion                                                 // Route::get('/{id}', 'show')->name('show');                    // GET /promotion/{id}
-        Route::put('/{id}', 'update')->name('update');   // PUT /promotion/{id}
+        Route::get('/data', 'data')->name('data');                     // AJAX uchun server-side table
+        Route::get('/create/{company_id?}', 'create')->name('create'); // GET /promotion/create
+        Route::post('/', 'store')->name('store');                      // POST /promotion                                                 // Route::get('/{id}', 'show')->name('show');                    // GET /promotion/{id}
+        Route::put('/{id}', 'update')->name('update');                 // PUT /promotion/{id}
     });
 
 });

@@ -17,11 +17,12 @@ class CompanyController extends Controller
     {
         return view('admin.company.index');
     }
-    public function create(Request $request)
+    public function create(Request $request, )
     {
         $authResponse = $this->forwardRequest("GET", $this->auth_url, "front/users/clients", $request);
         $clients      = $authResponse->json();
-        return view('admin.company.create', compact('clients'));
+
+        return view('admin.company.create', compact('clients', ));
     }
     public function store(Request $request)
     {

@@ -19,13 +19,16 @@ class PromotionController extends Controller
 
     public function create(Request $request)
     {
+        // dd($company_id = $request->query('company_id'));
         $response = $this->forwardRequest("GET", $this->url, "front/promotion/create", $request);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             $companies         = $response->json('companies');
             $platforms         = $response->json('platforms');
             $partisipants_type = $response->json('partisipants_type');
+            $selectedCompanyId = $request->query('company_id');
+
             // dd($companies);
-            return view('admin.promotion.create', compact(var_name: ['companies', 'platforms', 'partisipants_type']));
+            return view('admin.promotion.create', compact(var_name: ['companies', 'platforms', 'partisipants_type', 'selectedCompanyId']));
         }
 
     }
@@ -88,7 +91,6 @@ class PromotionController extends Controller
     }
     public function store(Request $request)
     {
-        Log::info("Store ishladi");
         $response = $this->forwardRequestMedias(
             'POST',
             $this->url,
@@ -96,7 +98,7 @@ class PromotionController extends Controller
             $request,
             ['media_preview', 'media_gallery', 'offer_file']// Fayl nomlari (formdagi `name=""`)
         );
-        dd($response->json());
+        dd(vars: $response->json());
         if ($response->ok()) {
             return redirect()->route('admin.promotion.index')
                 ->with('success', 'Promoaksiya muvaffaqiyatli saqlandi.');
@@ -109,30 +111,5 @@ class PromotionController extends Controller
         Log::error('Promo saqlashda xatolik', ['response' => $response->body()]);
         return redirect()->back()->with('error', 'Promoaksiya saqlanmadi.');
     }
-
-    // public function update(Request $request, $id)
-    // {
-    //     $response = $this->forwardRequest("PUT", $this->url, "front/promo/{$id}/update", $request);
-
-    //     if ($response instanceof \Illuminate\Http\Client\Response  && $response->ok()) {
-    //         return redirect()->route('admin.users.index')->with('success', 'Foydalanuvchi yangilandi.');
-    //     }
-
-    //     if ($response->status() === 422) {
-    //         // Validation error response from auth-service
-    //         $errors    = $response->json('errors') ?? [];
-    //         $errorJson = json_encode($response->json(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-    //         Log::error('Auth service validation error', ['response' => $errorJson]);
-    //         return redirect()->back()
-    //             ->withErrors($errors)
-    //             ->withInput();
-    //     }
-
-    //     // Log other errors from auth service
-    //     $errorJson = json_encode($response->json(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-    //     Log::error('Auth service update error', ['response' => $errorJson]);
-
-    //     return redirect()->back()->with('error', 'Foydalanuvchini yangilashda xatolik.');
-    // }
 
 }

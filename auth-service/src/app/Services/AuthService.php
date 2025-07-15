@@ -1,14 +1,10 @@
 <?php
-
 namespace App\Services;
 
 use App\Jobs\UserUpdateAvatarJob;
+use App\Models\User;
 use App\Models\UserOtps;
 use Carbon\Carbon;
-use App\Models\User;
-use App\Models\UserOtp;
-use Detection\MobileDetect;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Queue;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -26,20 +22,22 @@ class AuthService
         $user = User::firstOrCreate(
             ['phone' => $phone],
             [
-                'name' => 'User' . rand(0, 100000),
-                'phone' => $phone,
+                'name'     => 'User' . rand(0, 100000),
+                'phone'    => $phone,
                 'is_guest' => false,
-                'status' => false
+                'status'   => false,
             ]
         );
         $is_new = true;
-        if (!$user->wasRecentlyCreated) {
+        if (! $user->wasRecentlyCreated) {
+            $is_new = false;
+
             // Mavjud foydalanuvchi qaytarildi
             $userOtp = UserOtps::where('user_id', $user->id)->where("created_at", '>', Carbon::now()->subMinutes(2))->count();
             if ($userOtp > 3) {
                 return [
                     "message" => "Juda ko'p urunishlar qildingiz. Iltimos keyinroq qayta urinib ko'ring!!!",
-                    "code" => 422
+                    "code"    => 422,
                 ];
             }
         }
@@ -48,10 +46,10 @@ class AuthService
         $this->smsService->sendMessage($userOtp['otp'], $phone);
 
         return [
-            'is_new' => $is_new,
-            'token' => $userOtp['token'],
+            'is_new'  => $is_new,
+            'token'   => $userOtp['token'],
             'user_id' => $user->id,
-            "code" => 200
+            "code"    => 200,
         ];
     }
     private function generateOtp($user, $phone)
@@ -64,17 +62,17 @@ class AuthService
         //     $otp = rand(100000, 999999);
         // }
         return UserOtps::create([
-            'user_id' => $user['id'],
-            'phone' => $user['phone'],
-            'token' => Hash::make($user['phone']),
-            'otp' => $otp,
+            'user_id'     => $user['id'],
+            'phone'       => $user['phone'],
+            'token'       => Hash::make($user['phone']),
+            'otp'         => $otp,
             'otp_sent_at' => $now,
-            'expires_at' => $now->addMinutes(5),
+            'expires_at'  => $now->addMinutes(5),
         ]);
     }
     public function check($user, $userOld, array $req, $ip)
     {
-        if ($user->userOtps &&  $user->userOtps->otp == $req['password'] && $req['token'] == $user->userOtps->token) {
+        if ($user->userOtps && $user->userOtps->otp == $req['password']) {
             $user->status = true;
             $user->save();
             if ($userOld) {
@@ -83,30 +81,30 @@ class AuthService
             }
             JWTAuth::factory()->setTTL(60);
             $token = JWTAuth::claims([
-                'ip' => $ip
+                'ip' => $ip,
             ])->fromUser($user);
             return ([
                 "user_id" => $user->id,
-                'token' => $token,
-                'error' => null
+                'token'   => $token,
+                'error'   => null,
             ]);
         } else {
             return [
                 'success' => "Parol xato yoki eskirgan iltimos qayta urinib ko'ring !!!",
-                'error' => 422
+                'error'   => 422,
             ];
         }
     }
     public function checkUpdate($user, array $req)
     {
-        if ($user->userOtps &&  $user->userOtps->otp == $req['password'] && $req['token'] == $user->userOtps->token) {
+        if ($user->userOtps && $user->userOtps->otp == $req['password']) {
             $user->update([
-                'name' => $req['name'],
-                'phone' => $req['phone'],
-                'region_id' => $req['region_id'],
+                'name'        => $req['name'],
+                'phone'       => $req['phone'],
+                'region_id'   => $req['region_id'],
                 'district_id' => $req['district_id'],
-                'phone2' => $req['phone2'],
-                'gender' => $req['gender'],
+                'phone2'      => $req['phone2'],
+                'gender'      => $req['gender'],
             ]);
             if ($req['avatar'] !== null) {
                 Queue::connection('redis')->push(new UserUpdateAvatarJob($user['id'], $user, $req['avatar']));
@@ -114,12 +112,12 @@ class AuthService
             return ["error_type" => 200];
         } else {
             return [
-                "error_type" => 422
+                "error_type" => 422,
             ];
         }
     }
 
-    public function update($user,  $data)
+    public function update($user, $data)
     {
         $userOtp = $this->generateOtp($user, $data['phone']);
 
@@ -127,8 +125,8 @@ class AuthService
 
         return [
             "error_type" => null,
-            'token' => $userOtp['token'],
-            'user_id' => $user->id,
+            'token'      => $userOtp['token'],
+            'user_id'    => $user->id,
         ];
     }
 }

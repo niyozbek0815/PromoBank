@@ -36,7 +36,8 @@ return Application::configure(basePath: dirname(__DIR__))
         };
 
         // ➤ Only handle for API
-        $onlyApi = fn($request) => $request->is('api/*');
+        $onlyApi = fn($request) =>
+        $request->is('api/*') && ! $request->is('api/front*');
 
         $exceptions->renderable(function (ValidationException $e, $request) use ($errorResponse, $onlyApi) {
             if (! $onlyApi($request)) {

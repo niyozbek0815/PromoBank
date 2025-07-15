@@ -1,15 +1,14 @@
 <?php
-
 namespace App\Http\Controllers\Mobil;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Services\ViaPromocodeService;
-use App\Http\Resources\PromotionResource;
-use App\Repositories\PromotionRepository;
 use App\Http\Requests\SendPromocodeRequest;
 use App\Http\Resources\PromoHistoryRecource;
+use App\Http\Resources\PromotionResource;
 use App\Models\PromoCodeUser;
+use App\Repositories\PromotionRepository;
+use App\Services\ViaPromocodeService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class PromoController extends Controller
@@ -24,35 +23,33 @@ class PromoController extends Controller
 
     public function index()
     {
-        $cacheKey = 'promotions:platform:mobile:page:' . request('page', 1);
-        $ttl = now()->addMinutes(5); // 5 daqiqa kesh
+        $cacheKey   = 'promotions:platform:mobile:page:' . request('page', 1);
+        $ttl        = now()->addMinutes(5); // 5 daqiqa kesh
         $promotions = Cache::store('redis')->remember($cacheKey, $ttl, function () {
-            return  $this->promotionRepository->getAllPromotionsForMobile();
+            return $this->promotionRepository->getAllPromotionsForMobile();
         });
         return $this->successResponse(['promotions' => PromotionResource::collection($promotions)], "success");
     }
     public function viaPromocode(SendPromocodeRequest $request, $id)
     {
         $user = $request['auth_user'];
-        $req = $request->validated();
+        $req  = $request->validated();
         $data = $this->viaPromocodeService->proccess($req, $user, $id);
         // return $data;
-        if (!empty($data['promotion'])) {
-            return $this->errorResponse('Promotion not found.', 'Promotion not found.', 404);
+        if (! empty($data['promotion'])) {
+            return $this->errorResponse('Promotion not found.', ['promotion' => 'Promotion not found.'], 404);
         }
-        if (!empty($data['promocode'])) {
-            return $this->errorResponse('Promocode not found.', 'Promocode not found.', 404);
+        if (! empty($data['promocode'])) {
+            return $this->errorResponse('Promocode not found.', ['promocode' => 'Promocode not found.'], 404);
         }
         return $data['action'] === "claim"
-            ? $this->errorResponse($data['message'] ?? "Kechirasiz promocodedan avval foydalanilgan", 422)
-            : $this->successResponse($data, $data['message'] ?? "Promocode movaffaqiyatli ro'yhatga olindi");
+        ? $this->errorResponse($data['message'] ?? "Kechirasiz promocodedan avval foydalanilgan", ['promocode' => $data['message'] ?? "Kechirasiz promocodedan avval foydalanilgan"], 422)
+        : $this->successResponse($data, $data['message'] ?? "Promocode movaffaqiyatli ro'yhatga olindi");
     }
-
-
 
     public function listParticipationHistory(Request $request, $promotionId)
     {
-        $user = $request['auth_user'];
+        $user       = $request['auth_user'];
         $promo_user = PromoCodeUser::where('promotion_id', $promotionId)
             ->where('user_id', $user['id'])
             ->with([

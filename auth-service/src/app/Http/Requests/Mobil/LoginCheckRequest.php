@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Requests\Mobil;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,8 +22,8 @@ class LoginCheckRequest extends FormRequest
     {
         return [
             'password' => 'required',
-            'token' => 'required',
-            'uuid' => 'required'
+            // 'token' => 'required',
+            'uuid'     => 'required',
         ];
     }
 }

@@ -70,6 +70,12 @@ class Promotions extends Model
     {
         return $this->hasMany(PromotionParticipationType::class, 'promotion_id')->with('participationType');
     }
+
+    public function participantTypeIds()
+    {
+        return $this->belongsToMany(ParticipationType::class, 'promotion_participation_types', 'promotion_id', 'participation_type_id');
+    }
+
     public function participationTypesSms()
     {
         return $this->hasMany(PromotionParticipationType::class, 'promotion_id')->with('participationType')->whereHas('participationType', function ($query) {
@@ -87,6 +93,12 @@ class Promotions extends Model
             ->withPivot(['is_enabled', 'additional_rules'])
             ->withTimestamps();
     }
+
+    public function platformIds()
+    {
+        return $this->belongsToMany(Platform::class, 'platform_promotions', 'promotion_id', 'platform_id');
+    }
+
     public function promoActions()
     {
         return $this->hasMany(PromoAction::class, 'promotion_id');

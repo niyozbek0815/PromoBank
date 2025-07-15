@@ -55,8 +55,8 @@ RUN pecl install redis \
 # 4. AMQP (RabbitMQ) extension o‘rnatish
 RUN pecl install amqp \
     && docker-php-ext-enable amqp
-
-# 5. Tozalash
+RUN echo "upload_max_filesize=200M\npost_max_size=250M" > /usr/local/etc/php/conf.d/uploads.ini
+# 5. Tozalashs]
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # 6. Ishlash katalogi

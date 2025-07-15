@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Requests\Mobil;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -22,9 +21,9 @@ class GuestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'uuid' => 'required|string',
-            'model' => "required|string",
-            'platform' => "required|string|in:iOS,Android,Linux"
+            'uuid'     => 'required|string',
+            'model'    => "required|string",
+            'platform' => "required|string|in:ios,android,linux",
         ];
     }
 }

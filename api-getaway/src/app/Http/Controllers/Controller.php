@@ -5,6 +5,7 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 abstract class Controller
 {
@@ -101,31 +102,34 @@ abstract class Controller
             $hasFiles = collect($fileKeys)->some(fn($key) => $request->hasFile($key));
 
             if (in_array($method, ['POST', 'PUT']) && $hasFiles) {
-                $http = $http->asMultipart();
+                $multipartData = collect();
 
-                // Form-data (text) tayyorlash
-                $multipartData = collect($request->except($fileKeys))
-                    ->flatMap(function ($value, $key) {
-                        if (is_array($value)) {
-                            return collect($value)->map(function ($subValue, $subKey) use ($key) {
-                                return [
-                                    'name'     => is_numeric($subKey) ? "{$key}[]" : "{$key}[{$subKey}]",
-                                    'contents' => $subValue,
-                                ];
-                            })->values();
+                // 🔹 1. Oddiy fieldlar (text, array, translations, etc.)
+                foreach ($request->except($fileKeys) as $key => $value) {
+                    if (is_array($value)) {
+                        foreach ($value as $subKey => $subVal) {
+                            $fieldName = is_numeric($subKey) ? "{$key}[]" : "{$key}[{$subKey}]";
+                            $multipartData->push([
+                                'name'     => $fieldName,
+                                'contents' => $subVal,
+                            ]);
                         }
-                        return [[
+                    } else {
+                        $multipartData->push([
                             'name'     => $key,
                             'contents' => $value,
-                        ]];
-                    })->values();
+                        ]);
+                    }
+                }
 
-                // Fayllarni qo‘shish (bir dona yoki array)
+                // 🔹 2. Fayllar
                 foreach ($fileKeys as $fileKey) {
                     if ($request->hasFile($fileKey)) {
                         $files = $request->file($fileKey);
 
                         if ($files instanceof UploadedFile) {
+                            Log::info("media_name=" . $files->getClientOriginalName());
+
                             // Bitta fayl
                             $multipartData->push([
                                 'name'     => $fileKey,
@@ -135,29 +139,34 @@ abstract class Controller
                         } elseif (is_array($files)) {
                             // Ko‘p fayl
                             foreach ($files as $file) {
-                                $multipartData->push([
-                                    'name'     => "{$fileKey}[]",
-                                    'contents' => fopen($file->getPathname(), 'r'),
-                                    'filename' => $file->getClientOriginalName(),
-                                ]);
+                                if ($file instanceof UploadedFile) {
+                                    $multipartData->push([
+                                        'name'     => "{$fileKey}[]", // ❗️❗️ NOT "{$fileKey}[]"!
+                                        'contents' => fopen($file->getPathname(), 'r'),
+                                        'filename' => $file->getClientOriginalName(),
+                                    ]);
+                                }
                             }
+
                         }
                     }
                 }
 
-                // Agar method PUT bo‘lsa, _method ni berish kerak
+                // 🔹 3. PUT bo‘lsa _method=PUT kerak
                 if ($method === 'PUT') {
                     $multipartData->push([
                         'name'     => '_method',
                         'contents' => 'PUT',
                     ]);
-                    return $http->post($url, $multipartData->all());
                 }
 
-                return $http->post($url, $multipartData->all());
+                // 🔹 4. So‘rovni yuborish
+                return $http->send('POST', $url, [
+                    'multipart' => $multipartData->toArray(),
+                ]);
             }
 
-            // Faylsiz GET/POST/PUT/DELETE
+            // 🔹 5. Faylsiz oddiy so‘rovlar
             return match ($method) {
                 'GET' => $http->get($url, $request->query()),
                 'POST' => $http->post($url, $request->all()),
@@ -165,12 +174,13 @@ abstract class Controller
                 'DELETE' => $http->delete($url, $request->all()),
                 default => throw new \InvalidArgumentException("Unsupported HTTP method: $method"),
             };
-        } catch (\Exception $e) {
-            return $this->errorResponse(
-                'Internal error from external service',
-                $e->getMessage(),
-                503
-            );
+
+        } catch (Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Internal error from external service',
+                'errors'  => $e->getMessage(),
+            ], 503);
         }
     }
 }

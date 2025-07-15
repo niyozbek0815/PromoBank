@@ -48,6 +48,14 @@
                         searchable: false
                     },
                     {
+                        data: 'platform_names',
+                        name: 'platform_names'
+                    },
+                    {
+                        data: 'participant_types',
+                        name: 'participant_types'
+                    },
+                    {
                         data: 'status',
                         name: 'status',
                         orderable: false,
@@ -187,6 +195,8 @@
                         <th>Sarlavha</th>
                         <th>Tavsif</th>
                         <th>Kompaniya</th>
+                        <th>Platformalar</th>
+                        <th>Ishtirok etish turlari</th>
                         <th>Faollik</th>
                         <th>Ommaviylik</th>
                         <th>Boshlanish</th>

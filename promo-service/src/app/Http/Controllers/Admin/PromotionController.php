@@ -20,14 +20,23 @@ class PromotionController extends Controller
     public function companydata(Request $request, $id)
     {
 
-        $query = Promotions::with('company')
-            ->where('company_id', $id)
+        $query = Promotions::with([
+            'company:id,name',
+            'platforms:id,name',                                 // platforma nomlarini olish uchun
+            'participationTypes.participationType:id,name,slug', // qo‘shilgan aloqador turlar
+        ])->where('company_id', $id)
             ->select('promotions.*');
 
         return DataTables::of($query)
             ->addColumn('name', fn($item) => Str::limit($item->getTranslation('name', 'uz') ?? '-', 15))
             ->addColumn('title', fn($item) => Str::limit($item->getTranslation('title', 'uz') ?? '-', 20))
             ->addColumn('description', fn($item) => Str::limit($item->getTranslation('description', 'uz') ?? '-', 25))
+            ->addColumn('platform_names', function ($item) {
+                return $item->platforms->pluck('name')->implode(', ') ?: '-';
+            })
+            ->addColumn('participant_types', function ($item) {
+                return $item->participationTypes->pluck('participationType.name')->implode(', ') ?: '-';
+            })
             ->addColumn('status', fn($item) => $item->status
                 ? '<span class="badge bg-success">Faol</span>'
                 : '<span class="badge bg-danger">Nofaol</span>'
@@ -54,15 +63,23 @@ class PromotionController extends Controller
     }
     public function data(Request $request)
     {
-
-        $query = Promotions::with(['company'])
-            ->select('promotions.*');
-        Log::info('Promotion', ['promo' => $query->get()]);
+        $query = Promotions::with([
+            'company:id,name',
+            'platforms:id,name',                                 // platforma nomlarini olish uchun
+            'participationTypes.participationType:id,name,slug', // qo‘shilgan aloqador turlar
+        ])->select('promotions.*');
+        // Log::info('Promotion', ['promo' => $query->get()]);
         return DataTables::of($query)
             ->addColumn('name', fn($item) => Str::limit($item->getTranslation('name', 'uz') ?? '-', 15))
             ->addColumn('title', fn($item) => Str::limit($item->getTranslation('title', 'uz') ?? '-', 20))
             ->addColumn('description', fn($item) => Str::limit($item->getTranslation('description', 'uz') ?? '-', 25))
             ->addColumn('company_name', fn($item) => Str::limit($item->company->getTranslation('name', 'uz') ?? '-', 15))
+            ->addColumn('platform_names', function ($item) {
+                return $item->platforms->pluck('name')->implode(', ') ?: '-';
+            })
+            ->addColumn('participant_types', function ($item) {
+                return $item->participationTypes->pluck('participationType.name')->implode(', ') ?: '-';
+            })
             ->addColumn('status', fn($item) => $item->status
                 ? '<span class="badge bg-success">Faol</span>'
                 : '<span class="badge bg-danger">Nofaol</span>'
@@ -152,98 +169,142 @@ class PromotionController extends Controller
     }
     public function store(Request $request)
     {
-        $user = $request->get('auth_user');
 
-        Log::info("store user", ['user' => $user]);
         $validated = $request->validate([
             'name'                => 'required|array',
             'title'               => 'required|array',
             'description'         => 'required|array',
-
             'company_id'          => 'required|exists:companies,id',
             'start_date'          => 'nullable|date',
             'end_date'            => 'nullable|date|after_or_equal:start_date',
-            'created_by_user_id'  => 'required|string|max:255',
-            // 'code_settings'       => 'nullable|json',
-            // 'extra_conditions'    => 'nullable|json',
 
             'participants_type'   => 'nullable|array',
             'participants_type.*' => 'integer',
 
             'platforms'           => 'nullable|array',
             'platforms.*'         => 'integer',
+            'created_by_user_id'  => 'required|string|max:255',
 
-            'logo'                => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'video'               => 'nullable|file|mimes:mp4,mov,avi,webm|max:10240',
+            'offer_file'          => 'required|file|mimes:pdf,doc,docx,odt,rtf,txt|max:5120',
+            'media_preview'       => 'required|file|mimes:jpg,jpeg,png,gif,mp4,webm|max:5120',
+            'media_gallery'       => 'required|array|max:10',
+            'media_gallery.*'     => 'file|mimes:jpg,jpeg,png,gif,mp4,webm|max:20480',
+
+            'status'              => 'nullable|boolean',
+            'is_public'           => 'nullable|boolean',
+            'is_prize'            => 'nullable|boolean',
+        ]);
+        $promotion = Promotions::create([
+            'name'               => $validated['name'],
+            'title'              => $validated['title'],
+            'description'        => $validated['description'],
+            'company_id'         => $validated['company_id'],
+            'start_date'         => $validated['start_date'] ?? null,
+            'end_date'           => $validated['end_date'] ?? null,
+            'status'             => $request->boolean('status'),
+            'is_public'          => $request->boolean('is_public'),
+            'is_prize'           => $request->boolean('is_prize'),
+            'created_by_user_id' => $validated['created_by_user_id'],
+        ]);
+        $promotion->platformIds()->sync($validated['platforms'] ?? []);
+        $promotion->participantTypeIds()->sync($validated['participants_type'] ?? []);
+
+        if ($request->hasFile('offer_file')) {
+            Log::info('📎 Offer file mavjud. Yuklanmoqda...');
+            // $promotion->addMediaFromRequest('offer_file')->toMediaCollection('offer');
+
+        }
+
+        if ($request->hasFile('media_preview')) {
+            Log::info('📎 Media preview fayl mavjud. Yuklanmoqda...');
+            // $promotion->addMediaFromRequest('media_preview')->toMediaCollection('preview');
+        }
+
+        if ($request->hasFile('media_gallery')) {
+            Log::info('📎 Media galereya fayllari mavjud. Fayllar soni: ' . count($request->file('media_gallery')));
+            foreach ($request->file('media_gallery') as $index => $file) {
+            }
+        }
+
+        return response()->json([
+            'message'                    => 'Promoaksiya muvaffaqiyatli saqlandi.',
+            'id'                         => $promotion->id,
+            'platform'                   => $promotion->platformIds,
+            'attached_participants_type' => $promotion->participantTypeIds,
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name'                => 'required|array',
+            'title'               => 'required|array',
+            'description'         => 'required|array',
+            'company_id'          => 'required|exists:companies,id',
+            'start_date'          => 'nullable|date',
+            'end_date'            => 'nullable|date|after_or_equal:start_date',
+
+            'participants_type'   => 'nullable|array',
+            'participants_type.*' => 'integer',
+
+            'platforms'           => 'nullable|array',
+            'platforms.*'         => 'integer',
+            'created_by_user_id'  => 'required|string|max:255',
+
+            'offer_file'          => 'nullable|file|mimes:pdf,doc,docx,odt,rtf,txt|max:5120',
+            'media_preview'       => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,webm|max:5120',
+            'media_gallery'       => 'nullable|array|max:10',
+            'media_gallery.*'     => 'file|mimes:jpg,jpeg,png,gif,mp4,webm|max:20480',
 
             'status'              => 'nullable|boolean',
             'is_public'           => 'nullable|boolean',
             'is_prize'            => 'nullable|boolean',
         ]);
 
-        $promotion = new Promotions();
-        $promotion->setTranslations('name', $validated['name']);
-        $promotion->setTranslations('title', $validated['title']);
-        $promotion->setTranslations('description', $validated['description']);
-        $promotion->company_id = $validated['company_id'];
-        $promotion->start_date = $validated['start_date'] ?? null;
-        $promotion->end_date   = $validated['end_date'] ?? null;
-        // $promotion->code_settings      = json_decode($validated['code_settings'] ?? '{}', true);
-        // $promotion->extra_conditions   = json_decode($validated['extra_conditions'] ?? '{}', true);
-        $promotion->status             = $request->boolean('status');
-        $promotion->is_public          = $request->boolean('is_public');
-        $promotion->is_prize           = $request->boolean('is_prize');
-        $promotion->created_by_user_id = $user['id']; // yoki $request->user()->id
-        $promotion->save();
+        $promotion = Promotions::findOrFail($id);
 
-        // Platformlar va participants (agar alohida jadval bo‘lsa)
-        $promotion->platforms()->sync($validated['platforms'] ?? []);
-        $promotion->participants()->sync($validated['participants_type'] ?? []);
+        $promotion->update([
+            'name'               => $validated['name'],
+            'title'              => $validated['title'],
+            'description'        => $validated['description'],
+            'company_id'         => $validated['company_id'],
+            'start_date'         => $validated['start_date'] ?? null,
+            'end_date'           => $validated['end_date'] ?? null,
+            'status'             => $request->boolean('status'),
+            'is_public'          => $request->boolean('is_public'),
+            'is_prize'           => $request->boolean('is_prize'),
+            'created_by_user_id' => $validated['created_by_user_id'],
+        ]);
 
-        // Fayllarni saqlash (media library yoki storage bo‘lsa)
-        if ($request->hasFile('logo')) {
-            $promotion->addMediaFromRequest('logo')->toMediaCollection('logo');
+        // Fayllar yangilanishi
+        if ($request->hasFile('offer_file')) {
+            Log::info('📎 Offer fayli yangilanmoqda...');
+            // $promotion->clearMediaCollection('offer');
+            // $promotion->addMediaFromRequest('offer_file')->toMediaCollection('offer');
         }
 
-        if ($request->hasFile('video')) {
-            $promotion->addMediaFromRequest('video')->toMediaCollection('video');
+        if ($request->hasFile('media_preview')) {
+            Log::info('📎 Preview fayli yangilanmoqda...');
+            // $promotion->clearMediaCollection('preview');
+            // $promotion->addMediaFromRequest('media_preview')->toMediaCollection('preview');
         }
+
+        if ($request->hasFile('media_gallery')) {
+            Log::info('📎 Media galereyasi yangilanmoqda...');
+            // $promotion->clearMediaCollection('gallery');
+            foreach ($request->file('media_gallery') as $file) {
+                // $promotion->addMedia($file)->toMediaCollection('gallery');
+            }
+        }
+
+        // Platform/participants agar mavjud bo‘lsa
+        // $promotion->platforms()->sync($validated['platforms'] ?? []);
+        // $promotion->participants()->sync($validated['participants_type'] ?? []);
 
         return response()->json([
-            'message' => 'Promoaksiya muvaffaqiyatli saqlandi.',
+            'message' => 'Promoaksiya muvaffaqiyatli yangilandi.',
             'id'      => $promotion->id,
         ]);
     }
-
-    // public function update(Request $request, $id)
-    // {
-    //     $user      = Promotions::findOrFail($id);
-    //     $validated = $request->validate([
-    //         'name'        => 'required|string|max:255',
-    //         'email'       => 'nullable|email|max:255|unique:users,email,' . $user->id,
-    //         'phone'       => 'required|string|max:50|regex:/^\+?\d{7,50}$/|unique:users,phone,' . $user->id,
-    //         'phone2'      => 'nullable|string|max:50|regex:/^\+?\d{7,50}$/',
-    //         'region_id'   => 'required|exists:regions,id',
-    //         'district_id' => 'required|exists:districts,id',
-    //         'birthdate'   => [
-    //             'required',
-    //             'date_format:Y-m-d',
-    //             'before_or_equal:today',
-    //         ],
-    //         'chat_id'     => 'required|string|max:50|unique:users,chat_id,' . $user->id,
-    //         'gender'      => 'required|in:M,F',
-    //         'image'       => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-    //     ]);
-    //     if ($request->hasFile('image')) {
-    //         $file     = $request->file('image');
-    //         $tempPath = $file->store('tmp', 'public');
-    //         Log ::info("image mavjud" . $tempPath);
-    //         // Queue::connection('rabbitmq')->push(new UserUpdateMediaJob($user['id'], $tempPath));
-    //     }
-
-    //     $user->update($validated);
-
-    //     return response()->json(['message' => 'Foydalanuvchi yangilandi.']);
-    // }
 
 }

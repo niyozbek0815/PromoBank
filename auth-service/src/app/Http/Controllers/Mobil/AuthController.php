@@ -38,7 +38,7 @@ class AuthController extends Controller
                 'is_guest' => true,
             ]
         );
-        JWTAuth::factory()->setTTL(60);
+        JWTAuth::factory()->setTTL(1);
         $token = JWTAuth::claims([
             'ip' => $request->header('User-Ip'),
         ])->fromUser($user);
@@ -71,12 +71,18 @@ class AuthController extends Controller
         $token = $request->bearerToken();
 
         if (! $token) {
-            return $this->errorResponse('Token not provided', ['error' => 'Token not provided'], 401);
+            return $this->errorResponse(
+                'Validatsiya xatoligi',
+                ['token' => ['Token not provided']],
+                401
+            );
         }
+
         try {
-            JWTAuth::factory()->setTTL(60);
+            JWTAuth::factory()->setTTL(1);
             $newToken = JWTAuth::setToken($token)->refresh();
             $payload  = JWTAuth::setToken($newToken)->getPayload();
+
             return $this->successResponse(
                 [
                     'token'    => $newToken,
@@ -85,20 +91,31 @@ class AuthController extends Controller
                     'is_guest' => $payload->get('is_guest'),
                     'ip'       => $payload->get('ip'),
                 ],
-                "Guest token created saccecfully"
+                'Guest token created successfully'
             );
+
         } catch (TokenExpiredException $e) {
-            return $this->errorResponse('Token expired and cannot be refreshed', $e->getMessage(), 401);
+            return $this->errorResponse(
+                'Token muddati tugagan, qayta olishning iloji yo‘q',
+                ['token' => ['Token expired and cannot be refreshed']],
+                401
+            );
+
         } catch (\Exception $e) {
-            return $this->errorResponse('Cannot refresh token', $e->getMessage(), 401);
+            return $this->errorResponse(
+                'Tokenni yangilab bo‘lmadi',
+                ['token' => [$e->getMessage()]],
+                401
+            );
         }
+
     }
     public function login(LoginRequuest $request)
     {
         $phone = $request->input('phone');
         $data  = $this->authService->login($phone);
         if ($data['code'] == 422) {
-            return $this->errorResponse($data["message"], $data["message"], 422);
+            return $this->errorResponse($data["message"], ['error' => $data["message"]], 422);
         } else {
             // return response()->json($data["result"]);
             return $this->successResponse(
@@ -126,7 +143,7 @@ class AuthController extends Controller
             if ($data['error']) {
                 return $this->errorResponse(
                     $data['success'],
-                    $data['success'],
+                    ['error' => $data['success']],
                     422
                 );
             } else {
@@ -153,7 +170,9 @@ class AuthController extends Controller
         if ($request->filled('avatar')) {
             Queue::connection('redis')->push(new UploadUserAvatarJob($id, $request['avatar']));
         }
-        return $this->successResponse(['user' => new UserResource($user->load(['media', 'district', 'region']))], "User muvaffaqiyatli ro‘yxatdan o‘tdi");
+        return $this->successResponse(
+            new UserResource($user->load(['media', 'district', 'region'])),
+            "User muvaffaqiyatli ro‘yxatdan o‘tdi");
     }
     public function userupdate(UserUpdateRequest $request)
     {
@@ -177,20 +196,18 @@ class AuthController extends Controller
                 'user'            => new UserResource($user->load(['media', 'district', 'region']))], "User data updated Successfully!!!");
         } else {
             $return = $this->authService->update($user, $data);
-            if ($return['error_type'] == 422) {
-                return $this->errorResponse($return["result"], 422);
-            } else {
-                return $this->successResponse(
-                    [
-                        'token'           => $return['token'],
-                        'user_id'         => $return['user_id'],
-                        "is_verification" => true,
-                        "response"        => $data,
-                    ],
-                    "Updated Code Sended!!!"
-                );
-            }
+
+            return $this->successResponse(
+                [
+                    'token'           => $return['token'],
+                    'user_id'         => $return['user_id'],
+                    "is_verification" => true,
+                    "response"        => $data,
+                ],
+                "Updated Code Sended!!!"
+            );
         }
+
     }
 
     public function checkUpdate(CheckUpdateRequest $request)
@@ -202,11 +219,10 @@ class AuthController extends Controller
         $data     = $this->authService->checkUpdate($user, $req, );
 
         if ($data['error_type'] == 422) {
-
-            return $this->errorResponse("Parol xato yoki eskirgan iltimos qayta urinib ko'ring !!!", 422);
+            return $this->errorResponse("Parol xato yoki eskirgan iltimos qayta urinib ko'ring !!!", ['error' => "Parol xato yoki eskirgan iltimos qayta urinib ko'ring !!!"], 422);
         } else {
             return $this->successResponse(
-                ['user' => new UserResource($user->load(['media', 'district', 'region']))],
+                new UserResource($user->load(['media', 'district', 'region'])),
                 "User Updated Successfully!!!"
             );
         }
@@ -217,7 +233,7 @@ class AuthController extends Controller
         $id       = $user_req['id'];
         $user     = User::with(['media', 'district', 'region'])->findOrFail($id);
         return $this->successResponse(
-            ['user' => new UserResource($user)],
+            new UserResource($user),
             "User Get Successfully!!!"
         );
     }
