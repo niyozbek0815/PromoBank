@@ -3,7 +3,6 @@ namespace App\Http\Controllers\Admin\Promo;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class PromotionController extends Controller
 {
@@ -19,18 +18,14 @@ class PromotionController extends Controller
 
     public function create(Request $request)
     {
-        // dd($company_id = $request->query('company_id'));
         $response = $this->forwardRequest("GET", $this->url, "front/promotion/create", $request);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             $companies         = $response->json('companies');
             $platforms         = $response->json('platforms');
             $partisipants_type = $response->json('partisipants_type');
             $selectedCompanyId = $request->query('company_id');
-
-            // dd($companies);
             return view('admin.promotion.create', compact(var_name: ['companies', 'platforms', 'partisipants_type', 'selectedCompanyId']));
         }
-
     }
     public function companydata(Request $request, $id)
     {
@@ -61,8 +56,6 @@ class PromotionController extends Controller
     }
     public function delete(Request $request, $id)
     {
-        Log::info(message: "so'rov keldi delete");
-
         $response = $this->forwardRequest("POST", $this->url, "front/promotion/{$id}/delete", $request);
         if ($response->ok()) {
             return redirect()->back()->with('success', 'Promo aksiya o‘chirildi.');
@@ -81,13 +74,16 @@ class PromotionController extends Controller
     public function edit(Request $request, $id)
     {
         $response = $this->forwardRequest("GET", $this->url, "front/promotion/{$id}/edit", $request);
-
         if ($response->ok()) {
             $data = $response->json();
-            dd($data);
-            // return view('admin.users.edit', compact('data'));
+            return view('admin.promotion.edit', [
+                'promotion'         => $data['promotion'],
+                'platforms'         => $data['platforms'],         // id => name format
+                'partisipants_type' => $data['partisipants_type'], // id => name format
+                'companies'         => $data['companies'],         // [id, name] list
+            ]);
         }
-        return redirect()->back()->with('error', 'Foydalanuvchi topilmadi.');
+        return redirect()->back()->with('error', 'Promoaksiya topilmadi.');
     }
     public function store(Request $request)
     {
@@ -98,7 +94,7 @@ class PromotionController extends Controller
             $request,
             ['media_preview', 'media_gallery', 'offer_file']// Fayl nomlari (formdagi `name=""`)
         );
-        dd(vars: $response->json());
+        dd($response);
         if ($response->ok()) {
             return redirect()->route('admin.promotion.index')
                 ->with('success', 'Promoaksiya muvaffaqiyatli saqlandi.');
@@ -108,8 +104,29 @@ class PromotionController extends Controller
                 ->withErrors($response->json('errors'))
                 ->withInput();
         }
-        Log::error('Promo saqlashda xatolik', ['response' => $response->body()]);
         return redirect()->back()->with('error', 'Promoaksiya saqlanmadi.');
+    }
+    public function update(Request $request, $id)
+    {
+        $response = $this->forwardRequestMedias(
+            'POST', // PUT emas, chunki multipart so‘rovda faqat POST ishlaydi
+            $this->url,
+            "front/promotion/{$id}", // yangilanayotgan promo
+            $request,
+            ['media_preview', 'media_gallery', 'offer_file']
+        );
+        if ($response->ok()) {
+            return redirect()->route('admin.promotion.index')
+                ->with('success', 'Promoaksiya muvaffaqiyatli yangilandi.');
+        }
+
+        if ($response->status() === 422) {
+            return redirect()->back()
+                ->withErrors($response->json('errors'))
+                ->withInput();
+        }
+
+        return redirect()->back()->with('error', 'Promoaksiya yangilanmadi.');
     }
 
 }

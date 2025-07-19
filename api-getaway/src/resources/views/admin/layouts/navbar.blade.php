@@ -417,9 +417,8 @@
              <li class="nav-item nav-item-dropdown-lg dropdown ms-lg-2">
                  <a href="#" class="navbar-nav-link align-items-center rounded-pill p-1"
                      data-bs-toggle="dropdown">
-                     @if (!empty($user['image']))
-                         <img src="{{ asset('uploads/users/' . $user['image']) }}" class="w-32px h-32px rounded-pill"
-                             alt="">
+                     @if (!empty($user['avatar']))
+                         <img src="{{ $user['avatar'] }}" class="w-32px h-32px rounded-pill" alt="">
                      @else
                          <img src="{{ asset('adminpanel/assets/images/user.jpg') }}"
                              class="w-32px h-32px rounded-pill" alt="">

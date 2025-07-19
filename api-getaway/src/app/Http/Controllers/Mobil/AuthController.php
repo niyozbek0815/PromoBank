@@ -1,9 +1,9 @@
 <?php
-
 namespace App\Http\Controllers\Mobil;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -67,6 +67,8 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
+        Log::info("Me ishladi");
+
         $response = $this->forwardRequest("GET", $this->url, '/me', $request);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());

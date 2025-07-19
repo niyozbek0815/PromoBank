@@ -1,12 +1,11 @@
 <?php
 namespace App\Services;
 
-use App\Jobs\UserUpdateAvatarJob;
+use App\Jobs\StoreBase64MediaJob;
 use App\Models\User;
 use App\Models\UserOtps;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Queue;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthService
@@ -107,7 +106,19 @@ class AuthService
                 'gender'      => $req['gender'],
             ]);
             if ($req['avatar'] !== null) {
-                Queue::connection('redis')->push(new UserUpdateAvatarJob($user['id'], $user, $req['avatar']));
+                $deletedImages = $user->media
+                    ->where('collection_name', 'user_avatar')
+                    ->sortByDesc('created_at')
+                    ->pluck('url')
+                    ->toArray();
+
+                StoreBase64MediaJob::dispatch(
+                    base64: $req['avatar'],
+                    context: 'user_avatar',
+                    correlationId: $user->id,
+                    callbackQueue: 'auth-queue',
+                    deleteMediaUrls: $deletedImages
+                )->onQueue('media_queue');
             }
             return ["error_type" => 200];
         } else {

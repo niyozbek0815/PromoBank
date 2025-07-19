@@ -35,9 +35,7 @@ class FrontAuthController extends Controller
 
         try {
             $user = User::where('email', $credentials['email'])->first();
-            Log::info('UserData', [
-                'user' => $user,
-            ]);
+
             if (! $user || ! \Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
                 Log::warning('Invalid credentials attempt', [
                     'email' => $request->input('email'),
@@ -69,7 +67,7 @@ class FrontAuthController extends Controller
 
         return response()->json([
             'token'       => $token,
-            'user'        => $user->only(['id', 'name', 'email', 'phone', 'chat_id']),
+            'user'        => $user->only(['id', 'name', 'email', 'phone', 'chat_id', 'avatar']),
             'roles'       => $user->getRoleNames(),
             'permissions' => $user->getAllPermissions()->pluck('name'),
         ]);
@@ -110,7 +108,7 @@ class FrontAuthController extends Controller
 
             return response()->json([
                 'token'       => $newToken,
-                'user'        => $user->only(['id', 'name', 'email', 'phone']),
+                'user'        => $user->only(['id', 'name', 'email', 'phone', 'avatar']),
                 'roles'       => $user->getRoleNames(),
                 'permissions' => $user->getAllPermissions()->pluck('name'),
             ]);

@@ -44,9 +44,11 @@ Route::prefix('front')->group(function () {
         ->group(function () {
             Route::get('/{id}/data', 'companydata')->name('companydata'); // AJAX uchun server-side table
             Route::get('/data', 'data')->name('data');
-            Route::get('/{id}/edit', 'edit')->name('edit');              // GET — edit form
-            Route::post('/', 'store')->name('store');                    // POST — create
-            Route::put('/{id}', 'update')->name('update');               // PUT — update
+            Route::get('/{id}/edit', 'edit')->name('edit'); // GET — edit form
+            Route::post('/', 'store')->name('store');       // POST — create
+                                                            // ✅ POST va PUT ikkalasini qo‘llab-quvvatlaydi
+            Route::match(['POST', 'PUT'], '/{id}', [PromotionController::class, 'update'])->name('update');
+// PUT — update
             Route::post('{id}/delete', 'delete')->name('delete');        // admin.socialcompany.delete
             Route::post('/{id}/status', 'changeStatus')->name('status'); // POST — toggle status
             Route::post('/{id}/public', 'changePublic')->name('public'); // POST — toggle status

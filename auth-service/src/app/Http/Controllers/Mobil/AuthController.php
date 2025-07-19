@@ -9,13 +9,13 @@ use App\Http\Requests\Mobil\LoginRequuest;
 use App\Http\Requests\Mobil\RegisterRequest;
 use App\Http\Requests\Mobil\UserUpdateRequest;
 use App\Http\Resources\Mobil\UserResource;
-use App\Jobs\UploadUserAvatarJob;
+use App\Jobs\StoreBase64MediaJob;
 use App\Jobs\UserSessionJob;
-use App\Jobs\UserUpdateAvatarJob;
 use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -42,8 +42,7 @@ class AuthController extends Controller
         $token = JWTAuth::claims([
             'ip' => $request->header('User-Ip'),
         ])->fromUser($user);
-
-        Queue::connection('redis')->push(new UserSessionJob($user['id'], $request->header('User-Ip'), $req, $request->header('User-Agent')));
+        Queue::connection('rabbitmq')->push(new UserSessionJob($user['id'], $request->header('User-Ip'), $req, $request->header('User-Agent')));
 
         // $session = DB::table('sessions')->insert([
         //     'id' => Str::random(32), // Random id
@@ -120,11 +119,10 @@ class AuthController extends Controller
             // return response()->json($data["result"]);
             return $this->successResponse(
                 [
-                    'phone'            => $phone,
-                    'user_id'          => $data['user_id'],
-                    'token'            => $data['token'],
-                    'is_new'           => $data['is_new'],
-                    'default_sms_code' => "Code: 111111. bu o'zaruvchi olib tashlanadi sms xizmat ulanganda.",
+                    'phone'   => $phone,
+                    'user_id' => $data['user_id'],
+                    'token'   => $data['token'],
+                    'is_new'  => $data['is_new'],
                 ],
                 "Sms muofaqiyatli jo'natildi"
             );
@@ -157,18 +155,31 @@ class AuthController extends Controller
     }
     public function register(RegisterRequest $request)
     {
+        $userReq = $request['auth_user'];
+        $user    = User::findOrFail($userReq['id']);
+        $user->update([
+            'region_id'   => $request['region_id'],
+            'district_id' => $request['district_id'],
+            'name'        => $request->input('name'),
+            'phone2'      => $request['phone2'],
+            'gender'      => $request['gender'],
+            'birthdate'   => $request['birthdate'],
+        ]);
+        $user->load('media');
 
-        $user_req          = $request['auth_user'];
-        $id                = $user_req['id'];
-        $user              = User::findOrFail($id);
-        $user->region_id   = $request['region_id'];
-        $user->district_id = $request['district_id'];
-        $user->name        = $request->input('name');
-        $user->phone2      = $request['phone2'];
-        $user->gender      = $request['gender'];
-        $user->save();
         if ($request->filled('avatar')) {
-            Queue::connection('redis')->push(new UploadUserAvatarJob($id, $request['avatar']));
+            $deletedImages = $user->media
+                ->where('collection_name', 'user_avatar')
+                ->sortByDesc('created_at')
+                ->pluck('url')
+                ->toArray();
+            StoreBase64MediaJob::dispatch(
+                base64: $request['avatar'],
+                context: 'user_avatar',
+                correlationId: $user->id,
+                callbackQueue: 'auth-queue',
+                deleteMediaUrls: $deletedImages
+            )->onQueue('media_queue');
         }
         return $this->successResponse(
             new UserResource($user->load(['media', 'district', 'region'])),
@@ -178,7 +189,8 @@ class AuthController extends Controller
     {
         $data     = $request->validated();
         $user_req = $request['auth_user'];
-        $user     = User::with('media')->findOrFail($user_req['id']);
+        $user     = User::findOrFail($user_req['id']);
+        Log::info("datas", ['user->phone' => $user->phone, 'request->phone' => $data['phone']]);
         if ($user->phone === $data['phone']) {
             $user->update([
                 'name'        => $data['name'],
@@ -187,13 +199,26 @@ class AuthController extends Controller
                 'district_id' => $data['district_id'],
                 'phone2'      => $data['phone2'],
                 'gender'      => $data['gender'],
+                'birthdate'   => $request['birthdate'],
             ]);
             if ($request->filled('avatar')) {
-                Queue::connection('redis')->push(new UserUpdateAvatarJob($user_req['id'], $user, $request['avatar']));
+                $deletedImages = $user->media
+                    ->where('collection_name', 'user_avatar')
+                    ->sortByDesc('created_at')
+                    ->pluck('url')
+                    ->toArray();
+
+                StoreBase64MediaJob::dispatch(
+                    base64: $request['avatar'],
+                    context: 'user_avatar',
+                    correlationId: $user->id,
+                    callbackQueue: 'auth-queue',
+                    deleteMediaUrls: $deletedImages
+                )->onQueue('media_queue');
             }
             return $this->successResponse([
                 "is_verification" => true,
-                'user'            => new UserResource($user->load(['media', 'district', 'region']))], "User data updated Successfully!!!");
+                'user'            => new UserResource($user->load(['district', 'region']))], "User data updated Successfully!!!");
         } else {
             $return = $this->authService->update($user, $data);
 
@@ -222,7 +247,7 @@ class AuthController extends Controller
             return $this->errorResponse("Parol xato yoki eskirgan iltimos qayta urinib ko'ring !!!", ['error' => "Parol xato yoki eskirgan iltimos qayta urinib ko'ring !!!"], 422);
         } else {
             return $this->successResponse(
-                new UserResource($user->load(['media', 'district', 'region'])),
+                new UserResource($user->load(['district', 'region'])),
                 "User Updated Successfully!!!"
             );
         }
@@ -231,7 +256,7 @@ class AuthController extends Controller
     {
         $user_req = $request['auth_user'];
         $id       = $user_req['id'];
-        $user     = User::with(['media', 'district', 'region'])->findOrFail($id);
+        $user     = User::with(['district', 'region'])->findOrFail($id);
         return $this->successResponse(
             new UserResource($user),
             "User Get Successfully!!!"

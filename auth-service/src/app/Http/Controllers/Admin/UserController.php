@@ -2,7 +2,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\UserUpdateMediaJob;
+use App\Jobs\StoreUploadedMediaJob;
 use App\Models\District;
 use App\Models\Region;
 use App\Models\User;
@@ -83,11 +83,12 @@ class UserController extends Controller
             'gender'      => 'required|in:M,F',
             'image'       => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
+
         if ($request->hasFile('image')) {
             $file     = $request->file('image');
             $tempPath = $file->store('tmp', 'public');
             Log::info("image mavjud" . $tempPath);
-            Queue::connection('rabbitmq')->push(new UserUpdateMediaJob($user['id'], $tempPath));
+            Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'user_avatar', $user->id));
         }
 
         $user->update($validated);

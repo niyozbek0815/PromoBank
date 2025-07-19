@@ -67,8 +67,8 @@ class AuthController extends Controller
             'lang'        => ['nullable', 'in:uz,ru,kr'],
         ]);
         $data['gender'] = match ($data['gender'] ?? null) {
-            'male' => 'M',
-            'female' => 'F',
+            'male' => 'e',
+            'female' => 'a',
             default => null,
         };
         DB::beginTransaction();
@@ -133,8 +133,8 @@ class AuthController extends Controller
             'lang'        => ['nullable', 'in:uz,ru,kr'],
         ]);
         $data['gender'] = match ($data['gender'] ?? null) {
-            'male' => 'M',
-            'female' => 'F',
+            'male' => 'e',
+            'female' => 'a',
             default => null,
         };
 

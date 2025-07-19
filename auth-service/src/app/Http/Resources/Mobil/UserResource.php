@@ -31,7 +31,7 @@ class UserResource extends JsonResource
             'phone'      => $this->phone,
             'phone2'     => $this->phone2 ?? null,
             'gender'     => $this->gender,
-            'avatar'     => $this->getMedia('user_avatar') ?: $default,
+            'avatar'     => $this->avatar,
             'created_at' => $this->created_at?->toDateTimeString(),
             'updated_at' => $this->updated_at?->toDateTimeString(),
         ];

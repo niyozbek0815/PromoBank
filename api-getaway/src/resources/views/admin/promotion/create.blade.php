@@ -100,32 +100,26 @@
                     <h5 class="mb-0">Promoaksiya qo'shish</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.promotion.update', $promotion->id) }}" method="POST"
-                        enctype="multipart/form-data">
-                        @method('PUT')
+                    <form action="{{ route('admin.promotion.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="row">
                             {{-- Translatable fields --}}
                             @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
                                 <div class="col-lg-4 mb-3">
                                     <label class="form-label">Nomi ({{ $label }})</label>
-                                    <input type="text" name="name[{{ $lang }}]" class="form-control"
-                                        value="{{ old('name.' . $lang, $promotion->getTranslation('name', $lang)) }}"
-                                        required>
+                                    <input type="text" name="name[{{ $lang }}]" class="form-control" required>
                                 </div>
                             @endforeach
                             @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
                                 <div class="col-lg-4 mb-3">
                                     <label class="form-label">Sarlavha ({{ $label }})</label>
-                                    <input type="text" name="title[{{ $lang }}]" class="form-control"
-                                        value="{{ old('title.' . $lang, $promotion->getTranslation('title', $lang)) }}"
-                                        required>
+                                    <input type="text" name="title[{{ $lang }}]" class="form-control" required>
                                 </div>
                             @endforeach
                             @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
                                 <div class="col-lg-4 mb-3">
                                     <label class="form-label">Tavsif ({{ $label }})</label>
-                                    <textarea name="description[{{ $lang }}]" class="form-control ckeditor" rows="6" required>{{ old('description.' . $lang, $promotion->getTranslation('description', $lang)) }}</textarea>
+                                    <textarea name="description[{{ $lang }}]" class="form-control ckeditor" rows="6" required></textarea>
                                 </div>
                             @endforeach
                         </div>
@@ -139,7 +133,7 @@
                                     <option value="">Tanlang...</option>
                                     @foreach ($companies as $company)
                                         <option value="{{ $company['id'] }}"
-                                            {{ (isset($selectedCompanyId) && $selectedCompanyId == $company['id']) || old('company_id', $promotion->company_id) == $company['id'] ? 'selected' : '' }}>
+                                            {{ isset($selectedCompanyId) && $selectedCompanyId == $company['id'] ? 'selected' : '' }}>
                                             {{ $company['name'] }}
                                         </option>
                                     @endforeach
@@ -150,15 +144,11 @@
                             </div>
                             <div class="col-lg-4 mb-3">
                                 <label class="form-label">Boshlanish sanasi</label>
-                                <input type="datetime-local" name="start_date" class="form-control"
-                                    value="{{ old('start_date', \Carbon\Carbon::parse($promotion->start_date)->format('Y-m-d\TH:i')) }}"
-                                    required>
+                                <input type="datetime-local" name="start_date" class="form-control" required>
                             </div>
                             <div class="col-lg-4 mb-3">
                                 <label class="form-label">Tugash sanasi</label>
-                                <input type="datetime-local" name="end_date" class="form-control"
-                                    value="{{ old('end_date', \Carbon\Carbon::parse($promotion->end_date)->format('Y-m-d\TH:i')) }}"
-                                    required>
+                                <input type="datetime-local" name="end_date" class="form-control" required>
                             </div>
                         </div>
                         <div class="row">
@@ -170,9 +160,7 @@
                                     required" data-non-selected-text="Please choose">
 
                                     @foreach ($partisipants_type as $name => $id)
-                                        <option value="{{ $id }}"
-                                            {{ in_array($id, old('participants_type', $promotion->participants_type ?? [])) ? 'selected' : '' }}>
-                                            {{ $name }}</option>
+                                        <option value="{{ $id }}">{{ $name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -182,16 +170,14 @@
                                     data-non-selected-text="Please choose">
 
                                     @foreach ($platforms as $name => $id)
-                                        <option value="{{ $id }}"
-                                            {{ in_array($id, old('platforms', $promotion->platforms ?? [])) ? 'selected' : '' }}>
-                                            {{ $name }}</option>
+                                        <option value="{{ $id }}">{{ $name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-lg-4 mb-3 mt-4">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" name="status" value="1"
-                                        id="statusSwitch" {{ old('status', $promotion->status) ? 'checked' : '' }}>
+                                        id="statusSwitch">
                                     <label class="form-check-label" for="statusSwitch">
                                         <strong>Promoaksiya faolligi:</strong><br>
                                         <small class="text-muted">Belgilansa, foydalanuvchilar uchun faol
@@ -202,7 +188,7 @@
                             <div class="col-lg-4 mb-3">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" name="is_public" value="1"
-                                        id="publicSwitch" {{ old('is_public', $promotion->is_public) ? 'checked' : '' }}>
+                                        id="publicSwitch">
                                     <label class="form-check-label" for="publicSwitch">
                                         <strong>Ommaviylik:</strong><br>
                                         <small class="text-muted">Belgilansa, aksiyani barcha ko‘ra oladi</small>
@@ -212,7 +198,7 @@
                             <div class="col-lg-4 mb-3">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" name="is_prize" value="1"
-                                        id="prizeSwitch" {{ old('is_prize', $promotion->is_prize) ? 'checked' : '' }}>
+                                        id="prizeSwitch">
                                     <label class="form-check-label" for="prizeSwitch">
                                         <strong>Yutuqli aksiya:</strong><br>
                                         <small class="text-muted">
@@ -227,12 +213,8 @@
                             {{-- Banner (yagona fayl) --}}
                             <div class="mb-3 col-lg-4">
                                 <label class="form-label">Ommaviy oferta hujjatini yuklang</label>
-                                <input type="file" name="offer_file" class="filepond-offer"
+                                <input type="file" name="offer_file" class="filepond-offer" required
                                     data-max-file-size="5MB" />
-                                @if ($promotion->offer_file)
-                                    <p class="mt-2">Mavjud fayl: <a href="{{ Storage::url($promotion->offer_file) }}"
-                                            target="_blank">{{ basename($promotion->offer_file) }}</a></p>
-                                @endif
 
                                 <div class="form-text text-muted">
                                     <strong>Ruxsat etilgan formatlar:</strong> .pdf, .doc, .docx <br>
@@ -241,13 +223,8 @@
                             </div>
                             <div class="mb-3 col-lg-4">
                                 <label class="form-label">Promoaksiya banneri </label>
-                                <input type="file" name="media_preview" class="filepond-banner"
+                                <input type="file" name="media_preview" class="filepond-banner" required
                                     data-max-file-size="5MB" accept="image/*,video/mp4,video/webm" />
-                                @if ($promotion->media_preview)
-                                    <p class="mt-2">Mavjud banner: <a
-                                            href="{{ Storage::url($promotion->media_preview) }}"
-                                            target="_blank">{{ basename($promotion->media_preview) }}</a></p>
-                                @endif
 
                                 <div class="form-text text-muted">
                                     Bu rasm yoki video promoaksiyaning tashqi ko‘rinishidir.<br>
@@ -258,26 +235,14 @@
                             @php
                                 $user = Session::get('user');
                             @endphp
-                            <input type="text" name="created_by_user_id"
-                                value="{{ old('created_by_user_id', $promotion->created_by_user_id) }}" hidden
+                            <input type="text" name="created_by_user_id" value="{{ $user['id'] }}" hidden
                                 class="form-control" required maxlength="255">
                             {{-- Galereya (bir nechta fayl) --}}
                             <div class="mb-3 col-lg-4">
                                 <label class="form-label">Promoaksiya Media Galereyasi (Bir nechta media)</label>
-                                <input type="file" name="media_gallery[]" class="filepond-gallery" multiple
+                                <input type="file" name="media_gallery[]" class="filepond-gallery" multiple required
                                     data-max-file-size="20MB" data-max-files="10"
                                     accept="image/*,video/mp4,video/webm" />
-                                @if ($promotion->media_gallery)
-                                    <div class="mt-2">
-                                        <p>Mavjud galereya:</p>
-                                        <ul>
-                                            @foreach ($promotion->media_gallery as $media)
-                                                <li><a href="{{ Storage::url($media) }}"
-                                                        target="_blank">{{ basename($media) }}</a></li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @endif
 
                                 <div class="form-text text-muted mt-1">
                                     Bu media fayllar promoaksiyani batafsil tushuntiradi (ko‘rsatmalar, shartlar,

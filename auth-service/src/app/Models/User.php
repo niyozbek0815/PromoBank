@@ -47,6 +47,7 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'birthdate'         => 'date:Y-m-d',
     ];
 
     // JWT interface methods
@@ -56,7 +57,7 @@ class User extends Authenticatable implements JWTSubject
     }
     public function getAvatarAttribute(): ?string
     {
-        return $this->getMedia('user_profile'); // yoki 'avatar'
+        return $this->getMedia('user_avatar'); // yoki 'avatar'
     }
 
     public function getJWTCustomClaims(): array

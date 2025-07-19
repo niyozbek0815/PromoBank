@@ -39,7 +39,6 @@ Route::post('/admin/logout', [LoginController::class, 'logout'])->name('admin.lo
 Route::middleware('checkadmin')->prefix('/admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/profile/update', [ProfileController::class, 'updateProfile'])->name('admin.profile.update');
-
     Route::prefix('/users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('admin.users.index');
         Route::get('/data', [UserController::class, 'data'])->name('admin.users.data');

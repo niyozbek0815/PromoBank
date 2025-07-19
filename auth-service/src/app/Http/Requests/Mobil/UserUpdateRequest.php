@@ -29,6 +29,7 @@ class UserUpdateRequest extends FormRequest
             'phone'       => ['required', 'string', 'regex:/^\+998\d{9}$/', 'max:14', 'unique:users,email,' . $userId],
             'phone2'      => ['required', 'string', 'regex:/^\+998\d{9}$/', 'max:14'],
             'gender'      => ['required', 'in:e,a'],
+            'birthdate'   => ['required', 'date_format:Y-m-d'],
             'avatar'      => ['nullable', 'string', function ($attribute, $value, $fail) {
                 // 1. Base64 formatini tekshir
                 if (! preg_match('/^data:image\/(jpg|jpeg|png|webp);base64,/', $value)) {

@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Jobs;
 
 use Illuminate\Bus\Queueable;
@@ -23,11 +22,11 @@ class ProcessSmsPromoJob implements ShouldQueue
 
     public function __construct(string $phone, $promocode, $shortphone, $correlationId, $created_at)
     {
-        $this->phone = $phone;
-        $this->promocode = $promocode;
-        $this->shortphone = $shortphone;
+        $this->phone         = $phone;
+        $this->promocode     = $promocode;
+        $this->shortphone    = $shortphone;
         $this->correlationId = $correlationId;
-        $this->created_at = $created_at;
+        $this->created_at    = $created_at;
     }
 
     /**

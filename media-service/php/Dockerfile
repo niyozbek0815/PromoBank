@@ -35,6 +35,8 @@ RUN apt-get update \
         librabbitmq-dev \
         pkg-config \
         libssl-dev \
+        # PCNTL uchun kerakli paketlar
+        libevent-dev \
     && docker-php-ext-install \
         pdo \
         pdo_mysql \
@@ -45,6 +47,7 @@ RUN apt-get update \
         mbstring \
         bcmath \
         sockets \
+        pcntl \
     && docker-php-ext-enable exif
 
 # 3. Redis extension o‘rnatish (phpredis)
@@ -54,13 +57,15 @@ RUN pecl install redis \
 # 4. AMQP (RabbitMQ) extension o‘rnatish
 RUN pecl install amqp \
     && docker-php-ext-enable amqp
+
+# 5. PHP ini sozlash
 RUN echo "upload_max_filesize=200M\npost_max_size=250M" > /usr/local/etc/php/conf.d/uploads.ini
 
-# 5. Tozalash
+# 6. Tozalash
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# 6. Ishlash katalogi
+# 7. Ishlash katalogi
 WORKDIR /var/www/html
 
-# 7. PHP-FPM servisini ishga tushurish
+# 8. PHP-FPM default komandasi (Alohida worker container kerak bo‘lsa override qilinadi)
 CMD ["php-fpm"]

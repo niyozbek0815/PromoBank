@@ -37,11 +37,15 @@ class PromotionController extends Controller
             ->addColumn('participant_types', function ($item) {
                 return $item->participationTypes->pluck('participationType.name')->implode(', ') ?: '-';
             })
-            ->addColumn('status', fn($item) => $item->status
+            ->addColumn(
+                'status',
+                fn($item) => $item->status
                 ? '<span class="badge bg-success">Faol</span>'
                 : '<span class="badge bg-danger">Nofaol</span>'
             )
-            ->addColumn('is_public', fn($item) => $item->is_public
+            ->addColumn(
+                'is_public',
+                fn($item) => $item->is_public
                 ? '<i class="ph ph-check-circle text-success"></i>'
                 : '<i class="ph ph-x-circle text-danger"></i>'
             )
@@ -80,11 +84,15 @@ class PromotionController extends Controller
             ->addColumn('participant_types', function ($item) {
                 return $item->participationTypes->pluck('participationType.name')->implode(', ') ?: '-';
             })
-            ->addColumn('status', fn($item) => $item->status
+            ->addColumn(
+                'status',
+                fn($item) => $item->status
                 ? '<span class="badge bg-success">Faol</span>'
                 : '<span class="badge bg-danger">Nofaol</span>'
             )
-            ->addColumn('is_public', fn($item) => $item->is_public
+            ->addColumn(
+                'is_public',
+                fn($item) => $item->is_public
                 ? '<i class="ph ph-check-circle text-success"></i>'
                 : '<i class="ph ph-x-circle text-danger"></i>'
             )
@@ -142,14 +150,6 @@ class PromotionController extends Controller
         return redirect()->back()->with('success', 'Promotion o‘chirildi.');
     }
 
-    public function edit($id)
-    {
-        $data = Promotions::findOrFail($id);
-        Log::info('data', ['data' => $data]);
-        return response()->json([
-            'data' => $data,
-        ]);
-    }
     public function create()
     {
         $companies = Company::select('id', 'name', 'status')->where('status', 'active')->get()->map(function ($item) {
@@ -167,6 +167,78 @@ class PromotionController extends Controller
         ]);
 
     }
+    public function edit($id)
+    {
+        $promotion = Promotions::with([
+            'platformIds:id,name',
+            'participantTypeIds:id,name,slug',
+            'company:id,name,status',
+        ])->findOrFail($id);
+
+        $companies = Company::select('id', 'name', 'status')
+            ->where('status', 'active')
+            ->get()
+            ->map(fn($item) => [
+                'id'   => $item->id,
+                'name' => $item->getTranslation('name', 'uz'),
+            ]);
+
+        $selectedPlatforms = $promotion->platformIds->map(fn($platform) => [
+            'id'               => $platform->id,
+            'name'             => $platform->name,
+            'is_enabled'       => (bool) $platform->pivot->is_enabled,
+            'phone'            => $platform->pivot->phone,
+            'additional_rules' => $platform->pivot->additional_rules,
+        ]);
+
+        $selectedParticipants = $promotion->participantTypeIds->map(fn($type) => [
+            'id'               => $type->id,
+            'name'             => $type->name,
+            'is_enabled'       => (bool) $type->pivot->is_enabled,
+            'additional_rules' => $type->pivot->additional_rules,
+        ]);
+
+        $availablePlatforms = Platform::whereNotIn('id', $selectedPlatforms->pluck('id'))
+            ->pluck('id', 'name')
+            ->toArray();
+
+        $availableParticipants = ParticipationType::whereNotIn('id', $selectedParticipants->pluck('id'))
+            ->pluck('id', 'name')
+            ->toArray();
+
+        return response()->json([
+            'promotion'         => [
+                'id'                 => $promotion->id,
+                'name'               => [
+                    'uz' => $promotion->getTranslation('name', 'uz'),
+                    'ru' => $promotion->getTranslation('name', 'ru'),
+                    'kr' => $promotion->getTranslation('name', 'kr'),
+                ],
+                'title'              => [
+                    'uz' => $promotion->getTranslation('title', 'uz'),
+                    'ru' => $promotion->getTranslation('title', 'ru'),
+                    'kr' => $promotion->getTranslation('title', 'kr'),
+                ],
+                'description'        => [
+                    'uz' => $promotion->getTranslation('description', 'uz'),
+                    'ru' => $promotion->getTranslation('description', 'ru'),
+                    'kr' => $promotion->getTranslation('description', 'kr'),
+                ],
+                'company_id'         => $promotion->company_id,
+                'start_date'         => optional($promotion->start_date)->toDateTimeString(),
+                'end_date'           => optional($promotion->end_date)->toDateTimeString(),
+                'status'             => (bool) $promotion->status,
+                'is_public'          => (bool) $promotion->is_public,
+                'is_prize'           => (bool) $promotion->is_prize,
+                'created_by_user_id' => $promotion->created_by_user_id,
+                // 'platforms'          => $selectedPlatforms,
+                // 'participants_type'  => $selectedParticipants,
+            ],
+            'platforms'         => $availablePlatforms,
+            'companies'         => $companies,
+            'partisipants_type' => $availableParticipants,
+        ]);
+    }
     public function store(Request $request)
     {
 
@@ -183,13 +255,12 @@ class PromotionController extends Controller
 
             'platforms'           => 'nullable|array',
             'platforms.*'         => 'integer',
-            'created_by_user_id'  => 'required|string|max:255',
 
             'offer_file'          => 'required|file|mimes:pdf,doc,docx,odt,rtf,txt|max:5120',
             'media_preview'       => 'required|file|mimes:jpg,jpeg,png,gif,mp4,webm|max:5120',
             'media_gallery'       => 'required|array|max:10',
             'media_gallery.*'     => 'file|mimes:jpg,jpeg,png,gif,mp4,webm|max:20480',
-
+            'created_by_user_id'  => 'required|integer',
             'status'              => 'nullable|boolean',
             'is_public'           => 'nullable|boolean',
             'is_prize'            => 'nullable|boolean',
@@ -202,13 +273,24 @@ class PromotionController extends Controller
             'start_date'         => $validated['start_date'] ?? null,
             'end_date'           => $validated['end_date'] ?? null,
             'status'             => $request->boolean('status'),
+            'created_by_user_id' => $validated['created_by_user_id'],
             'is_public'          => $request->boolean('is_public'),
             'is_prize'           => $request->boolean('is_prize'),
-            'created_by_user_id' => $validated['created_by_user_id'],
         ]);
-        $promotion->platformIds()->sync($validated['platforms'] ?? []);
-        $promotion->participantTypeIds()->sync($validated['participants_type'] ?? []);
-
+        $platformData = collect($validated['platforms'] ?? [])->mapWithKeys(function ($platformId) {
+            return [$platformId => [
+                'is_enabled'       => true, // default: true
+                'additional_rules' => null, // yoki ['min' => 1, 'max' => 3] kabi rule qo‘shsa bo‘ladi
+            ]];
+        })->toArray();
+        $promotion->platformIds()->sync($platformData);
+        $participantData = collect($validated['participants_type'] ?? [])->mapWithKeys(function ($typeId) {
+            return [$typeId => [
+                'is_enabled'       => true,
+                'additional_rules' => null,
+            ]];
+        })->toArray();
+        $promotion->participantTypeIds()->sync($participantData);
         if ($request->hasFile('offer_file')) {
             Log::info('📎 Offer file mavjud. Yuklanmoqda...');
             // $promotion->addMediaFromRequest('offer_file')->toMediaCollection('offer');

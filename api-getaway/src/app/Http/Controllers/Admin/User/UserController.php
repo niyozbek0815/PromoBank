@@ -19,7 +19,7 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $response = $this->forwardRequest("PUT", $this->url, "front/users/{$id}/update", $request);
-
+        //
         if ($response instanceof \Illuminate\Http\Client\Response  && $response->ok()) {
             return redirect()->route('admin.users.index')->with('success', 'Foydalanuvchi yangilandi.');
         }
@@ -72,6 +72,7 @@ class UserController extends Controller
         $response = $this->forwardRequest("POST", $this->url, "front/users/{$id}/edit", $request);
         if ($response->ok()) {
             $data = $response->json();
+            // dd($data);
             return view('admin.users.edit', compact('data'));
         }
         return redirect()->back()->with('error', 'Foydalanuvchi topilmadi.');
