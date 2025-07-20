@@ -21,11 +21,11 @@ class PromotionResource extends JsonResource
             'description' => $this->getTranslations('description'),
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
-            'banner' => $this->getMedia('promo_banner'),
-            'video' => $this->getMedia('promo_video'),
+            'offer'=>$this->offer,
+            'banner' => $this->banner,
+            'gallery' => $this->gallery,
             'participation_type' => ParticipationTypeResource::collection($this->participationTypes),
             'company' => new CompanyResource(resource: $this->company),
-
         ];
     }
 }

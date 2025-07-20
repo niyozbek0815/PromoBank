@@ -5,5 +5,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('media')->group(function () {
     Route::post('upload', [MediaController::class, 'upload']);
+Route::post('/upload-batch', [MediaController::class, 'uploadBatch']);
     Route::delete('{collection}/{filename}', [MediaController::class, 'destroy']);
 });

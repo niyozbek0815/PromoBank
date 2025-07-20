@@ -22,13 +22,11 @@ class PromotionRepository implements PromotionRepositoryInterface
             $query->where('name', 'mobile');
         })
             ->with([
-                'media',
                 'company:id,name,title,region,address',
                 'company.media',
                 'company.socialMedia.type',
                 'participationTypes.participationType'
             ])
-            ->select('id', 'company_id', 'name', 'title', 'description', 'start_date', 'end_date')
             ->get();
     }
 

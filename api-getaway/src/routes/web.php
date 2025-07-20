@@ -16,23 +16,20 @@ Route::get('/', function () {
 });
 
 Route::get('/media/uploads/{context}/{fileName}', function ($context, $fileName) {
-    // Media-service URL'ini shakllantirish
     $mediaServiceUrl = config('services.urls.media_service') . "/uploads/{$context}/{$fileName}";
 
-    // Media-service'dan faylni olish
-    $response = Http::get($mediaServiceUrl);
+    $response = Http::timeout(10)->get($mediaServiceUrl);
 
-    // Agar faylni olish muvaffaqiyatli bo'lsa
     if ($response->ok()) {
-        // Faylni qaytarish
         return Response::make($response->body(), 200, [
-            'Content-Type' => $response->header('Content-Type') ?: 'application/octet-stream', // MIME tipini tekshirib ko'rish
+            'Content-Type'        => $response->header('Content-Type') ?? 'application/octet-stream',
+            'Content-Disposition' => $response->header('Content-Disposition') ?? 'inline',
         ]);
     }
 
-    // Agar fayl topilmasa, 404 xatosi
     abort(404, 'File not found.');
-});
+})->name('media.proxy');
+
 Route::get('/admin/login', [LoginController::class, 'showLoginForm'])->name('admin.login');
 Route::post('/admin/login', [LoginController::class, 'login']);
 Route::post('/admin/logout', [LoginController::class, 'logout'])->name('admin.logout');

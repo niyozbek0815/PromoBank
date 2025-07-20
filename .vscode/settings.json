@@ -1,3 +1,11 @@
 {
-  "php-cs-fixer.executablePath": "/opt/homebrew/bin/php-cs-fixer"
+  "php-cs-fixer.executablePath": "/opt/homebrew/bin/php-cs-fixer",
+  
+  // "files.exclude": {
+  //   "**/vendor": true
+  // },
+  // "intelephense.files.exclude": [
+  //   "**/vendor/**"
+  // ]
+
 }

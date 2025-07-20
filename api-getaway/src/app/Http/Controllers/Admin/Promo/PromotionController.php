@@ -76,6 +76,7 @@ class PromotionController extends Controller
         $response = $this->forwardRequest("GET", $this->url, "front/promotion/{$id}/edit", $request);
         if ($response->ok()) {
             $data = $response->json();
+            // dd($data);
             return view('admin.promotion.edit', [
                 'promotion'         => $data['promotion'],
                 'platforms'         => $data['platforms'],         // id => name format
@@ -94,7 +95,6 @@ class PromotionController extends Controller
             $request,
             ['media_preview', 'media_gallery', 'offer_file']// Fayl nomlari (formdagi `name=""`)
         );
-        dd($response);
         if ($response->ok()) {
             return redirect()->route('admin.promotion.index')
                 ->with('success', 'Promoaksiya muvaffaqiyatli saqlandi.');

@@ -116,7 +116,8 @@ class StoreUploadedMediaJob implements ShouldQueue
     protected function getModelTypeByContext(string $context): string
     {
         return match ($context) {
-            'user_avatar' => \App\Models\User::class,
+            'promotion-offer' => \App\Models\Promotions::class,
+             'promotion-banner'   => \App\Models\Promotions::class,
         // kerak bo‘lsa yana qo‘sh
             default => throw new \InvalidArgumentException("Unknown context: {$context}"),
         };

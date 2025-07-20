@@ -2,12 +2,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\StoreUploadedMediaBatchJob;
+use App\Jobs\StoreUploadedMediaJob;
 use App\Models\Company;
 use App\Models\ParticipationType;
 use App\Models\Platform;
 use App\Models\Promotions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -228,6 +231,9 @@ class PromotionController extends Controller
                 'start_date'         => optional($promotion->start_date)->toDateTimeString(),
                 'end_date'           => optional($promotion->end_date)->toDateTimeString(),
                 'status'             => (bool) $promotion->status,
+                'banner'=>$promotion->banner,
+                'offer'=>$promotion->offer,
+                'gallery'=>$promotion->gallery,
                 'is_public'          => (bool) $promotion->is_public,
                 'is_prize'           => (bool) $promotion->is_prize,
                 'created_by_user_id' => $promotion->created_by_user_id,
@@ -292,20 +298,28 @@ class PromotionController extends Controller
         })->toArray();
         $promotion->participantTypeIds()->sync($participantData);
         if ($request->hasFile('offer_file')) {
-            Log::info('📎 Offer file mavjud. Yuklanmoqda...');
-            // $promotion->addMediaFromRequest('offer_file')->toMediaCollection('offer');
-
+            $file     = $request->file('offer_file');
+            $tempPath = $file->store('tmp', 'public');
+            Log::info("📎 Offer file mavjud. Yuklanmoqda..." . $tempPath);
+            Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'promotion-offer', $promotion->id));
         }
 
         if ($request->hasFile('media_preview')) {
-            Log::info('📎 Media preview fayl mavjud. Yuklanmoqda...');
-            // $promotion->addMediaFromRequest('media_preview')->toMediaCollection('preview');
+            $file     = $request->file('media_preview');
+            $tempPath = $file->store('tmp', 'public');
+            Log::info("📎 media_preview mavjud. Yuklanmoqda..." . $tempPath);
+            Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'promotion-banner', $promotion->id));
         }
 
         if ($request->hasFile('media_gallery')) {
+            $tempPaths = [];
             Log::info('📎 Media galereya fayllari mavjud. Fayllar soni: ' . count($request->file('media_gallery')));
             foreach ($request->file('media_gallery') as $index => $file) {
+                $tempPath    = $file->store('tmp', 'public');
+                $tempPaths[] = $tempPath;
             }
+            Log::info("📎 Media galereya fayllari: ", ['Paths' => $tempPaths]);
+            Queue::connection('rabbitmq')->push(new StoreUploadedMediaBatchJob($tempPaths, 'promotion-gallary', $promotion->id));
         }
 
         return response()->json([
@@ -357,27 +371,31 @@ class PromotionController extends Controller
             'is_prize'           => $request->boolean('is_prize'),
             'created_by_user_id' => $validated['created_by_user_id'],
         ]);
+if ($request->hasFile('offer_file')) {
+    $file     = $request->file('offer_file');
+    $tempPath = $file->store('tmp', 'public');
+    Log::info("📎 Offer file mavjud. Yuklanmoqda..." . $tempPath);
+    Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'promotion-offer', $promotion->id));
+}
 
-        // Fayllar yangilanishi
-        if ($request->hasFile('offer_file')) {
-            Log::info('📎 Offer fayli yangilanmoqda...');
-            // $promotion->clearMediaCollection('offer');
-            // $promotion->addMediaFromRequest('offer_file')->toMediaCollection('offer');
-        }
+if ($request->hasFile('media_preview')) {
+    $file     = $request->file('media_preview');
+    $tempPath = $file->store('tmp', 'public');
+    Log::info("📎 media_preview mavjud. Yuklanmoqda..." . $tempPath);
+    Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'promotion-banner', $promotion->id));
+}
 
-        if ($request->hasFile('media_preview')) {
-            Log::info('📎 Preview fayli yangilanmoqda...');
-            // $promotion->clearMediaCollection('preview');
-            // $promotion->addMediaFromRequest('media_preview')->toMediaCollection('preview');
-        }
+if ($request->hasFile('media_gallery')) {
+    $tempPaths = [];
+    Log::info('📎 Media galereya fayllari mavjud. Fayllar soni: ' . count($request->file('media_gallery')));
+    foreach ($request->file('media_gallery') as $index => $file) {
+        $tempPath    = $file->store('tmp', 'public');
+        $tempPaths[] = $tempPath;
+    }
+    Log::info("📎 Media galereya fayllari: ", ['Paths' => $tempPaths]);
+    Queue::connection('rabbitmq')->push(new StoreUploadedMediaBatchJob($tempPaths, 'promotion-gallary', $promotion->id));
+}
 
-        if ($request->hasFile('media_gallery')) {
-            Log::info('📎 Media galereyasi yangilanmoqda...');
-            // $promotion->clearMediaCollection('gallery');
-            foreach ($request->file('media_gallery') as $file) {
-                // $promotion->addMedia($file)->toMediaCollection('gallery');
-            }
-        }
 
         // Platform/participants agar mavjud bo‘lsa
         // $promotion->platforms()->sync($validated['platforms'] ?? []);

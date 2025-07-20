@@ -10,21 +10,22 @@ Route::get('/', function () {
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 
+
 Route::get('/uploads/{context}/{fileName}', function ($context, $fileName) {
     $path = "uploads/{$context}/{$fileName}";
 
-    if (!Storage::disk('public')->exists($path)) {
+    if (! Storage::disk('public')->exists($path)) {
         abort(404);
     }
 
-    // Faylni olish
-    $file = Storage::disk('public')->get($path);
+    $absolutePath = storage_path("app/public/{$path}");
+    $mimeType     = \Illuminate\Support\Facades\File::mimeType($absolutePath);
+    $file         = Storage::disk('public')->get($path);
 
-    // MIME turini aniqlash
-    $imageDetails = getimagesize(storage_path("app/public/{$path}"));
-    $mimeType = $imageDetails['mime'];
-
-    // Faylni qaytarish va Content-Type ni belgilash
-    return response($file, 200)
-        ->header('Content-Type', $mimeType);
+    return Response::make($file, 200, [
+        'Content-Type'                => $mimeType,
+        'Content-Disposition'         => 'inline; filename="' . $fileName . '"',
+        'Access-Control-Allow-Origin' => '*', // faqat development uchun
+    ]);
 });
+

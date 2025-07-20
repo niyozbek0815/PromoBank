@@ -36,7 +36,18 @@ class Promotions extends Model
         'start_date'       => 'datetime',
         'end_date'         => 'datetime',
     ];
-
+      public function getOfferAttribute()
+    {
+        return $this->getMedia('promotion-offer');
+    }
+        public function getBannerAttribute()
+    {
+        return $this->getMedia('promotion-banner');
+    }
+public function getGalleryAttribute()
+{
+    return $this->getMediaCollection('promotion-gallary');
+}
     public function company()
     {
         return $this->belongsTo(Company::class)->select(['id', 'name']);

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Mobil\AddresController;
 use App\Http\Controllers\Mobil\AuthController;
+use App\Http\Controllers\Mobil\BannerController;
 use App\Http\Controllers\Mobil\GameController;
 use App\Http\Controllers\Mobil\GetawayGameController;
 use App\Http\Controllers\Mobil\PromoController;
@@ -30,6 +31,9 @@ Route::controller(PromoController::class)->prefix('promotions')->middleware(['gu
     Route::post('/{promotion}/participate/promocode', 'viaPromocode');
     Route::post('/{promotion}/participate/receipt', 'viaReceipt');
     Route::get('/{promotion}/participations', 'listParticipationHistory');
+});
+Route::controller(BannerController::class)->prefix('banners')->middleware(['guestCheck'])->group(function () {
+    Route::get('/', 'index');
 });
 
 Route::controller(ReceiptController::class)->prefix('receipt')->middleware(['guestCheck'])->group(function () {

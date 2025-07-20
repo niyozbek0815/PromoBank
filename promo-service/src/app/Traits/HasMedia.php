@@ -1,9 +1,7 @@
 <?php
-
 namespace App\Traits;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 trait HasMedia
 {
@@ -17,7 +15,7 @@ trait HasMedia
     public function getMedia(?string $collectionName = null, ?string $fallback = null)
     {
         // Agar media aloqasi allaqachon yuklangan bo'lsa
-        if (!$this->relationLoaded('media')) {
+        if (! $this->relationLoaded('media')) {
             $this->load('media'); // Agar yuklanmagan bo'lsa, uni yuklab olish
         }
 
@@ -37,7 +35,7 @@ trait HasMedia
     public function getAllMedia(?string $collectionName = null)
     {
         // Agar media aloqasi allaqachon yuklangan bo'lsa
-        if (!$this->relationLoaded('media')) {
+        if (! $this->relationLoaded('media')) {
             $this->load('media'); // Agar yuklanmagan bo'lsa, uni yuklab olish
         }
 
@@ -49,5 +47,17 @@ trait HasMedia
         return $media->map(function ($item) {
             return $item->full_url;
         });
+    }
+    public function getMediaCollection(?string $collectionName = null): Collection
+    {
+        if (! $this->relationLoaded('media')) {
+            $this->load('media');
+        }
+
+        return $this->media
+            ->when($collectionName, fn($collection) => $collection->where('collection_name', $collectionName))
+            ->sortByDesc('created_at')
+            ->map(fn($media) => $media->full_url)
+            ->values(); // indekslarni tozalash
     }
 }
