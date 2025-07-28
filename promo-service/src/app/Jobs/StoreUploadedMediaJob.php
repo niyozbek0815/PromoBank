@@ -118,6 +118,8 @@ class StoreUploadedMediaJob implements ShouldQueue
         return match ($context) {
             'promotion-offer' => \App\Models\Promotions::class,
              'promotion-banner'   => \App\Models\Promotions::class,
+                          'logo'   => \App\Models\Company::class,
+
         // kerak bo‘lsa yana qo‘sh
             default => throw new \InvalidArgumentException("Unknown context: {$context}"),
         };

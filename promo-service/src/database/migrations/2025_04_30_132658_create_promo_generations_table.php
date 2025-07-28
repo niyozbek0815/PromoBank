@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('promo_generations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('promotion_id')->constrained()->onDelete('cascade');
-            $table->unsignedInteger('count');
+            // $table->unsignedInteger('count');
             $table->unsignedBigInteger('created_by_user_id');
-            // $table->enum('status', ['pending', 'in_progress', 'completed'])->default('pending');
+            $table->enum('type', ['generated', 'import']);
             $table->boolean('status')->default(true);
             $table->timestamps();
         });

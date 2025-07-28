@@ -19,8 +19,8 @@ class PromoGenerationSeeder extends Seeder
         foreach ($promotions as $promotion) {
             PromoGeneration::create([
                 'promotion_id' => $promotion->id,
-                'count' => rand(100, 1000),
                 'created_by_user_id' => 1,
+                'type'=>'generated',
             ]);
         }
     }

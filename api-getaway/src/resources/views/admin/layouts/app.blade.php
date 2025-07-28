@@ -57,6 +57,13 @@
             });
         </script>
     @endif
+    @if (isset($success))
+    <script>
+        $(function() {
+            toastr.success(@json($success));
+        });
+    </script>
+@endif
 </body>
 
 </html>

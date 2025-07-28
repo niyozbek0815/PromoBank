@@ -10,7 +10,11 @@
                     <i class="ph-pencil-simple me-2"></i> Tahrirlash
                 </a>
             @endif
-
+            @if (!empty($routes['show']))
+                <a href="{{ $routes['show'] }}" class="dropdown-item">
+                    <i class="ph-eye me-2"></i> Ko‘rish
+                </a>
+            @endif
             @if (!empty($routes['status']))
                 <a href="#" class="dropdown-item change-status" data-id="{{ $row->id }}"
                     data-status="{{ $row->status ? '0' : '1' }}" data-url="{{ $routes['status'] }}">

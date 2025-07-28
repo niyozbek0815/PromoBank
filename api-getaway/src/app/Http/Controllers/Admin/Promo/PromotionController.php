@@ -76,7 +76,6 @@ class PromotionController extends Controller
         $response = $this->forwardRequest("GET", $this->url, "front/promotion/{$id}/edit", $request);
         if ($response->ok()) {
             $data = $response->json();
-            // dd($data);
             return view('admin.promotion.edit', [
                 'promotion'         => $data['promotion'],
                 'platforms'         => $data['platforms'],         // id => name format
@@ -128,5 +127,46 @@ class PromotionController extends Controller
 
         return redirect()->back()->with('error', 'Promoaksiya yangilanmadi.');
     }
+    public function updateParticipantType(Request $request, $promotionId, $participantTypeId)
+    {
+        $response = $this->forwardRequestMedias(
+            'POST',     // multipart uchun faqat POST ishlaydi
+            $this->url, // promo-service yoki media-service URL
+            "front/promotion/{$promotionId}/participant-type/{$participantTypeId}/update",
+            $request,
+            []// bu yerda file yo‘q, faqat is_enabled + additional_rules keladi
+        );
+        if ($response->ok()) {
+
+            return redirect()->back()->with('success', 'Ishtirok turi muvaffaqiyatli yangilandi.');
+        }
+        if ($response->status() === 422) {
+            return redirect()->back()
+                ->withErrors($response->json('errors'))
+                ->withInput();
+        }
+        return redirect()->back()->with('error', 'Ishtirok turini yangilashda xatolik yuz berdi.');
+    }
+    public function updatePlatform(Request $request, $promotionId, $platformId)
+    {
+        $response = $this->forwardRequestMedias(
+            'POST',     // multipart uchun faqat POST ishlaydi
+            $this->url, // promo-service yoki media-service URL
+            "front/promotion/{$promotionId}/platform/{$platformId}/update",
+            $request,
+            []// bu yerda file yo‘q, faqat is_enabled + additional_rules keladi
+        );
+        if ($response->ok()) {
+            return redirect()->back()->with('success', 'Platform muvaffaqiyatli yangilandi.');
+        }
+        if ($response->status() === 422) {
+            return redirect()->back()
+                ->withErrors($response->json('errors'))
+                ->withInput();
+        }
+        return redirect()->back()->with('error', 'Platformni yangilashda xatolik yuz berdi.');
+    }
+
+
 
 }

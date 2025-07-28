@@ -2,10 +2,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\StoreUploadedMediaJob;
 use App\Models\Company;
 use App\Models\SocialType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Yajra\DataTables\Facades\DataTables;
 
 class CompanyController extends Controller
@@ -94,16 +96,16 @@ class CompanyController extends Controller
             'email'          => 'required|email|max:255|unique:companies,email,' . $company->id, 'region' => 'required|string|max:255',
             'address'        => 'required|string|max:255',
             'user_id'        => 'required|string|max:255',
-            'status'         => 'required|boolean', // we'll parse manually
+            'status'         => 'nullable|boolean', // we'll parse manually
             'logo'           => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        if ($request->hasFile('logo')) {
-            $file     = $request->file('logo');
-            $tempPath = $file->store('tmp', 'public');
-            Log::info("Logo mavjud: " . $tempPath);
-            // Queue::connection('rabbitmq')->push(new CompanyUpdateLogoJob($company->id, $tempPath));
-        }
+if ($request->hasFile('logo')) {
+    $file     = $request->file('logo');
+    $tempPath = $file->store('tmp', 'public');
+    Log::info("📎 logo mavjud. Yuklanmoqda..." . $tempPath);
+    Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'logo', $company->id));
+}
 
         $company->update($validated);
 

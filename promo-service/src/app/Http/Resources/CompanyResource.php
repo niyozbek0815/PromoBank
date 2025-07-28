@@ -21,7 +21,7 @@ class CompanyResource extends JsonResource
             // 'description' => $this->getTranslations('description'),
             'region' => $this->region,
             'address' => $this->address,
-            'logo' => $this->getMedia('company_logo'),
+            'logo' => $this->logo ??             ['url' => 'https://qadarun.com/namuna/logo.jpg', 'mime_type' => 'image/jpeg'],
             'social_media' => CompanyLinkResource::collection($this->socialMedia)
         ];
     }

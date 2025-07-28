@@ -11,6 +11,7 @@ class PlatformPromotion extends Model
     protected $fillable = [
         'promotion_id',
         'platform_id',
+        'phone',
         'is_enabled',
         'additional_rules',
     ];

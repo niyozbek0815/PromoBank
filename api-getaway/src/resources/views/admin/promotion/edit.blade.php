@@ -16,7 +16,9 @@
     </script>
     <script src="https://unpkg.com/filepond-plugin-file-poster/dist/filepond-plugin-file-poster.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
-
+    <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
+    <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
+    <script src="{{ asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // ✅ CKEditor init
@@ -91,198 +93,562 @@
             }
         });
     </script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const allPanels = document.querySelectorAll('.table-panel');
+            let currentlyOpen = document.querySelector('#collapse-promocode');
+            if (currentlyOpen) {
+                const defaultInstance = bootstrap.Collapse.getOrCreateInstance(currentlyOpen);
+                defaultInstance.show();
+
+                // Default aktiv tugma topiladi va unga active qo‘yiladi
+                document.querySelectorAll('.collapse-toggler').forEach(btn => {
+                    const targetId = btn.getAttribute('data-target');
+                    if (targetId === '#collapse-promocode') {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+            document.querySelectorAll('.collapse-toggler').forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const target = document.querySelector(targetId);
+
+                    // Boshqa panel ochiq bo‘lsa, yopiladi
+                    if (currentlyOpen && currentlyOpen !== target) {
+                        const currentInstance = bootstrap.Collapse.getOrCreateInstance(
+                            currentlyOpen);
+                        currentInstance.hide();
+                    }
+
+                    const targetInstance = bootstrap.Collapse.getOrCreateInstance(target);
+
+                    if (!target.classList.contains('show')) {
+                        targetInstance.show();
+                        currentlyOpen = target;
+                        document.querySelectorAll('.collapse-toggler').forEach(btn => btn.classList
+                            .remove('active'));
+                        this.classList.add('active');
+                    } else {
+                        targetInstance.hide();
+                        currentlyOpen = null;
+                        this.classList.remove('active');
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        $(document).ready(function() {
+            const url = "{{ route('admin.promocode.promocodedata', $promotion['id'], false) }}";
+            if ($.fn.DataTable.isDataTable('#promocode-table')) {
+                $('#promocode-table').DataTable().destroy();
+            }
+
+            $('#promocode-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: url,
+                    type: "GET",
+                    dataSrc: function(json) {
+                        console.log("Returned data:", json);
+                        return json.data;
+                    },
+                    error: function(xhr, error, thrown) {
+                        console.error("DataTable AJAX error", xhr.responseText);
+                    }
+                },
+                columns: [{
+                        data: 'id',
+                        name: 'id',
+                        className: 'text-center',
+                    },
+                    {
+                        data: 'promocode',
+                        name: 'promocode',
+                        className: 'text-nowrap'
+                    },
+                    {
+                        data: 'is_used',
+                        name: 'is_used',
+                        className: 'text-center'
+                    },
+                    {
+                        data: 'used_at',
+                        name: 'used_at',
+                        className: 'text-nowrap text-center'
+                    },
+                    {
+                        data: 'generation_name',
+                        name: 'generation_name',
+                        // className: 'text-center'
+                    },
+                    {
+                        data: 'platform',
+                        name: 'platform.name',
+                        className: 'text-nowrap'
+                    },
+                    {
+                        data: 'actions',
+                        name: 'actions',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center'
+                    },
+                ]
+            });
+
+        });
+    </script>
 @endpush
 @section('content')
-    <div class="tab-content flex-1 order-2 order-lg-1">
-        <div class="tab-pane fade show active" id="settings">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Promoaksiya qo'shish</h5>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('admin.promotion.update', $promotion['id']) }}" method="POST"
-                        enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
-                        {{-- @php
-                            dd($promotion);
-                        @endphp --}}
+        <div class="tab-content flex-1 order-2 order-lg-1">
+            <div class="tab-pane fade show active" id="settings">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Promoaksiyalarni taxrirlash</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ route('admin.promotion.update', $promotion['id']) }}" method="POST"
+                            enctype="multipart/form-data">
+                            @csrf
+                            @method('PUT')
+                            {{-- 🔤 Translatable Inputs --}}
+                            <div class="row">
+                                @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
+                                    <div class="col-lg-4 mb-3">
+                                        <label class="form-label">Nomi ({{ $label }})</label>
+                                        <input type="text" class="form-control" name="name[{{ $lang }}]"
+                                            value="{{ old('name.' . $lang, $promotion['name'][$lang] ?? '') }}" required>
+                                        <small class="text-muted">Aksiya nomini {{ $label }} tilida kiriting (masalan,
+                                            "Bahor aksiyasi").</small>
+                                    </div>
+                                @endforeach
 
-                        {{-- 🔤 Translatable Inputs --}}
-                        <div class="row">
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
-                                    <label class="form-label">Nomi ({{ $label }})</label>
-                                    <input type="text" class="form-control" name="name[{{ $lang }}]"
-                                        value="{{ old('name.' . $lang, $promotion['name'][$lang] ?? '') }}" required>
-                                </div>
-                            @endforeach
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
-                                    <label class="form-label">Sarlavha ({{ $label }})</label>
-                                    <input type="text" class="form-control" name="title[{{ $lang }}]"
-                                        value="{{ old('title.' . $lang, $promotion['title'][$lang] ?? '') }}" required>
-                                </div>
-                            @endforeach
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
-                                    <label class="form-label">Tavsif ({{ $label }})</label>
-                                    <textarea class="form-control ckeditor" name="description[{{ $lang }}]" rows="6" required>{{ old('description.' . $lang, $promotion['description'][$lang] ?? '') }}</textarea>
-                                </div>
-                            @endforeach
-                        </div>
+                                @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
+                                    <div class="col-lg-4 mb-3">
+                                        <label class="form-label">Sarlavha ({{ $label }})</label>
+                                        <input type="text" class="form-control" name="title[{{ $lang }}]"
+                                            value="{{ old('title.' . $lang, $promotion['title'][$lang] ?? '') }}" required>
+                                        <small class="text-muted">Sarlavha foydalanuvchilarga ko‘rinadigan qisqa tanishtiruv
+                                            bo‘lib xizmat qiladi.</small>
+                                    </div>
+                                @endforeach
 
-                        {{-- 📦 Selection Inputs --}}
-                        <div class="row">
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Kampaniya</label>
-                                <select name="company_id" class="form-select" required>
-                                    <option value="">Tanlang...</option>
-                                    @foreach ($companies as $company)
-                                        <option value="{{ $company['id'] }}"
-                                            {{ old('company_id', $promotion['company_id']) == $company['id'] ? 'selected' : '' }}>
-                                            {{ $company['name'] }}
+                                @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
+                                    <div class="col-lg-4 mb-3">
+                                        <label class="form-label">Tavsif ({{ $label }})</label>
+                                        <textarea class="form-control ckeditor" name="description[{{ $lang }}]" rows="6" required>{{ old('description.' . $lang, $promotion['description'][$lang] ?? '') }}</textarea>
+                                        <small class="text-muted">Aksiya haqida batafsil ma’lumot yozing: qanday ishtirok
+                                            etiladi, yutuqlar va qoidalar.</small>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            {{-- 📦 Selection Inputs --}}
+                            <div class="row">
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label">Kampaniya</label>
+                                    <select name="company_id" class="form-select" required>
+                                        <option value="">Tanlang...</option>
+                                        @foreach ($companies as $company)
+                                            <option value="{{ $company['id'] }}"
+                                                {{ old('company_id', $promotion['company_id']) == $company['id'] ? 'selected' : '' }}>
+                                                {{ $company['name'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted">Ushbu aksiya qaysi kompaniyaga tegishli ekanligini
+                                        belgilang.</small>
+                                </div>
+
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label">Boshlanish sanasi</label>
+                                    <input type="datetime-local" name="start_date" class="form-control"
+                                        value="{{ old('start_date', \Carbon\Carbon::parse($promotion['start_date'])->format('Y-m-d\TH:i')) }}"
+                                        required>
+                                    <small class="text-muted">Aksiya rasmiy boshlanadigan sana va vaqtni kiriting.</small>
+                                </div>
+
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label">Tugash sanasi</label>
+                                    <input type="datetime-local" name="end_date" class="form-control"
+                                        value="{{ old('end_date', \Carbon\Carbon::parse($promotion['end_date'])->format('Y-m-d\TH:i')) }}"
+                                        required>
+                                    <small class="text-muted">Aksiya tugaydigan sana va vaqtni belgilang.</small>
+                                </div>
+                            </div>
+
+                            {{-- 🔁 Multi-select fields --}}
+                            <div class="row">
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label">Aksiya o'tqaziladigan platformalarni tanlang</label>
+                                    <select name="platforms_new[]" class="form-control multiselect" multiple>
+                                        <option value="" disabled selected>-- Platformani tanlang --</option>
+                                        @foreach ($platforms as $name => $id)
+                                            <option value="{{ $id }}">{{ ucfirst($name) }}</option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted">Aksiya qaysi platformalarda (web, telegram, sms) o'tkazilishini
+                                        tanlang.</small>
+                                </div>
+
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label">ishtirok etish turlari uslublarini tanlang</label>
+                                    <select name="participants_type_new[]" class="form-control multiselect" multiple>
+                                        <option value="" disabled selected>-- Uslubni tanlang --</option>
+
+                                        @foreach ($partisipants_type as $name => $id)
+                                            <option value="{{ $id }}">{{ ucfirst($name) }}</option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted">Foydalanuvchi aksiyada qanday ishtirok etishini belgilang (QR,
+                                        kod, chek va h.k.).</small>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label fw-semibold">Yutuqni berish strategiyasi</label>
+                                    <select name="winning_strategy"
+                                        class="form-control select2-single @error('winning_strategy') is-invalid @enderror"
+                                        required>
+                                        <option value="" disabled
+                                            {{ old('winning_strategy', $promotion['winning_strategy'] ?? '') === null ? 'selected' : '' }}>
+                                            -- Strategiyani tanlang --
                                         </option>
-                                    @endforeach
-                                </select>
+                                        <option value="immediate"
+                                            {{ old('winning_strategy', $promotion['winning_strategy'] ?? '') === 'immediate' ? 'selected' : '' }}>
+                                            🎁 Har bir promokod yutuq olib keladi (tez yutuq)
+                                        </option>
+                                        <option value="delayed"
+                                            {{ old('winning_strategy', $promotion['winning_strategy'] ?? '') === 'delayed' ? 'selected' : '' }}>
+                                            🕒 Promokodlar ro'yxatga olinadi, oxirida sovrin beriladi
+                                        </option>
+                                        <option value="hybrid"
+                                            {{ old('winning_strategy', $promotion['winning_strategy'] ?? '') === 'hybrid' ? 'selected' : '' }}>
+                                            ⚖️ Aralash — ba'zilari yutadi, ba'zilari keyinchalik o'ynaydi
+                                        </option>
+                                    </select>
+                                    <small class="text-muted d-block mt-1">
+                                        Aksiya davomida promokodlar qanday tarzda yutuqqa aylanishini belgilang.
+                                    </small>
+                                </div>
                             </div>
 
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Boshlanish sanasi</label>
-                                <input type="datetime-local" name="start_date" class="form-control"
-                                    value="{{ old('start_date', \Carbon\Carbon::parse($promotion['start_date'])->format('Y-m-d\TH:i')) }}"
-                                    required>
+                            {{-- ✅ Switches --}}
+                            <div class="row mb-3">
+                                <div class="col-lg-4 form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="status" value="1"
+                                        id="statusSwitch" {{ old('status', $promotion['status']) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="statusSwitch">Faollik</label>
+                                    <small class="text-muted d-block">Aksiya faollashtirilgan bo‘lsa, foydalanuvchilar uni
+                                        ko‘rishlari mumkin.</small>
+                                </div>
+                                <div class="col-lg-4 form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="is_public" value="1"
+                                        id="publicSwitch" {{ old('is_public', $promotion['is_public']) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="publicSwitch">Ommaviy</label>
+                                    <small class="text-muted d-block">Aksiyani ommaga ko‘rsatish uchun belgilang.</small>
+                                </div>
+                                {{-- <div class="col-lg-4 form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="is_prize" value="1"
+                                        id="prizeSwitch" {{ old('is_prize', $promotion['is_prize']) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="prizeSwitch">Yutuqli</label>
+                                    <small class="text-muted d-block">Agar aksiya yutuqli bo‘lsa, ushbu tugmani yoqing.</small>
+                                </div> --}}
                             </div>
 
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Tugash sanasi</label>
-                                <input type="datetime-local" name="end_date" class="form-control"
-                                    value="{{ old('end_date', \Carbon\Carbon::parse($promotion['end_date'])->format('Y-m-d\TH:i')) }}"
-                                    required>
-                            </div>
-                        </div>
+                            {{-- 🔗 Media file uploads --}}
+                            <input type="hidden" name="created_by_user_id" value="{{ $promotion['created_by_user_id'] }}">
 
-                        {{-- 🔁 Multi-select fields --}}
-                        <div class="row">
-                            <div class="col-lg-6 mb-3">
-                                <label class="form-label">Platformalar</label>
-                                <select name="platforms_new[]" class="form-control multiselect" multiple>
-                                    @foreach ($platforms as $name => $id)
-                                        <option value="{{ $id }}">{{ ucfirst($name) }}</option>
-                                    @endforeach
-                                </select>
+                            <div class="row">
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label">Oferta fayl</label>
+                                    <input type="file" name="offer_file" class="filepond-offer" />
+                                    <small class="text-muted">Aksiya shartlarini PDF/DOC formatida yuklang. Bu
+                                        foydalanuvchilarga ko‘rsatiladi.</small>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label">Banner</label>
+                                    <input type="file" name="media_preview" class="filepond-banner" />
+                                    <small class="text-muted">Aksiyaga mos banner rasmi (vizual reklama) yuklang.</small>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label">Galereya</label>
+                                    <input type="file" name="media_gallery[]" class="filepond-gallery" multiple />
+                                    <small class="text-muted">Aksiya uchun bir nechta qo‘shimcha rasmlar yuklang
+                                        (ixtiyoriy).</small>
+                                </div>
                             </div>
-                            <div class="col-lg-6 mb-3">
-                                <label class="form-label">Ishtirok turlari</label>
-                                <select name="participants_type_new[]" class="form-control multiselect" multiple>
-                                    @foreach ($partisipants_type as $name => $id)
-                                        <option value="{{ $id }}">{{ ucfirst($name) }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        {{-- <div class="row mb-4">
-                            <h5 class="text-success">👥 Tanlangan ishtirok turlari</h5>
-                            @foreach ($promotion['participants_type'] ?? [] as $type)
-                                <div class="col-lg-6 border rounded p-3 mb-2">
-                                    <input type="hidden" name="participants_type[]" value="{{ $type['id'] }}">
-                                    <strong>{{ ucfirst($type['name']) }}</strong>
 
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox"
-                                            name="participants_enabled[{{ $type['id'] }}]"
-                                            id="participants_enabled_{{ $type['id'] }}"
-                                            {{ old("participants_enabled.{$type['id']}", $type['is_enabled']) ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="participants_enabled_{{ $type['id'] }}">
-                                            Faollashtirilgan
-                                        </label>
+                            {{-- 🔘 Submit --}}
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ route('admin.promotion.index') }}" class="btn btn-outline-secondary">Bekor
+                                    qilish</a>
+                                <button type="submit" class="btn btn-primary">Yangilash</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                @php
+    $hasPromoType = collect($promotion['participants_type'] ?? [])
+        ->pluck('name')
+        ->intersect(['QR code', 'Text code'])
+        ->isNotEmpty();
+    $hasReceiptType = collect($promotion['participants_type'] ?? [])
+        ->pluck('name')
+        ->intersect(['Receipt scan'])
+        ->isNotEmpty();
+    $hasPrize = in_array($promotion['winning_strategy'], ['immediate', 'hybrid']);
+
+                @endphp
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Promoaksiya ma'lumotlari</h5>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-success collapse-toggler"
+                            data-target="#collapse-platform">
+                            <i class="ph ph-share-network me-1"></i> Faol platformalar
+                        </button>
+                        <button type="button" class="btn btn-outline-success collapse-toggler" data-target="#collapse-type">
+                            <i class="ph ph-ticket me-1"></i> Faol Ishtirok turlari
+                        </button>
+                        @if ($hasPromoType)
+                            <button type="button" class="btn btn-outline-success collapse-toggler"
+                                data-target="#collapse-promocode">
+                                <i class="ph ph-gear me-1"></i> Promocodelar
+                            </button>
+                        @endif
+                        @if ($hasReceiptType)
+                            <button type="button" class="btn btn-outline-success collapse-toggler"
+                                data-target="#collapse-receipt">
+                                <i class="ph ph-gear me-1"></i> Receipt scan
+                            </button>
+                        @endif
+                           @if ($hasPrize)
+                            <button type="button" class="btn btn-outline-success collapse-toggler"
+                                data-target="#collapse-prize">
+                                <i class="ph ph-gear me-1"></i>Sovg'alar
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="collapse table-panel" id="collapse-platform">
+                        <div class="p-3">
+                            <div class="page-header-content d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="page-title mb-0">Tanlangan platformalar</h4>
+                            </div>
+                            <div class="row g-3">
+
+                                @foreach ($promotion['platforms'] ?? [] as $platform)
+                                    <div class="col-lg-6">
+                                        <form
+                                            action="{{ route('admin.promotion.platform.update', ['promotion' => $promotion['id'], 'platform' => $platform['id']]) }}"
+                                            method="POST"
+                                            class="border rounded shadow-sm p-4 h-100 d-flex flex-column justify-content-between bg-light">
+
+                                            @csrf
+                                            <input type="hidden" name="platform_id" value="{{ $platform['id'] }}">
+                                            <input type="hidden" name="promotion_id" value="{{ $promotion['id'] }}">
+
+                                            <div class="mb-3">
+                                                <h5 class="fw-semibold mb-1">{{ ucfirst($platform['name']) }}</h5>
+                                                <div class="form-check form-switch mt-2">
+                                                    <input class="form-check-input" type="checkbox" name="is_enabled"
+                                                        id="platform_enabled_{{ $platform['id'] }}"
+                                                        {{ old("platforms_enabled.{$platform['id']}", $platform['is_enabled']) ? 'checked' : '' }}>
+                                                    <label class="form-check-label"
+                                                        for="platform_enabled_{{ $platform['id'] }}">
+                                                        Faollashtirilgan
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            @if (strtolower($platform['name']) === 'sms')
+                                                <div class="mb-3">
+                                                    <label class="form-label">📱 SMS telefon raqami</label>
+                                                    <input type="text" class="form-control" name="phone"
+                                                        value="{{ old("platforms_phone.{$platform['id']}", $platform['phone']) }}"
+                                                        placeholder="+99890xxxxxxx">
+                                                </div>
+                                            @endif
+
+                                            <div class="mb-3">
+                                                <label class="form-label">📝 Qo‘shimcha qoidalar (JSON yoki matn)</label>
+                                                <textarea name="additional_rules" rows="3" class="form-control"
+                                                    placeholder='{"limit": 3, "allowed_time": "09:00-18:00"}'>{{ old("platforms_rules.{$platform['id']}", $platform['additional_rules']) }}</textarea>
+                                            </div>
+
+                                            <div class="text-end">
+                                                <button type="submit" class="btn btn-primary">
+                                                    Saqlash
+                                                </button>
+                                            </div>
+                                        </form>
                                     </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse table-panel" id="collapse-type">
+                        <div class=" p-3 shadow-sm">
+                            <div class="page-header-content d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="page-title mb-0">👥 Tanlangan ishtirok turlari</h4>
+                            </div>
+                            <div class="row g-3">
+                                @foreach ($promotion['participants_type'] ?? [] as $type)
+                                    <div class="col-lg-6">
+                                        <form
+                                            action="{{ route('admin.promotion.participant-type.update', ['promotion' => $promotion['id'], 'participant_type' => $type['id']]) }}"
+                                            method="POST"
+                                            class="border rounded shadow-sm p-4 h-100 d-flex flex-column justify-content-between bg-light">
+                                            @csrf
 
-                                    <div class="mt-2">
-                                        <label>Qo‘shimcha qoidalar (JSON yoki matn)</label>
-                                        <textarea name="participants_rules[{{ $type['id'] }}]" rows="2" class="form-control">{{ old("participants_rules.{$type['id']}", $type['additional_rules']) }}</textarea>
+                                            <input type="hidden" name="participant_type_id" value="{{ $type['id'] }}">
+                                            <input type="hidden" name="promotion_id" value="{{ $promotion['id'] }}">
+
+                                            <div class="mb-3">
+                                                <h5 class="fw-semibold mb-1">{{ ucfirst($type['name']) }}</h5>
+                                                <div class="form-check form-switch mt-2">
+                                                    <input class="form-check-input" type="checkbox" name="is_enabled"
+                                                        id="participant_enabled_{{ $type['id'] }}"
+                                                        {{ old("participants_enabled.{$type['id']}", $type['is_enabled']) ? 'checked' : '' }}>
+                                                    <label class="form-check-label"
+                                                        for="participant_enabled_{{ $type['id'] }}">
+                                                        Faollashtirilgan
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label">📝 Qo‘shimcha qoidalar (JSON yoki matn)</label>
+                                                <textarea name="additional_rules" rows="3" class="form-control"
+                                                    placeholder='{"limit": 5, "allowed_time": "08:00-22:00"}'>{{ old("participants_rules.{$type['id']}", $type['additional_rules']) }}</textarea>
+                                            </div>
+
+                                            <div class="text-end">
+                                                <button type="submit" class="btn btn-primary">
+                                                    Saqlash
+                                                </button>
+
+                                            </div>
+                                        </form>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    @if ($hasPromoType)
+                        <div class="collapse table-panel" id="collapse-promocode">
+                            <div class="border rounded p-3">
+                                <div class="page-header-content d-flex justify-content-between align-items-center">
+                                    <h4 class="page-title mb-0">PromoCodelar jadvali</h4>
+                                    <div>
+                                        <a href="{{ route('admin.promocode.create', ['promotion_id' => $promotion['id']]) }}"
+                                            class="btn btn-outline-success ms-3">
+                                            <i class="ph-plus-circle me-1"></i> Generate va Import
+                                        </a>
+                                        {{-- <button type="button" class="btn btn-outline-success ms-3" data-bs-toggle="modal"
+                                            data-bs-target="#socialMediaModal">
+                                            <i class="ph-plus-circle me-1"></i> Sozlamalar
+                                        </button> --}}
                                     </div>
                                 </div>
-                            @endforeach
+                                <table id="promocode-table" class="table datatable-button-init-basic">
+                                    <thead>
+                                        <tr>
+                                            <th>#ID</th>
+                                            <th>Promocode</th>
+                                            <th>Foydalanilgan</th>
+                                            <th>Foydalanilgan vaqti</th>
+                                            <th>Generation</th>
+                                            <th>Platforma</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+
+                            </div>
                         </div>
-                        <div class="row">
-                            <h5 class="text-primary">🔌 Tanlangan platformalar</h5>
-                            @foreach ($promotion['platforms'] ?? [] as $platform)
-                                <div class="col-lg-6 border rounded p-3 mb-2">
-                                    <input type="hidden" name="platforms[]" value="{{ $platform['id'] }}">
-                                    <strong>{{ ucfirst($platform['name']) }}</strong>
-
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox"
-                                            name="platforms_enabled[{{ $platform['id'] }}]"
-                                            id="platform_enabled_{{ $platform['id'] }}"
-                                            {{ old("platforms_enabled.{$platform['id']}", $platform['is_enabled']) ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="platform_enabled_{{ $platform['id'] }}">
-                                            Faollashtirilgan
-                                        </label>
-                                    </div>
-
-                                    <div class="mt-2">
-                                        <label>SMS telefon raqami (agar kerak bo‘lsa)</label>
-                                        <input type="text" class="form-control"
-                                            name="platforms_phone[{{ $platform['id'] }}]"
-                                            value="{{ old("platforms_phone.{$platform['id']}", $platform['phone']) }}">
-                                    </div>
-
-                                    <div class="mt-2">
-                                        <label>Qo‘shimcha qoidalar (JSON yoki matn)</label>
-                                        <textarea name="platforms_rules[{{ $platform['id'] }}]" rows="2" class="form-control">{{ old("platforms_rules.{$platform['id']}", $platform['additional_rules']) }}</textarea>
+                    @endif
+                    @if ($hasReceiptType)
+                        <div class="collapse table-panel" id="collapse-receipt">
+                            <div class="border rounded p-3">
+                                <div class="page-header-content d-flex justify-content-between align-items-center">
+                                    <h4 class="page-title mb-0">PromoCodelar jadvali</h4>
+                                    <div>
+                                        <a href="{{ route('admin.promocode.create', ['promotion_id' => $promotion['id']]) }}"
+                                            class="btn btn-outline-success ms-3">
+                                            <i class="ph-plus-circle me-1"></i> Generate va Import
+                                        </a>
+                                        {{-- <button type="button" class="btn btn-outline-success ms-3" data-bs-toggle="modal"
+                                            data-bs-target="#socialMediaModal">
+                                            <i class="ph-plus-circle me-1"></i> Sozlamalar
+                                        </button> --}}
                                     </div>
                                 </div>
-                            @endforeach
-                        </div> --}}
+                                {{-- <table id="promocode-table" class="table datatable-button-init-basic">
+                                        <thead>
+                                            <tr>
+                                                <th>#ID</th>
+                                                <th>Promocode</th>
+                                                <th>Foydalanilgan</th>
+                                                <th>Foydalanilgan vaqti</th>
+                                                <th>Generation</th>
+                                                <th>Platforma</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                    </table> --}}
 
-                        {{-- ✅ Switches --}}
-                        <div class="row mb-3">
-                            <div class="col-lg-4 form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="status" value="1"
-                                    id="statusSwitch" {{ old('status', $promotion['status']) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="statusSwitch">Faollik</label>
-                            </div>
-                            <div class="col-lg-4 form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="is_public" value="1"
-                                    id="publicSwitch" {{ old('is_public', $promotion['is_public']) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="publicSwitch">Ommaviy</label>
-                            </div>
-                            <div class="col-lg-4 form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="is_prize" value="1"
-                                    id="prizeSwitch" {{ old('is_prize', $promotion['is_prize']) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="prizeSwitch">Yutuqli</label>
                             </div>
                         </div>
+                    @endif
+                    @if ($hasPrize)
+                                   <div class="collapse table-panel" id="collapse-receipt">
+                            <div class="border rounded p-3">
+                                <div class="page-header-content d-flex justify-content-between align-items-center">
+                                    <h4 class="page-title mb-0">Prizes</h4>
+                                    <div>
+                                        <a href="{{ route('admin.promocode.create', ['promotion_id' => $promotion['id']]) }}"
+                                            class="btn btn-outline-success ms-3">
+                                            <i class="ph-plus-circle me-1"></i> Generate va Import
+                                        </a>
+                                        {{-- <button type="button" class="btn btn-outline-success ms-3" data-bs-toggle="modal"
+                                            data-bs-target="#socialMediaModal">
+                                            <i class="ph-plus-circle me-1"></i> Sozlamalar
+                                        </button> --}}
+                                    </div>
+                                </div>
+                                {{-- <table id="promocode-table" class="table datatable-button-init-basic">
+                                        <thead>
+                                            <tr>
+                                                <th>#ID</th>
+                                                <th>Promocode</th>
+                                                <th>Foydalanilgan</th>
+                                                <th>Foydalanilgan vaqti</th>
+                                                <th>Generation</th>
+                                                <th>Platforma</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                    </table> --}}
 
-                        {{-- 🔗 Media file uploads --}}
-                        <input type="hidden" name="created_by_user_id" value="{{ $promotion['created_by_user_id'] }}">
-
-                        <div class="row">
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Oferta fayl</label>
-                                <input type="file" name="offer_file" class="filepond-offer" />
-                            </div>
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Banner</label>
-                                <input type="file" name="media_preview" class="filepond-banner" />
-                            </div>
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Galereya</label>
-                                <input type="file" name="media_gallery[]" class="filepond-gallery" multiple />
                             </div>
                         </div>
-
-                        {{-- 🔘 Submit --}}
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('admin.promotion.index') }}" class="btn btn-outline-secondary">Bekor
-                                qilish</a>
-                            <button type="submit" class="btn btn-primary">Yangilash</button>
-                        </div>
-                    </form>
+                    @endif
                 </div>
             </div>
         </div>
-    </div>
 @endsection

@@ -18,7 +18,7 @@ class Promotions extends Model
         'description',
         'status',
         'is_public',
-        'is_prize',
+        'winning_strategy',
         'code_settings',
         'extra_conditions',
         'start_date',
@@ -79,7 +79,9 @@ public function getGalleryAttribute()
 
     public function participationTypes()
     {
-        return $this->hasMany(PromotionParticipationType::class, 'promotion_id')->with('participationType');
+        return $this->belongsToMany(ParticipationType::class, 'promotion_participation_types', 'promotion_id', 'participation_type_id')
+            ->withPivot(['is_enabled', 'additional_rules'])
+            ->withTimestamps();
     }
 
     public function participantTypeIds()
@@ -101,7 +103,7 @@ public function getGalleryAttribute()
     public function platforms()
     {
         return $this->belongsToMany(Platform::class, 'platform_promotions', 'promotion_id', 'platform_id')
-            ->withPivot(['is_enabled', 'additional_rules'])
+            ->withPivot(['is_enabled', 'additional_rules','phone'])
             ->withTimestamps();
     }
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\Company\CompanyController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\PromoCodeController;
 use App\Http\Controllers\Admin\Promo\PromotionController;
 use App\Http\Controllers\Admin\SocialMediaController;
 use App\Http\Controllers\Admin\User\UserController;
@@ -77,7 +78,20 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
         Route::get('/data', 'data')->name('data');                     // AJAX uchun server-side table
         Route::get('/create/{company_id?}', 'create')->name('create'); // GET /promotion/create
         Route::post('/', 'store')->name('store');                      // POST /promotion                                                 // Route::get('/{id}', 'show')->name('show');                    // GET /promotion/{id}
-        Route::put('/{id}', 'update')->name('update');                 // PUT /promotion/{id}
+        Route::put('/{id}', 'update')->name('update');
+        Route::post('{promotion}/participant-type/{participant_type}/update', 'updateParticipantType')->name('participant-type.update');
+        Route::post('{promotion}/platform/{platform}/update', 'updatePlatform')->name('platform.update');
+    });
+    Route::prefix('promocode')->name('admin.promocode.')->controller(PromoCodeController::class)->group(function () {
+        Route::get('/create/{promotion_id?}', 'create')->name('create'); // GET /promocode/create
+        Route::post('/{promotion}/generate', 'generatePromoCodes')->name('generate');
+        Route::post('/{promotion}/import', 'importPromoCodes')->name('import');
+        Route::get('/{promotion}/promocode-settings', 'showPromocodeSettingsForm')->name('settings.form');
+        Route::post('/{promotion}/promocode-settings', "updatePromocodeSettings")->name('settings.update');
+        Route::get('/{promotion}/generatedata', 'generateData')->name('generatedata'); // AJAX uchun server-side table
+        Route::get('/{generate}/showgenerate', 'generateShow')->name('generateshow');
+        Route::get('/{promotion}/generate/promocodedata', 'generatePromocodeData')->name('generate.promocodedata'); // AJAX uchun server-side table
+        Route::get('/{promotion}/promocodedata', 'promocodeData')->name('promocodedata'); // AJAX uchun server-side table
     });
 
 });

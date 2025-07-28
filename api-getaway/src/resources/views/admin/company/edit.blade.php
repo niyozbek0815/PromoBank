@@ -6,14 +6,12 @@
     @php
         $social_types = $data['select_types'];
         $data = $data['data'];
-
     @endphp
     <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/form_layouts.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
-
     <script>
         $(document).on('change', 'input[name="logo"]', function(evt) {
             const [file] = this.files;
@@ -352,7 +350,7 @@
                 </div>
 
                 <div class="card-body">
-                    <form action="{{ route('admin.company.update', $data['id']) }}" method="POST">
+                    <form action="{{ route('admin.company.update', $data['id']) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 

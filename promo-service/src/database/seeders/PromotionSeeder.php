@@ -34,11 +34,7 @@ class PromotionSeeder extends Seeder
                     ],
                     'status'             => true,
                     'is_public'          => (bool) random_int(0, 1),
-                    'is_prize'           => (bool) random_int(0, 1),
-                    'extra_conditions'   => [
-                        'min_purchase'       => rand(10000, 50000),
-                        'region_restriction' => false,
-                    ],
+                     'winning_strategy'   => collect(['immediate', 'delayed', 'hybrid'])->random(), // ✅ shu yer
                     'start_date'         => Carbon::now()->subDays(rand(1, 30)),
                     'end_date'           => Carbon::now()->addDays(rand(15, 60)),
                     'created_by_user_id' => rand(1, 3),

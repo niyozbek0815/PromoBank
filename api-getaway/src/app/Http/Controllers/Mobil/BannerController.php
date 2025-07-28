@@ -16,9 +16,9 @@ class BannerController extends Controller
                     'kr' => 'Йозги акция бошланди!',
                 ],
                 'media'       => [
-                    'uz' => 'https: //www.pinterest.com/pin/103231016456382347/',
-                    'ru' => 'https: //www.pinterest.com/pin/103231016456382347/',
-                    'kr' => 'https: //www.pinterest.com/pin/103231016456382347/',
+                    'uz' =>  ['url' => 'https://qadarun.com/namuna/1.gif', 'mime_type' => 'image/gif'],
+                    'ru' =>  ['url' => 'https://qadarun.com/namuna/1.gif', 'mime_type' => 'image/gif'],
+                    'kr' =>  ['url' => 'https://qadarun.com/namuna/1.gif', 'mime_type' => 'image/gif'],
                 ],
                 'url'         => '12',
                 'banner_type' => 'promotion',
@@ -30,9 +30,9 @@ class BannerController extends Controller
                     'kr' => 'Янгиликлар билан танишинг',
                 ],
                 'media'       => [
-                    'uz' => 'https: //www.pinterest.com/pin/126171227056001059/',
-                    'ru' => 'https: //www.pinterest.com/pin/126171227056001059/',
-                    'kr' => 'https: //www.pinterest.com/pin/126171227056001059/',
+                    'uz' => ['url' => 'https://qadarun.com/namuna/6.jpeg', 'mime_type' => 'image/jpeg'],
+                    'ru' => ['url' => 'https://qadarun.com/namuna/6.jpeg', 'mime_type' => 'image/jpeg'],
+                    'kr' => ['url' => 'https://qadarun.com/namuna/6.jpeg', 'mime_type' => 'image/jpeg'],
                 ],
                 'url'         => '7',
                 'banner_type' => 'news',
@@ -44,9 +44,9 @@ class BannerController extends Controller
                     'kr' => 'Бизнинг расмий сайтимиз',
                 ],
                 'media'       => [
-                    'uz' => 'https: //www.pinterest.com/pin/25473554137498545/',
-                    'ru' => 'https: //www.pinterest.com/pin/25473554137498545/',
-                    'kr' => 'https: //www.pinterest.com/pin/25473554137498545/',
+                    'uz' => ['url' => 'https://qadarun.com/namuna/8.jpeg', 'mime_type' => 'image/jpeg'],
+                    'ru' => ['url' => 'https://qadarun.com/namuna/8.jpeg', 'mime_type' => 'image/jpeg'],
+                    'kr' => ['url' => 'https://qadarun.com/namuna/8.jpeg', 'mime_type' => 'image/jpeg'],
                 ],
                 'url'         => 'https://officialsite.uz',
                 'banner_type' => 'url',
@@ -58,14 +58,14 @@ class BannerController extends Controller
                     'kr' => 'Қишги чегирмалар!',
                 ],
                 'media'       => [
-                    'uz' => 'https: //www.pinterest.com/pin/370984088067376830/',
-                    'ru' => 'https: //www.pinterest.com/pin/370984088067376830/',
-                    'kr' => 'https: //www.pinterest.com/pin/370984088067376830/',
+                    'uz' =>  ['url' => 'https://qadarun.com/namuna/7.jpeg', 'mime_type' => 'image/jpeg'],
+                    'ru' =>  ['url' => 'https://qadarun.com/namuna/7.jpeg', 'mime_type' => 'image/jpeg'],
+                    'kr' =>  ['url' => 'https://qadarun.com/namuna/7.jpeg', 'mime_type' => 'image/jpeg'],
                 ],
                 'url'         => '4',
                 'banner_type' => 'promotion',
             ],
         ];
-return $this->successResponse( $banners);
+        return $this->successResponse( $banners);
     }
 }

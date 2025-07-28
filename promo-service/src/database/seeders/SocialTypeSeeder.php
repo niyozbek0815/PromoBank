@@ -19,6 +19,7 @@ class SocialTypeSeeder extends Seeder
             ['name' => 'Facebook'],
             ['name' => 'YouTube'],
             ['name' => 'LinkedIn'],
+            ['name' => 'Website'],
         ];
 
         DB::table('social_types')->insert($types);

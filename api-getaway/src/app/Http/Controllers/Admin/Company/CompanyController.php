@@ -66,6 +66,9 @@ class CompanyController extends Controller
     }
     public function update(Request $request, $id)
     {
+        // if ($request->hasFile('logo')) {
+        //     dd($request->file('logo'));
+        // }
         $response = $this->forwardRequest("PUT", $this->url, "front/company/{$id}/update", $request, 'logo');
         if ($response instanceof \Illuminate\Http\Client\Response  && $response->ok()) {
             return redirect()->route('admin.company.index')->with('success', 'Foydalanuvchi yangilandi.');

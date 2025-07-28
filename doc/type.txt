@@ -1,0 +1,51 @@
+return [
+
+    // 🖼 Rasm formatlari (image)
+    'image/jpeg',       // .jpeg, .jpg
+    'image/png',        // .png
+    'image/gif',        // .gif
+    'image/webp',       // .webp
+    'image/bmp',        // .bmp
+    'image/svg+xml',    // .svg
+    'image/x-icon',     // .ico
+
+    // 🎥 Video formatlari (video)
+    'video/mp4',            // .mp4
+    'video/x-msvideo',      // .avi
+    'video/x-ms-wmv',       // .wmv
+    'video/webm',           // .webm
+    'video/quicktime',      // .mov
+    'video/3gpp',           // .3gp
+    'video/ogg',            // .ogv
+    'application/x-mpegURL',// .m3u8
+    'video/MP2T',           // .ts
+
+    // 📄 Hujjatlar (document)
+    'application/pdf',                                                              // .pdf
+    'application/msword',                                                           // .doc
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',      // .docx
+    'application/vnd.ms-excel',                                                     // .xls
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',            // .xlsx
+    'application/vnd.ms-powerpoint',                                                // .ppt
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',    // .pptx
+    'text/plain',                                                                   // .txt
+    'text/csv',                                                                     // .csv
+    'application/rtf',                                                              // .rtf
+
+    // 📦 Arxiv fayllar (optional)
+    'application/zip',              // .zip
+    'application/x-rar-compressed',// .rar
+    'application/x-7z-compressed', // .7z
+    'application/x-tar',           // .tar
+    'application/gzip',            // .gz
+
+    // 💻 Kod fayllari (agar ruxsat qilsang)
+    'text/html',               // .html
+    'application/javascript',  // .js
+    'text/css',                // .css
+    'application/json',        // .json
+    'application/xml',         // .xml
+    'text/x-php',              // .php
+    'text/x-shellscript',      // .sh
+
+];

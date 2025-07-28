@@ -16,6 +16,14 @@
     </script>
     <script src="https://unpkg.com/filepond-plugin-file-poster/dist/filepond-plugin-file-poster.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
+        {{-- <script src="{{ asset('adminpanel/assets/js/filepond/filepond.js') }}"></script>
+    <script src="{{ asset('adminpanel/assets/js/filepond/filepond-plugin-file-validate-type.js') }}"></script>
+    <script src="{{ asset('adminpanel/assets/js/filepond/filepond-plugin-file-validate-size.js') }}"></script>
+    <script src="{{ asset('adminpanel/assets/js/filepond/filepond-plugin-image-preview.js') }}"></script>
+    <script src="{{ asset('adminpanel/assets/js/filepond/filepond-plugin-image-exif-orientation.js') }}">
+    </script>
+    <script src="{{ asset('adminpanel/assets/js/filepond/filepond-plugin-file-poster.js') }}"></script>
+    <script src="{{ asset('adminpanel/assets/js/ckeditor.js') }}"></script> --}}
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

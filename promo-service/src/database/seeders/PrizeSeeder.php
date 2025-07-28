@@ -19,7 +19,7 @@ class PrizeSeeder extends Seeder
         $categories = PrizeCategory::all();
 
         // is_prize = true bo'lgan promotionlar
-        $promotions = Promotions::where('is_prize', true)->get();
+        $promotions = Promotions::whereIn('winning_strategy', ['immediate', 'hybrid'])->get();
 
         foreach ($promotions as $promotion) {
             foreach ($categories as $category) {

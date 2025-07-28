@@ -28,7 +28,7 @@ class PromoController extends Controller
         $promotions = Cache::store('redis')->remember($cacheKey, $ttl, function () {
             return $this->promotionRepository->getAllPromotionsForMobile();
         });
-        return $this->successResponse(['promotions' => PromotionResource::collection($promotions)], "success");
+        return $this->successResponse( PromotionResource::collection($promotions), "success");
     }
     public function viaPromocode(SendPromocodeRequest $request, $id)
     {

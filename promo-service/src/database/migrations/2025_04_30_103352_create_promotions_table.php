@@ -19,7 +19,7 @@ return new class extends Migration
             $table->json('description');
             $table->boolean('status')->default(false);
             $table->boolean('is_public')->default(false);
-            $table->boolean('is_prize')->default(false);
+            $table->enum('winning_strategy', ['immediate', 'delayed', 'hybrid'])->default('immediate');
             $table->json('code_settings')->nullable();
                                                           // $table->enum('winner_selection_type', ['manual', 'random', 'criteria'])->default('manual');
             $table->json('extra_conditions')->nullable(); // e.g., {"min_age":18,"location":"Tashkent"}

@@ -15,8 +15,8 @@ class ParticipationTypeResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->participationType->id,
-            'type' => $this->participationType->name
+            'id' => $this->id,
+            'type' => $this->name
         ];
     }
 }

@@ -7,8 +7,10 @@ use App\Jobs\StoreUploadedMediaJob;
 use App\Models\Company;
 use App\Models\ParticipationType;
 use App\Models\Platform;
+use App\Models\PlatformPromotion;
 use App\Models\Promotions;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
@@ -26,7 +28,7 @@ class PromotionController extends Controller
         $query = Promotions::with([
             'company:id,name',
             'platforms:id,name',                                 // platforma nomlarini olish uchun
-            'participationTypes.participationType:id,name,slug', // qo‘shilgan aloqador turlar
+            'participationTypes:id,name', // qo‘shilgan aloqador turlar
         ])->where('company_id', $id)
             ->select('promotions.*');
 
@@ -38,7 +40,7 @@ class PromotionController extends Controller
                 return $item->platforms->pluck('name')->implode(', ') ?: '-';
             })
             ->addColumn('participant_types', function ($item) {
-                return $item->participationTypes->pluck('participationType.name')->implode(', ') ?: '-';
+                return $item->participationTypes->pluck('name')->implode(', ') ?: '-';
             })
             ->addColumn(
                 'status',
@@ -73,7 +75,7 @@ class PromotionController extends Controller
         $query = Promotions::with([
             'company:id,name',
             'platforms:id,name',                                 // platforma nomlarini olish uchun
-            'participationTypes.participationType:id,name,slug', // qo‘shilgan aloqador turlar
+            'participationTypes:id,name,slug', // qo‘shilgan aloqador turlar
         ])->select('promotions.*');
         // Log::info('Promotion', ['promo' => $query->get()]);
         return DataTables::of($query)
@@ -85,7 +87,7 @@ class PromotionController extends Controller
                 return $item->platforms->pluck('name')->implode(', ') ?: '-';
             })
             ->addColumn('participant_types', function ($item) {
-                return $item->participationTypes->pluck('participationType.name')->implode(', ') ?: '-';
+                return $item->participationTypes->pluck('name')->implode(', ') ?: '-';
             })
             ->addColumn(
                 'status',
@@ -173,7 +175,7 @@ class PromotionController extends Controller
     public function edit($id)
     {
         $promotion = Promotions::with([
-            'platformIds:id,name',
+
             'participantTypeIds:id,name,slug',
             'company:id,name,status',
         ])->findOrFail($id);
@@ -186,18 +188,21 @@ class PromotionController extends Controller
                 'name' => $item->getTranslation('name', 'uz'),
             ]);
 
-        $selectedPlatforms = $promotion->platformIds->map(fn($platform) => [
-            'id'               => $platform->id,
-            'name'             => $platform->name,
-            'is_enabled'       => (bool) $platform->pivot->is_enabled,
-            'phone'            => $platform->pivot->phone,
-            'additional_rules' => $platform->pivot->additional_rules,
-        ]);
-
-        $selectedParticipants = $promotion->participantTypeIds->map(fn($type) => [
+        $selectedPlatforms = $promotion->platforms->map(fn($type) => [
             'id'               => $type->id,
             'name'             => $type->name,
             'is_enabled'       => (bool) $type->pivot->is_enabled,
+            'promotion_id'     => $type->pivot->promotion_id,
+            'platform_id'      => $type->pivot->platform_id,
+            'additional_rules' => $type->pivot->additional_rules,
+            'phone'            => $type->pivot->phone,
+        ]);
+        $selectedParticipants = $promotion->participationTypes->map(fn($type) => [
+            'id'               => $type->id,
+            'name'             => $type->name,
+            'is_enabled'       => (bool) $type->pivot->is_enabled,
+            'promotion_id'     => $type->pivot->promotion_id,
+            'participation_type_id'      => $type->pivot->participation_type_id,
             'additional_rules' => $type->pivot->additional_rules,
         ]);
 
@@ -231,14 +236,15 @@ class PromotionController extends Controller
                 'start_date'         => optional($promotion->start_date)->toDateTimeString(),
                 'end_date'           => optional($promotion->end_date)->toDateTimeString(),
                 'status'             => (bool) $promotion->status,
-                'banner'=>$promotion->banner,
-                'offer'=>$promotion->offer,
-                'gallery'=>$promotion->gallery,
+                'banner'             => $promotion->banner,
+                'offer'              => $promotion->offer,
+                'gallery'            => $promotion->gallery,
                 'is_public'          => (bool) $promotion->is_public,
                 'is_prize'           => (bool) $promotion->is_prize,
+                'winning_strategy' => $promotion->winning_strategy,
                 'created_by_user_id' => $promotion->created_by_user_id,
-                // 'platforms'          => $selectedPlatforms,
-                // 'participants_type'  => $selectedParticipants,
+                'platforms'          => $selectedPlatforms,
+                'participants_type'  => $selectedParticipants,
             ],
             'platforms'         => $availablePlatforms,
             'companies'         => $companies,
@@ -265,11 +271,11 @@ class PromotionController extends Controller
             'offer_file'          => 'required|file|mimes:pdf,doc,docx,odt,rtf,txt|max:5120',
             'media_preview'       => 'required|file|mimes:jpg,jpeg,png,gif,mp4,webm|max:5120',
             'media_gallery'       => 'required|array|max:10',
-            'media_gallery.*'     => 'file|mimes:jpg,jpeg,png,gif,mp4,webm|max:20480',
+            'media_gallery.*'     => 'file|mimes:jpg,jpeg,png,gif,mp4,webm|max:240480',
             'created_by_user_id'  => 'required|integer',
+            'winning_strategy' => 'required|in:immediate,delayed,hybrid',
             'status'              => 'nullable|boolean',
             'is_public'           => 'nullable|boolean',
-            'is_prize'            => 'nullable|boolean',
         ]);
         $promotion = Promotions::create([
             'name'               => $validated['name'],
@@ -281,7 +287,7 @@ class PromotionController extends Controller
             'status'             => $request->boolean('status'),
             'created_by_user_id' => $validated['created_by_user_id'],
             'is_public'          => $request->boolean('is_public'),
-            'is_prize'           => $request->boolean('is_prize'),
+            'winning_strategy' => $validated['winning_strategy'],
         ]);
         $platformData = collect($validated['platforms'] ?? [])->mapWithKeys(function ($platformId) {
             return [$platformId => [
@@ -333,28 +339,27 @@ class PromotionController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'name'                => 'required|array',
-            'title'               => 'required|array',
-            'description'         => 'required|array',
-            'company_id'          => 'required|exists:companies,id',
-            'start_date'          => 'nullable|date',
-            'end_date'            => 'nullable|date|after_or_equal:start_date',
+            'name'                    => 'required|array',
+            'title'                   => 'required|array',
+            'description'             => 'required|array',
+            'company_id'              => 'required|exists:companies,id',
+            'start_date'              => 'nullable|date',
+            'end_date'                => 'nullable|date|after_or_equal:start_date',
 
-            'participants_type'   => 'nullable|array',
-            'participants_type.*' => 'integer',
+            'participants_type_new'   => 'nullable|array',
+            'participants_type_new.*' => 'integer',
 
-            'platforms'           => 'nullable|array',
-            'platforms.*'         => 'integer',
-            'created_by_user_id'  => 'required|string|max:255',
+            'platforms_new'           => 'nullable|array',
+            'platforms_new.*'         => 'integer',
+            'created_by_user_id'      => 'required|string|max:255',
 
-            'offer_file'          => 'nullable|file|mimes:pdf,doc,docx,odt,rtf,txt|max:5120',
-            'media_preview'       => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,webm|max:5120',
-            'media_gallery'       => 'nullable|array|max:10',
-            'media_gallery.*'     => 'file|mimes:jpg,jpeg,png,gif,mp4,webm|max:20480',
-
-            'status'              => 'nullable|boolean',
-            'is_public'           => 'nullable|boolean',
-            'is_prize'            => 'nullable|boolean',
+            'offer_file'              => 'nullable|file|mimes:pdf,doc,docx,odt,rtf,txt|max:5120',
+            'media_preview'           => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,webm|max:5120',
+            'media_gallery'           => 'nullable|array|max:10',
+            'media_gallery.*'         => 'file|mimes:jpg,jpeg,png,gif,mp4,webm|max:240480',
+            'winning_strategy' => 'required|in:immediate,delayed,hybrid',
+            'status'                  => 'nullable|boolean',
+            'is_public'               => 'nullable|boolean',
         ]);
 
         $promotion = Promotions::findOrFail($id);
@@ -368,34 +373,48 @@ class PromotionController extends Controller
             'end_date'           => $validated['end_date'] ?? null,
             'status'             => $request->boolean('status'),
             'is_public'          => $request->boolean('is_public'),
-            'is_prize'           => $request->boolean('is_prize'),
             'created_by_user_id' => $validated['created_by_user_id'],
+            'winning_strategy'   => $validated['winning_strategy'],
         ]);
-if ($request->hasFile('offer_file')) {
-    $file     = $request->file('offer_file');
-    $tempPath = $file->store('tmp', 'public');
-    Log::info("📎 Offer file mavjud. Yuklanmoqda..." . $tempPath);
-    Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'promotion-offer', $promotion->id));
-}
+        $platformData = collect($validated['platforms_new'] ?? [])->mapWithKeys(function ($platformId) {
+            return [$platformId => [
+                'is_enabled'       => true, // default: true
+                'additional_rules' => null, // yoki ['min' => 1, 'max' => 3] kabi rule qo‘shsa bo‘ladi
+            ]];
+        })->toArray();
+        $promotion->platformIds()->syncWithoutDetaching($platformData);
+        $participantData = collect($validated['participants_type_new'] ?? [])->mapWithKeys(function ($typeId) {
+            return [$typeId => [
+                'is_enabled'       => true,
+                'additional_rules' => null,
+            ]];
+        })->toArray();
+        $promotion->participantTypeIds()->syncWithoutDetaching($participantData, );
+        Log::info('Promotion updated: ', [' $platformData' => $platformData, ' $participantData' => $participantData]);
+        if ($request->hasFile('offer_file')) {
+            $file     = $request->file('offer_file');
+            $tempPath = $file->store('tmp', 'public');
+            Log::info("📎 Offer file mavjud. Yuklanmoqda..." . $tempPath);
+            Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'promotion-offer', $promotion->id));
+        }
 
-if ($request->hasFile('media_preview')) {
-    $file     = $request->file('media_preview');
-    $tempPath = $file->store('tmp', 'public');
-    Log::info("📎 media_preview mavjud. Yuklanmoqda..." . $tempPath);
-    Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'promotion-banner', $promotion->id));
-}
+        if ($request->hasFile('media_preview')) {
+            $file     = $request->file('media_preview');
+            $tempPath = $file->store('tmp', 'public');
+            Log::info("📎 media_preview mavjud. Yuklanmoqda..." . $tempPath);
+            Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'promotion-banner', $promotion->id));
+        }
 
-if ($request->hasFile('media_gallery')) {
-    $tempPaths = [];
-    Log::info('📎 Media galereya fayllari mavjud. Fayllar soni: ' . count($request->file('media_gallery')));
-    foreach ($request->file('media_gallery') as $index => $file) {
-        $tempPath    = $file->store('tmp', 'public');
-        $tempPaths[] = $tempPath;
-    }
-    Log::info("📎 Media galereya fayllari: ", ['Paths' => $tempPaths]);
-    Queue::connection('rabbitmq')->push(new StoreUploadedMediaBatchJob($tempPaths, 'promotion-gallary', $promotion->id));
-}
-
+        if ($request->hasFile('media_gallery')) {
+            $tempPaths = [];
+            Log::info('📎 Media galereya fayllari mavjud. Fayllar soni: ' . count($request->file('media_gallery')));
+            foreach ($request->file('media_gallery') as $index => $file) {
+                $tempPath    = $file->store('tmp', 'public');
+                $tempPaths[] = $tempPath;
+            }
+            Log::info("📎 Media galereya fayllari: ", ['Paths' => $tempPaths]);
+            Queue::connection('rabbitmq')->push(new StoreUploadedMediaBatchJob($tempPaths, 'promotion-gallary', $promotion->id));
+        }
 
         // Platform/participants agar mavjud bo‘lsa
         // $promotion->platforms()->sync($validated['platforms'] ?? []);
@@ -406,5 +425,85 @@ if ($request->hasFile('media_gallery')) {
             'id'      => $promotion->id,
         ]);
     }
+    public function updateParticipantType(Request $request, $promotionId, $participantTypeId)
+    {
+        Log::info('🎯 Participant Type Update Request:', [
+            'promotion_id'        => $promotionId,
+            'participant_type_id' => $participantTypeId,
+            'request_data'        => $request->all(),
+        ]);
 
+        $request->merge([
+            'is_enabled' => $request->has('is_enabled'),
+        ]);
+
+        $validated = $request->validate([
+            'is_enabled'       => 'boolean',
+            'additional_rules' => 'nullable|string',
+        ]);
+
+        $additionalRules = $validated['additional_rules'] ?? null;
+        if ($additionalRules) {
+            $decoded         = json_decode($additionalRules, true);
+            $additionalRules = json_last_error() === JSON_ERROR_NONE ? $decoded : $additionalRules;
+        }
+
+        $updated = DB::table('promotion_participation_types')->updateOrInsert(
+            [
+                'promotion_id'          => $promotionId,
+                'participation_type_id' => $participantTypeId,
+            ],
+            [
+                'is_enabled'       => $validated['is_enabled'],
+                'additional_rules' => is_array($additionalRules) ? json_encode($additionalRules) : $additionalRules,
+                'updated_at'       => now(),
+            ]
+        );
+
+        Log::info('✅ Participant Type Updated or Inserted:', [
+            'updated'          => $updated,
+            'is_enabled'       => $validated['is_enabled'],
+            'additional_rules' => $additionalRules,
+        ]);
+        return response()->json(['success'=> 'Ishtirok turi yangilandi.']);
+    }
+   public function updatePlatform(Request $request,  $promotionId, $platformId)
+    {
+     Log::info('🎯 Participant Type Update Request:', [
+    'promotion_id'        => $promotionId,
+    'participant_type_id' => $platformId,
+    'request_data'        => $request->all(),
+]);
+
+        $validated = $request->validate([
+            'promotion_id' => 'required|integer|exists:promotions,id',
+            'platform_id' => 'required|integer|exists:platforms,id',
+            'is_enabled' => 'nullable|boolean',
+            'additional_rules' => 'nullable|string',
+            'phone' => 'nullable|string',
+        ]);
+
+        // Normalize
+        $isEnabled = filter_var($validated['is_enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $rules = $validated['additional_rules'] ?? '{}';
+
+        // Optional: validate JSON format
+        if (!is_array(json_decode($rules, true))) {
+            return response()->json(['message' => 'Invalid additional_rules JSON format.'], 422);
+        }
+
+        // Save or update pivot
+        PlatformPromotion::updateOrCreate(
+            [
+                'promotion_id' => $validated['promotion_id'],
+                'platform_id' => $validated['platform_id'],
+            ],
+            [
+                'is_enabled' => $isEnabled,
+                'additional_rules' => $rules,
+            ]
+        );
+
+        return response()->json(['message' => 'Platform settings updated.']);
+    }
 }

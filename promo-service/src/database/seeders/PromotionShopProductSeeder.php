@@ -15,8 +15,7 @@ class PromotionShopProductSeeder extends Seeder
     {
         $promotions = Promotions::whereHas('platforms', function ($query) {
             $query->where('name', 'mobile');
-        })
-            ->whereHas('participationTypes.participationType', function ($query) {
+        }) ->whereHas('participationTypes', function ($query) {
                 $query->whereIn('slug', ['receipt_scan']);
             })
             ->get();

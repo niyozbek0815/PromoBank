@@ -25,7 +25,7 @@ class PromotionRepository implements PromotionRepositoryInterface
                 'company:id,name,title,region,address',
                 'company.media',
                 'company.socialMedia.type',
-                'participationTypes.participationType'
+                'participationTypes'
             ])
             ->get();
     }
@@ -36,7 +36,7 @@ class PromotionRepository implements PromotionRepositoryInterface
         return  $this->model->whereHas('platforms', function ($query) {
             $query->where('name', 'mobile');
         })
-            ->whereHas('participationTypes.participationType', function ($query) use ($slug) {
+            ->whereHas('participationType', function ($query) use ($slug) {
                 $query->whereIn('slug', $slug);
             })->select('id', 'is_prize') // faqat kerakli ustun
             ->find($id);
