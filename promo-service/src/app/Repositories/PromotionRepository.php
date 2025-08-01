@@ -1,10 +1,8 @@
 <?php
-
 namespace App\Repositories;
 
 use App\Models\Promotions;
 use App\Repositories\RepositoryInterface\PromotionRepositoryInterface;
-
 
 class PromotionRepository implements PromotionRepositoryInterface
 {
@@ -25,7 +23,7 @@ class PromotionRepository implements PromotionRepositoryInterface
                 'company:id,name,title,region,address',
                 'company.media',
                 'company.socialMedia.type',
-                'participationTypes'
+                'participationTypes',
             ])
             ->get();
     }
@@ -33,12 +31,12 @@ class PromotionRepository implements PromotionRepositoryInterface
     public function getPromotionByIdforVia($id, array $slug)
     {
         // Mobil platforma uchun reklama aktsiyasini ID bo'yicha olish
-        return  $this->model->whereHas('platforms', function ($query) {
+        return $this->model->whereHas('platforms', function ($query) {
             $query->where('name', 'mobile');
         })
-            ->whereHas('participationType', function ($query) use ($slug) {
+            ->whereHas('participationTypes', function ($query) use ($slug) {
                 $query->whereIn('slug', $slug);
-            })->select('id', 'is_prize') // faqat kerakli ustun
+            })->select('id', 'winning_strategy') // faqat kerakli ustun
             ->find($id);
     }
 }

@@ -15,6 +15,7 @@ class PromoCode extends Model
         'promocode',
         'is_used',
         'used_at',
+        'platform_id'
     ];
 
     protected $casts = [

@@ -27,15 +27,21 @@ RUN apt-get update \
         libonig-dev \
         libxml2-dev \
         libpq-dev \
-        libjpeg-dev \
-        libpng-dev \
-        libwebp-dev \
-        libexif-dev \
         build-essential \
         librabbitmq-dev \
         pkg-config \
         libssl-dev \
+        libjpeg-dev \
+        libpng-dev \
+        libwebp-dev \
+        libexif-dev \
+        libfreetype6-dev \
+    && docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
+        --with-webp \
     && docker-php-ext-install \
+        gd \
         pdo \
         pdo_mysql \
         pdo_pgsql \
@@ -55,12 +61,13 @@ RUN pecl install redis \
 # 4. AMQP (RabbitMQ) extension o‘rnatish
 RUN pecl install amqp \
     && docker-php-ext-enable amqp
-RUN echo "upload_max_filesize=200M\npost_max_size=250M" > /usr/local/etc/php/conf.d/uploads.ini
 
-# 5. Tozalash
+# 5. PHP konfiguratsiyasi: upload limiti
+RUN echo "memory_limit=2048M\nupload_max_filesize=512M\npost_max_size=512M" > /usr/local/etc/php/conf.d/uploads.ini
+# 6. Tozalash
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# 6. Ishlash katalogi
+# 7. Ish katalogi
 WORKDIR /var/www/html
 
 CMD ["php-fpm"]

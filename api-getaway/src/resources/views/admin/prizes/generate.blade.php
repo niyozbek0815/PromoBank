@@ -33,7 +33,6 @@
             }
         });
         $(document).ready(function() {
-            const promotioId="{$promotion_id}";
             const url = "{{ route('admin.promocode.generatedata', $promotion_id, false) }}";
             if ($.fn.DataTable.isDataTable('#generate-table')) {
                 $('#generate-table').DataTable().destroy();
@@ -41,7 +40,7 @@
 
             $('#generate-table').DataTable({
                 processing: true,
-                serverSide: false,
+                serverSide: true,
                 ajax: {
                     url: url,
                     type: "GET",
@@ -59,82 +58,34 @@
                     },
                     {
                         data: 'name',
-                        name: 'name',
-                        searchable: false,
+                        name: 'name'
                     },
                     {
                         data: 'count',
-                        name: 'count',
-                        searchable: false,
-
+                        name: 'count'
                     },
 
                     {
                         data: 'used_count',
-                        name: 'used_count',
-                        searchable: false,
-
+                        name: 'used_count'
                     },
                     {
                         data: 'type',
-                        name: 'type',
-                        searchable: false,
-
+                        name: 'type'
                     },
 
                     {
                         data: 'created_at',
-                        name: 'created_at',
-                        searchable: false,
-
+                        name: 'created_at'
                     },
                     {
                         data: 'created_by',
-                        name: 'created_by',
-                        searchable: false,
-
+                        name: 'created_by'
                     },
                     {
                         data: 'actions',
-                        name: 'actions',
-                        searchable: false,
-
+                        name: 'actions'
                     },
-                ],
-                     buttons: [{
-                        extend: 'copy',
-                        exportOptions: {
-                            modifier: {
-                                page: 'all' // <-- all sahifalarni oladi
-                            }
-                        }
-                    },
-                    {
-                        extend: 'excel',
-                        filename: promotioId + '-idli promotion promocodelari',
-                        exportOptions: {
-                            modifier: {
-                                page: 'all' // <-- faqat ko‘rinayotgan emas, hammasini oladi
-                            }
-                        }
-                    },
-                    {
-                        extend: 'csv',
-                        filename: promotioId + '-idli promotion promocodelari',
-                        exportOptions: {
-                            modifier: {
-                                page: 'all'
-                            }
-                        }
-                    },
-                    {
-                        extend: 'print',
-                        exportOptions: {
-                            modifier: {
-                                page: 'all'
-                            }
-                        }
-                    }
                 ]
             });
         });
@@ -203,7 +154,17 @@
                                     <h6 class="fw-bold mb-3">📥 Excel fayldan import qilish</h6>
                                     <input type="hidden" name="created_by_user_id"
                                         value="{{ Session::get('user')['id'] }}">
-
+                                    <div class="form-check my-3">
+                                        <input type="checkbox" class="form-check-input" name="apply_generation_rules"
+                                            id="apply_generation_rules" value="1">
+                                        <label class="form-check-label" for="apply_generation_rules">
+                                            Generatsiya shartlarini qo‘llash
+                                            <a href="{{ route('admin.promocode.create', ['promotion_id' => $promotion_id]) }}"
+                                                class="ms-2 text-primary text-decoration-underline" target="_blank">
+                                                Sozlamalarni ko‘rish
+                                            </a>
+                                        </label>
+                                    </div>
                                     <div class="mb-3">
                                         <label class="form-label">📄 Excel fayl (.xlsx yoki .csv)</label>
                                         <input type="file" name="file" class="form-control" accept=".xlsx,.csv"
@@ -213,17 +174,9 @@
                                             <strong>promocode</strong> lar bo‘lishi lozim.
                                         </div>
                                     </div>
-                                    <div class="form-check my-3">
-                                        <input type="checkbox" class="form-check-input" name="settings_rules"
-                                            id="settings_rules" value="1">
-                                        <label class="form-check-label" for="settings_rules">
-                                            Generatsiya shartlarini qo‘llash
-                                            <a href="{{ route('admin.promocode.settings.form', ['promotion' => $promotion_id]) }}"
-                                                class="ms-2 text-primary text-decoration-underline" target="_blank">
-                                                Sozlamalarni ko‘rish
-                                            </a>
-                                        </label>
-                                    </div>
+
+
+
                                     <div class="d-flex flex-column gap-2 mt-3">
                                         <a href="{{ asset('namuna/promo-default.xlsx') }}"
                                             class="{{ $buttonClass }} btn-outline-success" download>

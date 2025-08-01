@@ -42,14 +42,42 @@ class PromoCodeController extends Controller
         return redirect()->back()->with('error', 'Generatsiya qilishda xatolik.');
     }
     public function importPromoCodes(Request $request, $promotionId)
-    {dd($promotionId);}
+    {
+        // $response = $this->forwardRequest("POST", $this->url, "front/promocode/{$promotionId}/import", $request);
+        $response = $this->forwardRequestMedias(
+            'POST',
+            $this->url,
+            "front/promocode/{$promotionId}/import",
+            $request,
+            ['file']// Fayl nomlari (formdagi `name=""`)
+        );
+        dd($response->json());
+        if ($response->ok()) {
+            $data = $response->json();
+            return redirect()->back()->with('success', $data["message"]);
+        }
+
+        if ($response->status() === 422) {
+            return redirect()->back()
+                ->withErrors($response->json('errors'))
+                ->withInput();
+        }
+        return redirect()->back()->with('error', 'Generatsiya qilishda xatolik.');
+
+    }
     public function updatePromocodeSettings(Request $request, $promotionId)
     {
         $response = $this->forwardRequest("POST", $this->url, "front/promocode/{$promotionId}/promocode-settings", $request);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             $settings = $response->json('setting');
             // dd($settings);
-            return view('admin.promocode.create', ['settings' => $settings, 'promotion_id' => $promotionId, 'success' => 'Promocode sozlamalari yangilandi.']);
+
+            return redirect()
+                ->route('admin.promocode.create', ['promotion_id' => $promotionId])
+                ->with([
+                    'settings' => $settings,
+                    'success'  => '✅ Promocode sozlamalari yangilandi.',
+                ]);
         }
     }
     public function showPromocodeSettingsForm(Request $request, $promotionId)

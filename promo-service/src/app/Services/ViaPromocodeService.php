@@ -14,6 +14,7 @@ use App\Repositories\PromotionMessageRepository;
 use App\Repositories\PromotionRepository;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 
@@ -55,12 +56,12 @@ class ViaPromocodeService
         $data = [];
         $promotion = $this->getPromotionById($id);
         if (!$promotion) {
-            return $data['promotion'] == true;
+            return ['promotion'=> true];
         }
         $promocode = $this->promoCodeRepository->getPromoCodeByPromotionIdAndByPromocode($id, $promocodeInput);
 
         if (!$promocode) {
-            return $data['promocode'] ==  true;
+            return ['promocode'=> true];
         }
         // return $this->successResponse(['promotions' => $promocode], "success");
 
@@ -69,10 +70,10 @@ class ViaPromocodeService
             $status = "blocked";
             $message = $this->getPromotionMessage($promotion->id, $lang, 'claim');
         } else {
-            if ($promotion->is_prize) {
+            if (in_array($promotion->winning_strategy, ['immediate', 'hybrid'])) {
                 $prizeId = $this->handlePrizeEvaluation($promocode, $promotion, $today, $lang, $action, $status, $message);
             }
-            if (!$promotion->is_prize || !$prizeId) {
+            if (!in_array($promotion->winning_strategy, ['immediate', 'hybrid']) || !$prizeId) {
                 $action = "vote";
                 $status = "pending";
                 $message = $this->getPromotionMessage($promotion->id, $lang, 'success');
@@ -94,7 +95,7 @@ class ViaPromocodeService
             'promotion_id' => $promotion->id,
             'promo_code_id' => $promocode->id,
             'user_id' => $user['id'],
-            'prize_id' => $prizeId,
+            'prize_id' => $prizeId ?? null,
             'action' => $action,
             'status' => $status,
             'attempt_time' => now(),

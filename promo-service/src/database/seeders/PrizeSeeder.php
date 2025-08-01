@@ -18,7 +18,6 @@ class PrizeSeeder extends Seeder
         // Barcha prize kategoriyalarni olib qo'yamiz
         $categories = PrizeCategory::all();
 
-        // is_prize = true bo'lgan promotionlar
         $promotions = Promotions::whereIn('winning_strategy', ['immediate', 'hybrid'])->get();
 
         foreach ($promotions as $promotion) {

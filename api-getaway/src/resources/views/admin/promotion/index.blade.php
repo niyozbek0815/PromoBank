@@ -23,7 +23,7 @@
             }
             $('#promo-table').DataTable({
                 processing: true,
-                serverSide: true,
+                serverSide: false,
                 ajax: '/admin/promotion/data',
                 columns: [{
                         data: 'id',
@@ -82,6 +82,41 @@
                         searchable: false
                     }
                 ],
+                        buttons: [{
+                        extend: 'copy',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all' // <-- all sahifalarni oladi
+                            }
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        filename: "Promoaksiyalar jadvali",
+                        exportOptions: {
+                            modifier: {
+                                page: 'all' // <-- faqat ko‘rinayotgan emas, hammasini oladi
+                            }
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        filename: "Promoaksiyalar jadvali",
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    }
+                ]
             });
         });
         // 1 marta ro'yxatdan o'tgan click handler

@@ -30,6 +30,7 @@
         <div class="tab-pane fade show active" id="settings">
             @php
                 $user = Session::get('user');
+                // dd($settings);
             @endphp
             <div class="card">
                 <div class="card-header">

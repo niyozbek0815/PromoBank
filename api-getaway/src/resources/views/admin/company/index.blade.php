@@ -19,7 +19,7 @@
             }
             $('#companies-table').DataTable({
                 processing: true,
-                serverSide: true,
+                serverSide: false,
                 ajax: '/admin/company/data',
                 columns: [{
                         data: 'id',

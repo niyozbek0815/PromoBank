@@ -240,7 +240,6 @@ class PromotionController extends Controller
                 'offer'              => $promotion->offer,
                 'gallery'            => $promotion->gallery,
                 'is_public'          => (bool) $promotion->is_public,
-                'is_prize'           => (bool) $promotion->is_prize,
                 'winning_strategy' => $promotion->winning_strategy,
                 'created_by_user_id' => $promotion->created_by_user_id,
                 'platforms'          => $selectedPlatforms,

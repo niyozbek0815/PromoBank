@@ -10,6 +10,7 @@ use App\Repositories\PromotionRepository;
 use App\Services\ViaPromocodeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class PromoController extends Controller
 {
@@ -25,6 +26,8 @@ class PromoController extends Controller
     {
         $cacheKey   = 'promotions:platform:mobile:page:' . request('page', 1);
         $ttl        = now()->addMinutes(5); // 5 daqiqa kesh
+        Cache::store('redis')->forget($cacheKey);
+
         $promotions = Cache::store('redis')->remember($cacheKey, $ttl, function () {
             return $this->promotionRepository->getAllPromotionsForMobile();
         });
@@ -35,7 +38,6 @@ class PromoController extends Controller
         $user = $request['auth_user'];
         $req  = $request->validated();
         $data = $this->viaPromocodeService->proccess($req, $user, $id);
-        // return $data;
         if (! empty($data['promotion'])) {
             return $this->errorResponse('Promotion not found.', ['promotion' => 'Promotion not found.'], 404);
         }

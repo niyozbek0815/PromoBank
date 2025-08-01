@@ -99,7 +99,7 @@
 
             $('#social-table').DataTable({
                 processing: true,
-                serverSide: true,
+                serverSide: false,
                 ajax: '/admin/socialcompany/' + companyId + '/data',
                 columns: [{
                         data: 'id',
@@ -199,7 +199,7 @@
             const companyId = $('#company-id').val(); // Yoki: $('#company-data').data('id')
             $('#promo-table').DataTable({
                 processing: true,
-                serverSide: true,
+                serverSide: false,
                 ajax: '/admin/promotion/' + companyId + '/data',
                 columns: [{
                         data: 'id',
@@ -244,6 +244,41 @@
                         searchable: false
                     }
                 ],
+                buttons: [{
+                        extend: 'copy',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all' // <-- all sahifalarni oladi
+                            }
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        filename: companyId + '-idli company promoaksiyalari',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all' // <-- faqat ko‘rinayotgan emas, hammasini oladi
+                            }
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        filename: companyId + '-idli company promoaksiyalari',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    }
+                ]
             });
         });
         // 1 marta ro'yxatdan o'tgan click handler
@@ -350,7 +385,8 @@
                 </div>
 
                 <div class="card-body">
-                    <form action="{{ route('admin.company.update', $data['id']) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('admin.company.update', $data['id']) }}" method="POST"
+                        enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 

@@ -59,8 +59,7 @@ RUN pecl install amqp \
     && docker-php-ext-enable amqp
 
 # 5. PHP ini sozlash
-RUN echo "upload_max_filesize=200M\npost_max_size=250M" > /usr/local/etc/php/conf.d/uploads.ini
-
+RUN echo "memory_limit=2048M\nupload_max_filesize=512M\npost_max_size=512M" > /usr/local/etc/php/conf.d/uploads.ini
 # 6. Tozalash
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

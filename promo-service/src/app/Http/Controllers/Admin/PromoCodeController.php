@@ -3,8 +3,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\GeneratePromoCodesJob;
+use App\Jobs\ImportPromoCodesJob;
 use App\Models\PromoCode;
 use App\Models\PromoGeneration;
+use Maatwebsite\Excel\Facades\Excel;
+
 use App\Models\PromotionSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -66,55 +69,72 @@ class PromoCodeController extends Controller
             $validated['created_by_user_id']
         ));
 
-
         return response()->json([
             'message' => "{$validated['count']} ta promo kod generatsiyasi queue orqali ishga tushdi.",
         ]);
     }
+    public function importPromoCodes(Request $request, $promotionId)
+    {
+        $validated = $request->validate([
+            'file'               => 'required|file|mimes:xlsx,xls',
+             'settings_rules'     => 'nullable|boolean',
+            'created_by_user_id' => 'required|integer',
+        ]);
+    $validated['settings_rules'] = $request->boolean('settings_rules');
+        Log::info('validated data', ['validated data' => $validated]);
+        // Faylni vaqtinchalik saqlaymiz
+        $path = $request->file('file')->store('promo-imports', 'public');
 
-    // public function importPromoCodes(Request $request, $promotionId)
-    // {
-    //     $request->validate([
-    //         'count'              => 'required|integer|min:1|max:100000',
-    //         'created_by_user_id' => 'required|exists:users,id',
-    //     ]);
-    //     $settings   = PromotionSetting::where('promotion_id', $promotionId)->firstOrFail();
-    //     $generation = PromoGeneration::create([
-    //         'promotion_id'       => $promotionId,
-    //         'created_by_user_id' => $request->created_by_user_id,
-    //         'type'               => 'generated',
-    //     ]);
-    //     $codes       = [];
-    //     $maxAttempts = $request->count * 2; // fallback for uniqueness
-    //     $attempts    = 0;
-    //     while (count($codes) < $request->count && $attempts < $maxAttempts) {
-    //         $code = self::generateCodeFromSettings($settings);
+        // $path     = $request->file('file')->store('promo-imports');
+        $fullPath = storage_path('app/public/' . $path);
 
-    //         // Uniqueness check
-    //         if ($settings->unique_across_all_promotions) {
-    //             if (PromoCode::where('promocode', $code)->exists()) {
-    //                 $attempts++;
-    //                 continue;
-    //             }
-    //         } else {
-    //             if (PromoCode::where('promotion_id', $promotionId)->where('promocode', $code)->exists()) {
-    //                 $attempts++;
-    //                 continue;
-    //             }
-    //         }
+        // Excel faylni array formatga o‘qib olamiz
+        try {
+            $sheets = Excel::toArray(null, $fullPath);
+        } catch (\Throwable $e) {
+            Log::error("❌ Excel faylni o'qishda xatolik: " . $e->getMessage());
+            return response()->json([
+                'message' => 'Validation Error',
+                'errors'  => [
+                    'file' => ['Excel faylni o‘qib bo‘lmadi. Iltimos, formatni tekshiring.'],
+                ],
+            ], 422);
+        }
 
-    //         $codes[] = [
-    //             'generation_id' => $generation->id,
-    //             'promotion_id'  => $promotionId,
-    //             'promocode'     => $code,
-    //             'is_used'       => false,
-    //             'created_at'    => now(),
-    //             'updated_at'    => now(),
-    //         ];
-    //     }
-    //     PromoCode::insert($codes);
-    //     return redirect()->back()->with('success', count($codes) . ' ta promo kod generatsiya qilindi.');
-    // }
+        if (empty($sheets) || empty($sheets[0])) {
+            return response()->json([
+                'message' => 'Validation Error',
+                'errors'  => [
+                    'file' => ['Excel fayl bo‘sh yoki noto‘g‘ri formatda.'],
+                ],
+            ], 422);
+        }
+
+        $header = $sheets[0][0] ?? [];
+        if (! in_array('promocode', array_map('strtolower', $header))) {
+            return response()->json([
+                'message' => 'Validation Error',
+                'errors'  => [
+                    'file' => ["Excel faylda 'promocode' ustuni topilmadi. Birinchi qatorda ustun nomlari bo‘lishi va 'promocode' degan ustun mavjud bo‘lishi shart."],
+                ],
+            ], 422);
+        }
+
+        Log::info(message: "📥 PromoCode import queued from Excel: {$path}");
+
+        // ✅ Job'ni queue'ga yuborish
+        Queue::connection('rabbitmq')->push(new ImportPromoCodesJob(
+         $promotionId, $validated['created_by_user_id'], $path, $validated['settings_rules']
+        ));
+
+        // ImportPromoCodesJob::dispatch($promotionId, $validated['created_by_user_id'], $path)
+        //     ->onQueue('default');
+
+        return response()->json([
+            'message' => "✅ Promo kod import jarayoni queue orqali boshlandi.",
+        ]);
+    }
+
     public function generatedata(Request $request, $promotionId)
     {
         $query = PromoGeneration::withCount([
@@ -143,66 +163,89 @@ class PromoCodeController extends Controller
             ->make(true);
     }
 
-    public function generatePromocodeData(Request $request, $generateId)
-    {
-        $query = PromoCode::with(['generation', 'platform'])
-            ->where('generation_id', $generateId)
-            ->select('promo_codes.*'); // optimize qilingan select
+  public function generatePromocodeData(Request $request, $generateId)
+{
+    $query = PromoCode::query()
+        ->leftJoin('platforms', 'promo_codes.platform_id', '=', 'platforms.id')
+        ->leftJoin('promo_generations', 'promo_codes.generation_id', '=', 'promo_generations.id')
+        ->where('promo_codes.generation_id', $generateId)
+        ->select(
+            'promo_codes.*',
+            'platforms.name as platform_name',
+            'promo_generations.type as generation_type'
+        );
 
-        return DataTables::of($query)
-            ->addColumn('promocode', fn($item) => $item->promocode)
-
-            ->addColumn('is_used', function ($item) {
-                return $item->is_used
+    return DataTables::of($query)
+        ->filterColumn('platform_name', function ($query, $keyword) {
+            $query->whereRaw('LOWER(platforms.name) LIKE ?', ["%" . strtolower($keyword) . "%"]);
+        })
+        ->addColumn('promocode', fn($item) => $item->promocode)
+        ->addColumn('is_used', function ($item) {
+            return $item->is_used
                 ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
                 : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
-            })
+        })
+        ->addColumn('used_at', fn($item) => $item->used_at?->format('d.m.Y H:i') ?? '-')
+        ->addColumn('generation_name', function ($item) {
+            if (! $item->generation_id) {
+                return '-';
+            }
+            $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
+            return "{$item->generation_id}-idli {$label}";
+        })
+        ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
+        ->addColumn('actions', function ($item) {
+            return view('admin.actions', [
+                'row'    => $item,
+                'routes' => [
+                    'show' => "/admin/promocode/{$item->id}/show",
+                ],
+            ])->render();
+        })
+        ->addColumn('created_at', fn($item) => $item->created_at?->format('d.m.Y H:i') ?? '-')
+        ->rawColumns(['is_used', 'actions'])
+        ->make(true);
+}
+public function promocodeData(Request $request, $promotionId)
+{
+    $query = PromoCode::query()
+        ->leftJoin('platforms', 'promo_codes.platform_id', '=', 'platforms.id')
+        ->leftJoin('promo_generations', 'promo_codes.generation_id', '=', 'promo_generations.id')
+->where('promo_codes.promotion_id', $promotionId)        ->select(
+            'promo_codes.*',
+            'platforms.name as platform_name',
+            'promo_generations.type as generation_type'
+        );
 
-            ->addColumn('used_at', fn($item) => $item->used_at?->format('d.m.Y H:i') ?? '-')
-
-            ->addColumn('generation', fn($item) => $item->generation?->id ?? '-')
-
-            ->addColumn('platform', fn($item) => $item->platform?->name ?? '-')
-
-            ->addColumn('actions', function ($item) {
-                return view('admin.actions', [
-                    'row'    => $item,
-                    'routes' => [
-                        'show' => "/admin/promocode/{$item->id}/show",
-                    ],
-                ])->render();
-            })
-            ->addColumn('created_at', fn($item) => $item->created_at?->format('d.m.Y H:i') ?? '-')
-            ->rawColumns(['is_used', 'actions'])
-            ->make(true);
-    }
-    public function promocodeData(Request $request, $promotionId)
-    {
-        $query = PromoCode::with(['generation', 'platform'])
-            ->where('promotion_id', $promotionId)
-            ->select('promo_codes.*'); // optimize qilingan select
-
-        return DataTables::of($query)
-            ->addColumn('promocode', fn($item) => $item->promocode)
-            ->addColumn('is_used', function ($item) {
-                return $item->is_used
+    return DataTables::of($query)
+        ->filterColumn('platform_name', function($query, $keyword) {
+            $query->whereRaw('LOWER(platforms.name) LIKE ?', ["%".strtolower($keyword)."%"]);
+        })
+        ->addColumn('promocode', fn($item) => $item->promocode)
+        ->addColumn('is_used', function ($item) {
+            return $item->is_used
                 ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
                 : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
-            })
-            ->addColumn('used_at', fn($item) => $item->used_at?->format('d.m.Y H:i') ?? '-')
-            ->addColumn('generation_name', fn($item) => $item->generation_id ? "{$item->generation_id}-idli generatsiya" : '-')
-            ->addColumn('platform', fn($item) => $item->platform?->name ?? '-')
-
-            ->addColumn('actions', function ($item) {
-                return view('admin.actions', [
-                    'row'    => $item,
-                    'routes' => [
-                        'show' => "/admin/promocode/{$item->id}/show",
-                    ],
-                ])->render();
-            })
-            ->addColumn('created_at', fn($item) => $item->created_at?->format('d.m.Y H:i') ?? '-')
-            ->rawColumns(['is_used', 'actions'])
-            ->make(true);
-    }
+        })
+        ->addColumn('used_at', fn($item) => $item->used_at?->format('d.m.Y H:i') ?? '-')
+        ->addColumn('generation_name', function ($item) {
+            if (! $item->generation_id) {
+                return '-';
+            }
+            $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
+            return "{$item->generation_id}-idli {$label}";
+        })
+        ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
+        ->addColumn('actions', function ($item) {
+            return view('admin.actions', [
+                'row'    => $item,
+                'routes' => [
+                    'show' => "/admin/promocode/{$item->id}/show",
+                ],
+            ])->render();
+        })
+        ->addColumn('created_at', fn($item) => $item->created_at?->format('d.m.Y H:i') ?? '-')
+        ->rawColumns(['is_used', 'actions'])
+        ->make(true);
+}
 }

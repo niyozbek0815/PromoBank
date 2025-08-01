@@ -33,6 +33,7 @@
             }
         });
         $(document).ready(function() {
+            let generateId = "{{ $generate_id }}";
             const url = "{{ route('admin.promocode.generate.promocodedata', $generate_id, false) }}";
             if ($.fn.DataTable.isDataTable('#generate-table')) {
                 $('#generate-table').DataTable().destroy();
@@ -40,7 +41,7 @@
 
             $('#generate-table').DataTable({
                 processing: true,
-                serverSide: true,
+                serverSide: false,
                 ajax: {
                     url: url,
                     type: "GET",
@@ -52,44 +53,74 @@
                         console.error("DataTable AJAX error", xhr.responseText);
                     }
                 },
+
                 columns: [{
                         data: 'id',
-                        name: 'id',
-                        className: 'text-center',
-                        width: '5%'
+                        name: 'promo_codes.id'
                     },
                     {
                         data: 'promocode',
-                        name: 'promocode',
-                        className: 'text-nowrap'
+                        name: 'promo_codes.promocode'
                     },
                     {
                         data: 'is_used',
-                        name: 'is_used',
-                        className: 'text-center'
+                        name: 'promo_codes.is_used'
                     },
                     {
                         data: 'used_at',
-                        name: 'used_at',
-                        className: 'text-nowrap text-center'
+                        name: 'promo_codes.used_at',
                     },
                     {
-                        data: 'generation',
-                        name: 'generation.id',
-                        className: 'text-center'
+                        data: 'generation_name',
+                        name: 'promo_codes.generation_id',
                     },
                     {
                         data: 'platform',
-                        name: 'platform.name',
-                        className: 'text-nowrap'
+                        name: 'platform_name',
+                        searchable: false
+
                     },
                     {
                         data: 'actions',
                         name: 'actions',
                         orderable: false,
                         searchable: false,
-                        className: 'text-center'
                     },
+                ],
+                buttons: [{
+                        extend: 'copy',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all' // <-- all sahifalarni oladi
+                            }
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        filename: generateId + '-idli generatsiya promocodelar',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all' // <-- faqat ko‘rinayotgan emas, hammasini oladi
+                            }
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        filename: generateId + '-idli generatsiya promocodelar',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    }
                 ]
             });
 

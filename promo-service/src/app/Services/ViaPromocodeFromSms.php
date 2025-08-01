@@ -86,7 +86,7 @@ class ViaPromocodeFromSms
                 $status = "blocked";
                 $message = "Kechirasiz, bu promocode avval ishlatilgan.";
             } else {
-                if ($promotion->is_prize) {
+                if (in_array($promotion->winning_strategy, ['immediate', 'hybrid'])) {
                     $prize = $this->handlePrizeEvaluation($promo, $promotion, $today, $action, $status, $message);
                 }
 

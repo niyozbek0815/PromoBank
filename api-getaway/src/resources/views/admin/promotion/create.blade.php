@@ -16,7 +16,7 @@
     </script>
     <script src="https://unpkg.com/filepond-plugin-file-poster/dist/filepond-plugin-file-poster.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
-        {{-- <script src="{{ asset('adminpanel/assets/js/filepond/filepond.js') }}"></script>
+    {{-- <script src="{{ asset('adminpanel/assets/js/filepond/filepond.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/filepond/filepond-plugin-file-validate-type.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/filepond/filepond-plugin-file-validate-size.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/filepond/filepond-plugin-image-preview.js') }}"></script>
@@ -116,18 +116,24 @@
                                 <div class="col-lg-4 mb-3">
                                     <label class="form-label">Nomi ({{ $label }})</label>
                                     <input type="text" name="name[{{ $lang }}]" class="form-control" required>
+                                    <small class="text-muted">Aksiya nomini {{ $label }} tilida kiriting (masalan,
+                                        "Bahor aksiyasi").</small>
                                 </div>
                             @endforeach
                             @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
                                 <div class="col-lg-4 mb-3">
                                     <label class="form-label">Sarlavha ({{ $label }})</label>
                                     <input type="text" name="title[{{ $lang }}]" class="form-control" required>
+                                    <small class="text-muted">Sarlavha foydalanuvchilarga ko‘rinadigan qisqa tanishtiruv
+                                        bo‘lib xizmat qiladi.</small>
                                 </div>
                             @endforeach
                             @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
                                 <div class="col-lg-4 mb-3">
                                     <label class="form-label">Tavsif ({{ $label }})</label>
                                     <textarea name="description[{{ $lang }}]" class="form-control ckeditor" rows="6" required></textarea>
+                                    <small class="text-muted">Aksiya haqida batafsil ma’lumot yozing: qanday ishtirok
+                                        etiladi, yutuqlar va qoidalar.</small>
                                 </div>
                             @endforeach
                         </div>
@@ -146,6 +152,8 @@
                                         </option>
                                     @endforeach
                                 </select>
+                                <small class="text-muted">Ushbu aksiya qaysi kompaniyaga tegishli ekanligini
+                                    belgilang.</small>
                                 @if (isset($selectedCompanyId))
                                     <input type="hidden" name="company_id" value="{{ $selectedCompanyId }}">
                                 @endif
@@ -153,17 +161,20 @@
                             <div class="col-lg-4 mb-3">
                                 <label class="form-label">Boshlanish sanasi</label>
                                 <input type="datetime-local" name="start_date" class="form-control" required>
+                                <small class="text-muted">Aksiya rasmiy boshlanadigan sana va vaqtni kiriting.</small>
+
                             </div>
                             <div class="col-lg-4 mb-3">
                                 <label class="form-label">Tugash sanasi</label>
                                 <input type="datetime-local" name="end_date" class="form-control" required>
+                                <small class="text-muted">Aksiya tugaydigan sana va vaqtni belgilang.</small>
                             </div>
                         </div>
                         <div class="row">
                             {{-- JSON fields --}}
 
                             <div class="col-lg-4 mb-3">
-                                <label class="form-label">Aksiya qanday usullarda amalga oshiriladi</label>
+                                <label class="form-label">ishtirok etish turlari uslublarini tanlang</label>
                                 <select name="participants_type[]" class="form-control multiselect" multiple="multiple"
                                     required" data-non-selected-text="Please choose">
 
@@ -171,9 +182,11 @@
                                         <option value="{{ $id }}">{{ $name }}</option>
                                     @endforeach
                                 </select>
+                                  <small class="text-muted">Foydalanuvchi aksiyada qanday ishtirok etishini belgilang (QR,
+                                    kod, chek va h.k.).</small>
                             </div>
                             <div class="col-lg-4 mb-3">
-                                <label class="form-label">Aksiya amal qiladigan platformalar</label>
+                                <label class="form-label">Aksiya o'tqaziladigan platformalarni tanlang</label>
                                 <select name="platforms[]" class="form-control multiselect" multiple="multiple" required
                                     data-non-selected-text="Please choose">
 
@@ -181,6 +194,35 @@
                                         <option value="{{ $id }}">{{ $name }}</option>
                                     @endforeach
                                 </select>
+                                   <small class="text-muted">Aksiya qaysi platformalarda (web, telegram, sms) o'tkazilishini
+                                    tanlang.</small>
+                            </div>
+                            <div class="col-lg-4 mb-3">
+                                <label class="form-label fw-semibold">Yutuqni berish strategiyasi</label>
+                                <select name="winning_strategy"
+                                    class="form-control select2-single @error('winning_strategy') is-invalid @enderror"
+                                    required>
+                                    <option value="" disabled
+                                        {{ old('winning_strategy') === null ? 'selected' : '' }}>
+                                        -- Strategiyani tanlang --
+                                    </option>
+                                    <option value="immediate"
+                                        {{ old('winning_strategy') === 'immediate' ? 'selected' : '' }}>
+                                        🎁 Har bir promokod yutuq olib keladi (tez yutuq)
+                                    </option>
+                                    <option value="delayed" {{ old('winning_strategy') === 'delayed' ? 'selected' : '' }}>
+                                        🕒 Promokodlar ro'yxatga olinadi, oxirida sovrin beriladi
+                                    </option>
+                                    <option value="hybrid" {{ old('winning_strategy') === 'hybrid' ? 'selected' : '' }}>
+                                        ⚖️ Aralash — ba'zilari yutadi, ba'zilari keyinchalik o'ynaydi
+                                    </option>
+                                </select>
+                                @error('winning_strategy')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted d-block mt-1">
+                                    Aksiya davomida promokodlar qanday tarzda yutuqqa aylanishini belgilang.
+                                </small>
                             </div>
                             <div class="col-lg-4 mb-3 mt-4">
                                 <div class="form-check form-switch">
@@ -200,18 +242,6 @@
                                     <label class="form-check-label" for="publicSwitch">
                                         <strong>Ommaviylik:</strong><br>
                                         <small class="text-muted">Belgilansa, aksiyani barcha ko‘ra oladi</small>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-lg-4 mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="is_prize" value="1"
-                                        id="prizeSwitch">
-                                    <label class="form-check-label" for="prizeSwitch">
-                                        <strong>Yutuqli aksiya:</strong><br>
-                                        <small class="text-muted">
-                                            Belgilansa, foydalanuvchi ishtirok etganda sovrin yutib olish imkoniyati bo‘ladi
-                                        </small>
                                     </label>
                                 </div>
                             </div>
