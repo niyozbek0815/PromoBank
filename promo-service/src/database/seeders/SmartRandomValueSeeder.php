@@ -1,79 +1,94 @@
 <?php
-
 namespace Database\Seeders;
 
 use App\Models\Prize;
 use App\Models\PrizeCategory;
 use App\Models\SmartRandomRule;
 use App\Models\SmartRandomValue;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Carbon;
 
 class SmartRandomValueSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $now = Carbon::now();
-
-        $smartCategory = PrizeCategory::where('name', 'smart_random')->first();
-        if (!$smartCategory) {
-            $this->command->error("'smart_random' category topilmadi");
+        $category = PrizeCategory::where('name', 'smart_random')->first();
+        if (! $category) {
+            $this->command->error("'smart_random' category topilmadi.");
             return;
         }
 
-        $prizes = Prize::where('category_id', $smartCategory->id)->get();
+        $prizes = Prize::where('category_id', $category->id)->get();
+        $rules  = SmartRandomRule::all()->keyBy('key');
 
-        $availableRules = SmartRandomRule::all()->keyBy('key');
+        if ($rules->isEmpty()) {
+            $this->command->error("SmartRandomRule ma'lumotlari mavjud emas.");
+            return;
+        }
+
+        $insertData = [];
 
         foreach ($prizes as $prize) {
-            $rules = [];
+            // Har bir Prize uchun shartlar tanlanadi
+            $prizeRules = [];
 
-            // Basic rule: umumiy uzunlik = 10
-            $rules[] = [
-                'rule_id' => $availableRules['code_length']->id,
+            // 1) Majburiy qoida: code_length = 10
+            $prizeRules[] = [
+                'rule_id'  => $rules['code_length']->id,
                 'operator' => '=',
-                'values' => json_encode([10]),
+                'values'   => [10],
             ];
 
-            // 50% ehtimollik bilan raqamlar soni >= 3
+            // 2) 50% ehtimollik bilan digit_count >= 3
             if (rand(0, 1)) {
-                $rules[] = [
-                    'rule_id' => $availableRules['digit_count']->id,
+                $prizeRules[] = [
+                    'rule_id'  => $rules['digit_count']->id,
                     'operator' => '>=',
-                    'values' => json_encode([3]),
+                    'values'   => [3],
                 ];
             }
 
-            // 33% ehtimollik bilan boshlanish 'WDA'
+            // 3) 33% ehtimollik bilan boshlanish 'WDA'
             if (rand(1, 3) === 1) {
-                $rules[] = [
-                    'rule_id' => $availableRules['starts_with']->id,
+                $prizeRules[] = [
+                    'rule_id'  => $rules['starts_with']->id,
                     'operator' => 'in',
-                    'values' => json_encode(['WDA']),
+                    'values'   => ['WDA'],
                 ];
             }
 
-            // 33% ehtimollik bilan tugashi 'WRE'
+            // 4) 33% ehtimollik bilan tugashi 'WRE'
             if (rand(1, 3) === 1) {
-                $rules[] = [
-                    'rule_id' => $availableRules['ends_with']->id,
+                $prizeRules[] = [
+                    'rule_id'  => $rules['ends_with']->id,
                     'operator' => 'in',
-                    'values' => json_encode(['WRE']),
+                    'values'   => ['WRE', 'EE'],
                 ];
             }
 
-            foreach ($rules as $rule) {
-                SmartRandomValue::create([
-                    'prize_id' => $prize->id,
-                    'rule_id' => $rule['rule_id'],
-                    'operator' => $rule['operator'],
-                    'values' => $rule['values'],
-                ]);
+            // 5) 25% ehtimollik bilan uppercase_count >= 2
+            if (isset($rules['uppercase_count']) && rand(1, 4) === 1) {
+                $prizeRules[] = [
+                    'rule_id'  => $rules['uppercase_count']->id,
+                    'operator' => '>=',
+                    'values'   => [2],
+                ];
             }
+
+            // Insertga tayyorlash
+         foreach ($prizeRules as $rule) {
+    $insertData[] = [
+        'prize_id'   => $prize->id,
+        'rule_id'    => $rule['rule_id'],
+        'operator'   => $rule['operator'],
+        'values'     => json_encode($rule['values']),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ];
+}
+
         }
+
+        SmartRandomValue::insert($insertData);
+        $this->command->info(count($insertData) . " ta smart_random rule yozildi.");
     }
 }

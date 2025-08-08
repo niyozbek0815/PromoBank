@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('prize_messages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('prize_id')->nullable()->constrained('prizes')->nullOnDelete(); // default message if null
-            $table->enum('platform', ['sms', 'mobile', 'bot', 'all']);
+            $table->enum('platform', ['sms',"all"]);
+            $table->enum('participant_type', [ 'receipt_scan','smart_random','all']);
             $table->enum('message_type', ['success', 'fail', 'info', 'etc']);
             $table->json('message'); // laravel translatableda olindigan qilib  uz ru va kr xolatda
             $table->timestamps();

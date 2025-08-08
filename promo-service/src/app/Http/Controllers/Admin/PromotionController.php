@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\ParticipationType;
 use App\Models\Platform;
 use App\Models\PlatformPromotion;
+use App\Models\PrizeCategory;
 use App\Models\Promotions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +28,7 @@ class PromotionController extends Controller
 
         $query = Promotions::with([
             'company:id,name',
-            'platforms:id,name',                                 // platforma nomlarini olish uchun
+            'platforms:id,name',          // platforma nomlarini olish uchun
             'participationTypes:id,name', // qo‘shilgan aloqador turlar
         ])->where('company_id', $id)
             ->select('promotions.*');
@@ -74,7 +75,7 @@ class PromotionController extends Controller
     {
         $query = Promotions::with([
             'company:id,name',
-            'platforms:id,name',                                 // platforma nomlarini olish uchun
+            'platforms:id,name',               // platforma nomlarini olish uchun
             'participationTypes:id,name,slug', // qo‘shilgan aloqador turlar
         ])->select('promotions.*');
         // Log::info('Promotion', ['promo' => $query->get()]);
@@ -172,84 +173,87 @@ class PromotionController extends Controller
         ]);
 
     }
-    public function edit($id)
-    {
-        $promotion = Promotions::with([
+  public function edit($id)
+{
+    $promotion = Promotions::with([
+        'participantTypeIds:id,name,slug',
+        'company:id,name,status',
+        'platforms:id,name',
+        'participationTypes:id,name',
+    ])->findOrFail($id);
 
-            'participantTypeIds:id,name,slug',
-            'company:id,name,status',
-        ])->findOrFail($id);
+    $prizeCategories = PrizeCategory::withCount([
+        'prizes as prize_count' => fn($q) => $q->where('promotion_id', $id),
+    ])->get(['id', 'name', 'display_name', 'description']);
 
-        $companies = Company::select('id', 'name', 'status')
-            ->where('status', 'active')
-            ->get()
-            ->map(fn($item) => [
-                'id'   => $item->id,
-                'name' => $item->getTranslation('name', 'uz'),
-            ]);
-
-        $selectedPlatforms = $promotion->platforms->map(fn($type) => [
-            'id'               => $type->id,
-            'name'             => $type->name,
-            'is_enabled'       => (bool) $type->pivot->is_enabled,
-            'promotion_id'     => $type->pivot->promotion_id,
-            'platform_id'      => $type->pivot->platform_id,
-            'additional_rules' => $type->pivot->additional_rules,
-            'phone'            => $type->pivot->phone,
-        ]);
-        $selectedParticipants = $promotion->participationTypes->map(fn($type) => [
-            'id'               => $type->id,
-            'name'             => $type->name,
-            'is_enabled'       => (bool) $type->pivot->is_enabled,
-            'promotion_id'     => $type->pivot->promotion_id,
-            'participation_type_id'      => $type->pivot->participation_type_id,
-            'additional_rules' => $type->pivot->additional_rules,
+    $companies = Company::where('status', 'active')
+        ->get(['id', 'name'])
+        ->map(fn($company) => [
+            'id'   => $company->id,
+            'name' => $company->getTranslation('name', 'uz'),
         ]);
 
-        $availablePlatforms = Platform::whereNotIn('id', $selectedPlatforms->pluck('id'))
-            ->pluck('id', 'name')
-            ->toArray();
+    $selectedPlatforms = $promotion->platforms->map(fn($platform) => [
+        'id'               => $platform->id,
+        'name'             => $platform->name,
+        'is_enabled'       => (bool) $platform->pivot->is_enabled,
+        'promotion_id'     => $platform->pivot->promotion_id,
+        'platform_id'      => $platform->pivot->platform_id,
+        'additional_rules' => $platform->pivot->additional_rules,
+        'phone'            => $platform->pivot->phone,
+    ]);
 
-        $availableParticipants = ParticipationType::whereNotIn('id', $selectedParticipants->pluck('id'))
-            ->pluck('id', 'name')
-            ->toArray();
+    $selectedParticipants = $promotion->participationTypes->map(fn($type) => [
+        'id'                    => $type->id,
+        'name'                  => $type->name,
+        'is_enabled'            => (bool) $type->pivot->is_enabled,
+        'promotion_id'          => $type->pivot->promotion_id,
+        'participation_type_id' => $type->pivot->participation_type_id,
+        'additional_rules'      => $type->pivot->additional_rules,
+    ]);
 
-        return response()->json([
-            'promotion'         => [
-                'id'                 => $promotion->id,
-                'name'               => [
-                    'uz' => $promotion->getTranslation('name', 'uz'),
-                    'ru' => $promotion->getTranslation('name', 'ru'),
-                    'kr' => $promotion->getTranslation('name', 'kr'),
-                ],
-                'title'              => [
-                    'uz' => $promotion->getTranslation('title', 'uz'),
-                    'ru' => $promotion->getTranslation('title', 'ru'),
-                    'kr' => $promotion->getTranslation('title', 'kr'),
-                ],
-                'description'        => [
-                    'uz' => $promotion->getTranslation('description', 'uz'),
-                    'ru' => $promotion->getTranslation('description', 'ru'),
-                    'kr' => $promotion->getTranslation('description', 'kr'),
-                ],
-                'company_id'         => $promotion->company_id,
-                'start_date'         => optional($promotion->start_date)->toDateTimeString(),
-                'end_date'           => optional($promotion->end_date)->toDateTimeString(),
-                'status'             => (bool) $promotion->status,
-                'banner'             => $promotion->banner,
-                'offer'              => $promotion->offer,
-                'gallery'            => $promotion->gallery,
-                'is_public'          => (bool) $promotion->is_public,
-                'winning_strategy' => $promotion->winning_strategy,
-                'created_by_user_id' => $promotion->created_by_user_id,
-                'platforms'          => $selectedPlatforms,
-                'participants_type'  => $selectedParticipants,
-            ],
-            'platforms'         => $availablePlatforms,
-            'companies'         => $companies,
-            'partisipants_type' => $availableParticipants,
-        ]);
+    $availablePlatforms = Platform::whereNotIn('id', $selectedPlatforms->pluck('id'))
+        ->get(['id', 'name'])
+        ->pluck('id', 'name')
+        ->toArray();
+
+    $availableParticipants = ParticipationType::whereNotIn('id', $selectedParticipants->pluck('id'))
+        ->get(['id', 'name'])
+        ->pluck('id', 'name')
+        ->toArray();
+
+    $langs              = ['uz', 'ru', 'kr'];
+    $translatableFields = ['name', 'title', 'description'];
+    $promotionData      = ['id' => $promotion->id];
+    foreach ($translatableFields as $field) {
+        foreach ($langs as $lang) {
+            $promotionData[$field][$lang] = $promotion->getTranslation($field, $lang);
+        }
     }
+
+    return response()->json([
+        'promotion'         => array_merge($promotionData, [
+            'company_id'         => $promotion->company_id,
+            'start_date'         => optional($promotion->start_date)->toDateTimeString(),
+            'end_date'           => optional($promotion->end_date)->toDateTimeString(),
+            'status'             => (bool) $promotion->status,
+            'banner'             => $promotion->banner,
+            'offer'              => $promotion->offer,
+            'gallery'            => $promotion->gallery,
+            'is_public'          => (bool) $promotion->is_public,
+            'winning_strategy'   => $promotion->winning_strategy,
+            'created_by_user_id' => $promotion->created_by_user_id,
+            'platforms'          => $selectedPlatforms,
+            'participants_type'  => $selectedParticipants,
+        ]),
+        'platforms'         => $availablePlatforms,
+        'companies'         => $companies,
+        'partisipants_type' => $availableParticipants,
+        'prizeCategories'   => $prizeCategories,
+    ]);
+}
+
+
     public function store(Request $request)
     {
 
@@ -272,7 +276,7 @@ class PromotionController extends Controller
             'media_gallery'       => 'required|array|max:10',
             'media_gallery.*'     => 'file|mimes:jpg,jpeg,png,gif,mp4,webm|max:240480',
             'created_by_user_id'  => 'required|integer',
-            'winning_strategy' => 'required|in:immediate,delayed,hybrid',
+            'winning_strategy'    => 'required|in:immediate,delayed,hybrid',
             'status'              => 'nullable|boolean',
             'is_public'           => 'nullable|boolean',
         ]);
@@ -286,7 +290,7 @@ class PromotionController extends Controller
             'status'             => $request->boolean('status'),
             'created_by_user_id' => $validated['created_by_user_id'],
             'is_public'          => $request->boolean('is_public'),
-            'winning_strategy' => $validated['winning_strategy'],
+            'winning_strategy'   => $validated['winning_strategy'],
         ]);
         $platformData = collect($validated['platforms'] ?? [])->mapWithKeys(function ($platformId) {
             return [$platformId => [
@@ -356,7 +360,7 @@ class PromotionController extends Controller
             'media_preview'           => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,webm|max:5120',
             'media_gallery'           => 'nullable|array|max:10',
             'media_gallery.*'         => 'file|mimes:jpg,jpeg,png,gif,mp4,webm|max:240480',
-            'winning_strategy' => 'required|in:immediate,delayed,hybrid',
+            'winning_strategy'        => 'required|in:immediate,delayed,hybrid',
             'status'                  => 'nullable|boolean',
             'is_public'               => 'nullable|boolean',
         ]);
@@ -464,30 +468,30 @@ class PromotionController extends Controller
             'is_enabled'       => $validated['is_enabled'],
             'additional_rules' => $additionalRules,
         ]);
-        return response()->json(['success'=> 'Ishtirok turi yangilandi.']);
+        return response()->json(['success' => 'Ishtirok turi yangilandi.']);
     }
-   public function updatePlatform(Request $request,  $promotionId, $platformId)
+    public function updatePlatform(Request $request, $promotionId, $platformId)
     {
-     Log::info('🎯 Participant Type Update Request:', [
-    'promotion_id'        => $promotionId,
-    'participant_type_id' => $platformId,
-    'request_data'        => $request->all(),
-]);
+        Log::info('🎯 Participant Type Update Request:', [
+            'promotion_id'        => $promotionId,
+            'participant_type_id' => $platformId,
+            'request_data'        => $request->all(),
+        ]);
 
         $validated = $request->validate([
-            'promotion_id' => 'required|integer|exists:promotions,id',
-            'platform_id' => 'required|integer|exists:platforms,id',
-            'is_enabled' => 'nullable|boolean',
+            'promotion_id'     => 'required|integer|exists:promotions,id',
+            'platform_id'      => 'required|integer|exists:platforms,id',
+            'is_enabled'       => 'nullable|boolean',
             'additional_rules' => 'nullable|string',
-            'phone' => 'nullable|string',
+            'phone'            => 'nullable|string',
         ]);
 
         // Normalize
         $isEnabled = filter_var($validated['is_enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        $rules = $validated['additional_rules'] ?? '{}';
+        $rules     = $validated['additional_rules'] ?? '{}';
 
         // Optional: validate JSON format
-        if (!is_array(json_decode($rules, true))) {
+        if (! is_array(json_decode($rules, true))) {
             return response()->json(['message' => 'Invalid additional_rules JSON format.'], 422);
         }
 
@@ -495,10 +499,10 @@ class PromotionController extends Controller
         PlatformPromotion::updateOrCreate(
             [
                 'promotion_id' => $validated['promotion_id'],
-                'platform_id' => $validated['platform_id'],
+                'platform_id'  => $validated['platform_id'],
             ],
             [
-                'is_enabled' => $isEnabled,
+                'is_enabled'       => $isEnabled,
                 'additional_rules' => $rules,
             ]
         );

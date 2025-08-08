@@ -3,7 +3,16 @@
 @push('scripts')
     <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
     <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
+    <style>
+        .strategy-card {
+            transition: all 0.3s ease;
+        }
 
+        .strategy-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1.2rem rgba(0, 128, 0, 0.2);
+        }
+    </style>
     <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/form_layouts.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/bootstrap_multiselect.js') }}"></script>
@@ -98,7 +107,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const allPanels = document.querySelectorAll('.table-panel');
-            let currentlyOpen = document.querySelector('#collapse-promocode');
+            let currentlyOpen = document.querySelector('#collapse-prize');
             if (currentlyOpen) {
                 const defaultInstance = bootstrap.Collapse.getOrCreateInstance(currentlyOpen);
                 defaultInstance.show();
@@ -106,7 +115,7 @@
                 // Default aktiv tugma topiladi va unga active qo‘yiladi
                 document.querySelectorAll('.collapse-toggler').forEach(btn => {
                     const targetId = btn.getAttribute('data-target');
-                    if (targetId === '#collapse-promocode') {
+                    if (targetId === '#collapse-prize') {
                         btn.classList.add('active');
                     } else {
                         btn.classList.remove('active');
@@ -448,29 +457,38 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Promoaksiya ma'lumotlari</h5>
                 <div class="btn-group">
-                    <button type="button" class="btn btn-outline-success collapse-toggler"
-                        data-target="#collapse-platform">
-                        <i class="ph ph-share-network me-1"></i> Faol platformalar
-                    </button>
-                    <button type="button" class="btn btn-outline-success collapse-toggler" data-target="#collapse-type">
-                        <i class="ph ph-ticket me-1"></i> Faol Ishtirok turlari
-                    </button>
+
+                    @if (!empty($promotion['platforms']))
+                        <button type="button" class="btn btn-outline-success collapse-toggler"
+                            data-target="#collapse-platform">
+                            <i class="ph ph-share-network me-1"></i> Faol platformalar
+                        </button>
+                    @endif
+
+                    @if (!empty($promotion['participants_type']))
+                        <button type="button" class="btn btn-outline-success collapse-toggler"
+                            data-target="#collapse-type">
+                            <i class="ph ph-users-three me-1"></i> Faol Ishtirok turlari
+                        </button>
+                    @endif
                     @if ($hasPromoType)
                         <button type="button" class="btn btn-outline-success collapse-toggler"
                             data-target="#collapse-promocode">
-                            <i class="ph ph-gear me-1"></i> Promocodelar
+                            <i class="ph ph-ticket me-1"></i> Promocodelar
                         </button>
                     @endif
+
                     @if ($hasReceiptType)
                         <button type="button" class="btn btn-outline-success collapse-toggler"
                             data-target="#collapse-receipt">
-                            <i class="ph ph-gear me-1"></i> Receipt scan
+                            <i class="ph ph-receipt me-1"></i> Receipt scan
                         </button>
                     @endif
+
                     @if ($hasPrize)
                         <button type="button" class="btn btn-outline-success collapse-toggler"
                             data-target="#collapse-prize">
-                            <i class="ph ph-gear me-1"></i>Sovg'alar
+                            <i class="ph ph-gift me-1"></i> Sovg'alar
                         </button>
                     @endif
                 </div>
@@ -489,8 +507,7 @@
                                     <form
                                         action="{{ route('admin.promotion.platform.update', ['promotion' => $promotion['id'], 'platform' => $platform['id']]) }}"
                                         method="POST"
-                                        class="border rounded shadow-sm p-4 h-100 d-flex flex-column justify-content-between bg-light">
-
+                                        class="card shadow-sm  strategy-card border border-success border rounded shadow-sm p-4 h-100 bg-light">
                                         @csrf
                                         <input type="hidden" name="platform_id" value="{{ $platform['id'] }}">
                                         <input type="hidden" name="promotion_id" value="{{ $promotion['id'] }}">
@@ -545,7 +562,7 @@
                                     <form
                                         action="{{ route('admin.promotion.participant-type.update', ['promotion' => $promotion['id'], 'participant_type' => $type['id']]) }}"
                                         method="POST"
-                                        class="border rounded shadow-sm p-4 h-100 d-flex flex-column justify-content-between bg-light">
+                                        class="card shadow-sm  strategy-card border border-success border rounded shadow-sm p-4 h-100 bg-light">
                                         @csrf
 
                                         <input type="hidden" name="participant_type_id" value="{{ $type['id'] }}">
@@ -648,36 +665,48 @@
                         </div>
                     </div>
                 @endif
-                @if ($hasPrize)
+                @if ($hasPrize && !empty($prizeCategories))
                     <div class="collapse table-panel" id="collapse-prize">
                         <div class="border rounded p-3">
-                            <div class="page-header-content d-flex justify-content-between align-items-center">
-                                <h4 class="page-title mb-0">Prizes</h4>
-                                <div>
-                                    <a href="{{ route('admin.promocode.create', ['promotion_id' => $promotion['id']]) }}"
-                                        class="btn btn-outline-success ms-3">
-                                        <i class="ph-plus-circle me-1"></i> Generate va Import
-                                    </a>
-                                    {{-- <button type="button" class="btn btn-outline-success ms-3" data-bs-toggle="modal"
-                                            data-bs-target="#socialMediaModal">
-                                            <i class="ph-plus-circle me-1"></i> Sozlamalar
-                                        </button> --}}
-                                </div>
+                            <div class="page-header-content d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="page-title mb-0">🎁 Yutuq strategiyalari</h4>
                             </div>
-                            {{-- <table id="promocode-table" class="table datatable-button-init-basic">
-                                        <thead>
-                                            <tr>
-                                                <th>#ID</th>
-                                                <th>Promocode</th>
-                                                <th>Foydalanilgan</th>
-                                                <th>Foydalanilgan vaqti</th>
-                                                <th>Generation</th>
-                                                <th>Platforma</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                    </table> --}}
 
+                            <div class="row g-4">
+                                @foreach ($prizeCategories as $category)
+                                    <div class="col-xl-6 col-lg-6">
+                                        <div
+                                            class="card strategy-card shadow-sm border border-success rounded p-4 h-100 bg-light">
+                                            <div class="card-body d-flex flex-column justify-content-between">
+                                                <div>
+                                                    <h5 class="fw-semibold mb-1">
+                                                        {{ $category['display_name'] }}</h5>
+                                                    <p class="text-muted small mb-3">
+                {!! $category['description'] !!} </p>
+                                                    </p>
+                                                </div>
+
+                                                <div class="d-flex justify-content-between align-items-center mt-auto">
+                                                    <div>
+                                                        <span
+                                                            class="badge bg-light border-start border-width-3 text-body rounded-start-0 border-warning">
+                                                            {{ $category['name'] }}
+                                                        </span>
+                                                        <span
+                                                            class="badge bg-light border-start border-width-3 text-body rounded-start-0 border-info">
+                                                            {{ $category['prize_count'] }} ta sovg‘a
+                                                        </span>
+                                                    </div>
+                                                    <a href="{{ route('admin.prize-category.show', ['promotion' => $promotion['id'], 'type' => $category['name']]) }}"
+                                                        class="btn btn-sm btn-primary">
+                                                        <i class="ph ph-eye me-1"></i> Ko‘rish
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                 @endif

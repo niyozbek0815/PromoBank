@@ -15,7 +15,12 @@ class PromoCodeController extends Controller
     public function create(Request $request, $id = null)
     {
 
-        $response = $this->forwardRequest("GET", $this->url, "front/promocode/create/{$id}", $request);
+        $response = $this->forwardRequest(
+            "GET",
+            $this->url,
+            "front/promocode/create/{$id}",
+            $request
+        );
         if ($response instanceof \Illuminate\Http\Client\Response) {
             $settings = $response->json('settings');
             if ($settings === null) {
@@ -51,7 +56,6 @@ class PromoCodeController extends Controller
             $request,
             ['file']// Fayl nomlari (formdagi `name=""`)
         );
-        dd($response->json());
         if ($response->ok()) {
             $data = $response->json();
             return redirect()->back()->with('success', $data["message"]);
@@ -116,6 +120,14 @@ class PromoCodeController extends Controller
     {
         $response = $this->forwardRequest("GET", $this->url, "front/promocode/{$generateId}/promocodedata", $request);
         Log::info($response->json());
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return response()->json(['message' => 'Promo service error'], 500);
+    }
+    public function prizeData(Request $request, $promotionId)
+    {
+        $response = $this->forwardRequest("GET", $this->url, "front/promocode/{$promotionId}/prizedata", $request);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());
         }

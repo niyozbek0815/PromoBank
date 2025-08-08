@@ -15,11 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('key')->unique(); // masalan: code_length, starts_with
             $table->string('label');         // admin uchun ko‘rinadigan nom
-            $table->string('input_type');    // masalan: text, number, select, multiselect
+            $table->string(column: 'input_type');    // masalan: text, number, select, multiselect
             $table->boolean('is_comparison')->default(true);
-            // true => ishlatiladigan comparison operatorlar bo‘ladi (=, !=, >=, ...)
-            // false => faqat `IN` yoki `NOT IN` kabi ishlatiladi
-
+            $table->string('description');
+            $table->json('accepted_operators');
             $table->timestamps();
         });
     }

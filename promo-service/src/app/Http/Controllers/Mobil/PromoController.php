@@ -37,7 +37,17 @@ class PromoController extends Controller
     {
         $user = $request['auth_user'];
         $req  = $request->validated();
+
         $data = $this->viaPromocodeService->proccess($req, $user, $id);
+Log::info(
+    'Via promocode request',
+    [
+        'user_id' => $user['id'],
+        'request' => $req,
+        'data' => $data,
+    ]
+);
+
         if (! empty($data['promotion'])) {
             return $this->errorResponse('Promotion not found.', ['promotion' => 'Promotion not found.'], 404);
         }

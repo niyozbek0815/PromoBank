@@ -140,7 +140,7 @@ class ViaPromocodeService
             $action = "auto_win";
             $status = "won";
             $message = $this->getPrizeMessage($prizePromo->prize, $lang);
-            $prize = $prizePromo->prize;
+            $wonPrize = $prizePromo->prize;
             Queue::connection('rabbitmq')->push(new PrizePromoUpdateJob($prizePromo->id));
         }
 
@@ -153,6 +153,7 @@ class ViaPromocodeService
                 $action = "auto_win";
                 $status = "won";
                 $message = $this->getPrizeMessage($prize, $lang);
+                $wonPrize = $prize;
                 break;
             }
         }
@@ -170,12 +171,8 @@ class ViaPromocodeService
         }
 
 
-        return [
-            'action' => $action,
-            'status' => $status,
-            'message' => $message,
-            'prize_name' => $prize ?? null,
-        ];
+        return isset($prize) ? $prize->id : null;
+
     }
 
     private function isValidSmartPrize($prize, string $code): bool

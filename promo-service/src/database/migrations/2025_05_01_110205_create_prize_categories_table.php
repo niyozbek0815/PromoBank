@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('prize_categories', function (Blueprint $table) {
             $table->id();
-            $table->enum('name', ['manual', 'smart_random', 'auto_bind', 'weighted random']);
-            $table->text('description')->nullable();
+            $table->enum('name', ['manual', 'smart_random', 'auto_bind', 'weighted_random']);
+            $table->string('display_name'); // Foydalanuvchiga ko‘rsatiladigan nom (UZ)
+            $table->text('description');    // Kategoriya haqida to‘liq tushuntirish
             $table->timestamps();
-            // Uncomment if soft deletes are needed
             $table->softDeletes();
         });
     }

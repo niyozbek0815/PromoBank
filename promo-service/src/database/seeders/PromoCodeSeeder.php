@@ -19,7 +19,7 @@ class PromoCodeSeeder extends Seeder
         $platforms = Platform::all();
 
         PromoGeneration::with('promotion')->get()->each(function ($generation) use ($platforms) {
-            for ($i = 0; $i < 200; $i++) {
+            for ($i = 0; $i < 2000; $i++) {
                 PromoCode::create([
                     'generation_id' => $generation->id,
                     'promotion_id' => $generation->promotion_id,

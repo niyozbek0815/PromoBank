@@ -1,0 +1,143 @@
+<?php
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class PrizeController extends Controller
+{
+    protected $url;
+    public function __construct()
+    {
+        $this->url = config('services.urls.promo_service');
+    }
+    public function changeStatus(Request $request, $id)
+    {
+        Log::info("data");
+        $response = $this->forwardRequest("GET", $this->url, "front/prize/{$id}/status", $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return response()->json(['message' => 'Promo service error'], 500);
+    }
+    public function edit(Request $request, $prize)
+    {
+        $response = $this->forwardRequest("GET", $this->url, "front/prize/{$prize}/edit", $request);
+        // dd( $response->json());
+        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
+            $data = $response->json();
+            // dd($data);
+            return view('admin.prize.edit', [
+                'prize'         => $data['prize'],
+                'prizecategory' => $data['prizecategory'],
+                'smartRule'     => $data['smartRule'] ?? null,
+            ]);
+        }
+
+        abort(404, 'Xizmatdan maʼlumot olishda xatolik yuz berdi.');
+    }
+
+    public function update(Request $request, $prizeId)
+    {
+        $response = $this->forwardRequest(
+            'POST',
+            $this->url,
+            "front/prize/{$prizeId}/update",
+            $request
+        );
+        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
+            return redirect()
+                ->back()
+                ->with('success', 'Sovg‘a ma’lumotlari muvaffaqiyatli yangilandi.');
+        }
+        if ($response->status() === 422) {
+            return redirect()
+                ->back()
+                ->withErrors($response->json('errors'))
+                ->withInput();
+        }
+        abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
+    }
+    public function storeMessage(Request $request, $prizeId)
+    {
+        // dd($request->all());
+        $response = $this->forwardRequest(
+            'POST',
+            $this->url,
+            "front/prize/{$prizeId}/message",
+            $request
+        );
+        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
+            return redirect()
+                ->back()
+                ->with('success', 'Sovg‘a ma’lumotlari muvaffaqiyatli yangilandi.');
+        }
+
+        // 2️⃣ Validatsiya xatoliklari (422)
+        if ($response->status() === 422) {
+            return redirect()
+                ->back()
+                ->withErrors($response->json('errors'))
+                ->withInput();
+        }
+
+        // 3️⃣ Boshqa xatoliklar
+        abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
+    }
+    public function storeRules(Request $request, $prizeId)
+    {
+        // dd($request->all());
+        $response = $this->forwardRequest(
+            'POST',
+            $this->url,
+            "front/prize/{$prizeId}/smartrules",
+            $request
+        );
+        // dd($response->json());
+        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
+            return redirect()
+                ->back()
+                ->with('success', 'Smart qoidalar muvaffaqiyatli yangilandi.');
+        }
+
+        // 2️⃣ Validatsiya xatoliklari (422)
+        if ($response->status() === 422) {
+            return redirect()
+                ->back()
+                ->withErrors($response->json('errors'))
+                ->withInput();
+        }
+
+        // 3️⃣ Boshqa xatoliklar
+        abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
+    }
+    public function deleteRule(Request $request, $prizeId, $ruleId)
+    {
+        // dd($request->all());
+        $response = $this->forwardRequest(
+            'DELETE',
+            $this->url,
+            "front/prize/{$prizeId}/smartrules/{$ruleId}",
+            $request
+        );
+
+        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
+            return redirect()
+                ->back()
+                ->with('success', 'Smart qoida muvaffaqiyatli o‘chirildi.');
+        }
+
+        // Validatsiya yoki mantiqiy xatolik (422)
+        if ($response->status() === 422) {
+            return redirect()
+                ->back()
+                ->withErrors($response->json('errors'))
+                ->withInput();
+        }
+
+        // Boshqa xatoliklar
+        abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
+    }
+
+}

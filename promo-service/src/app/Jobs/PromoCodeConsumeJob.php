@@ -9,6 +9,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class PromoCodeConsumeJob implements ShouldQueue
 {
@@ -46,28 +47,29 @@ class PromoCodeConsumeJob implements ShouldQueue
     public function handle()
     {
         try {
-            logger()->info('PromoCodeConsumeJob started', [
-                'promo_code_id' => $this->promoCodeId,
-                'user_id' => $this->userId,
-                'platform_id' => $this->platformId,
-                'receipt_id' => $this->receiptId,
-                'promotion_product_id' => $this->promotionProductId,
-                'prize_id' => $this->prizeId,
-                'sub_prize_id' => $this->subPrizeId,
-                'promotion_id' => $this->promotionId,
-            ]);
+         Log::info('Checking types in PromoCodeConsumeJob', [
+    'promo_code_id'        => gettype($this->promoCodeId),
+    'user_id'              => gettype($this->userId),
+    'receipt_id'           => gettype($this->receiptId),
+    'promotion_product_id' => gettype($this->promotionProductId),
+    'prize_id'             => gettype($this->prizeId),
+    'sub_prize_id'         => gettype($this->subPrizeId),
+    'promotion_id'         => gettype($this->promotionId),
+]);
+
 
             // Faqat kerakli qiymatlar bilan to'ldiriladi, null'lar saqlanadi
-            PromoCodeUser::create([
-                'promo_code_id' => $this->promoCodeId,
-                'user_id' => $this->userId,
-                'platform_id' => $this->platformId,
-                'receipt_id' => $this->receiptId,
-                'promotion_product_id' => $this->promotionProductId,
-                'prize_id' => $this->prizeId,
-                'sub_prize_id' => $this->subPrizeId,
-                'promotion_id' => $this->promotionId,
-            ]);
+        PromoCodeUser::create([
+    'promo_code_id'        => is_array($this->promoCodeId) ? null : $this->promoCodeId,
+    'user_id'              => is_array($this->userId) ? null : $this->userId,
+    'platform_id'          => is_array($this->platformId) ? null : $this->platformId,
+    'receipt_id'           => is_array($this->receiptId) ? null : $this->receiptId,
+    'promotion_product_id' => is_array($this->promotionProductId) ? null : $this->promotionProductId,
+    'prize_id'             => is_array($this->prizeId) ? null : $this->prizeId,
+    'sub_prize_id'         => is_array($this->subPrizeId) ? null : $this->subPrizeId,
+    'promotion_id'         => is_array($this->promotionId) ? null : $this->promotionId,
+]);
+
 
             logger()->info('PromoCodeUser record created');
 

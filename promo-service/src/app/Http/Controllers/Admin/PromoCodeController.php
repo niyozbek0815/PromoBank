@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Jobs\GeneratePromoCodesJob;
 use App\Jobs\ImportPromoCodesJob;
+use App\Models\Prize;
 use App\Models\PromoCode;
 use App\Models\PromoGeneration;
 use Maatwebsite\Excel\Facades\Excel;
@@ -245,6 +246,144 @@ public function promocodeData(Request $request, $promotionId)
             ])->render();
         })
         ->addColumn('created_at', fn($item) => $item->created_at?->format('d.m.Y H:i') ?? '-')
+        ->rawColumns(['is_used', 'actions'])
+        ->make(true);
+}
+public function prizeData(Request $request, int $prizeId)
+{
+    Log::info("Fetching prize data for prize ID: {$prizeId}");
+
+    $prize = Prize::with(['smartRandomValues.rule', 'category'])->findOrFail($prizeId);
+
+    // Null-check qo‘shdik
+    if (! $prize || ! $prize->category || $prize->category->name !== 'smart_random') {
+        return DataTables::of(collect())->make(true); // Bo‘sh datatable
+    }
+
+    $rules = $prize->smartRandomValues;
+
+    $query = PromoCode::query()
+        ->where('promo_codes.promotion_id', $prize->promotion_id)
+        ->leftJoin('platforms', 'promo_codes.platform_id', '=', 'platforms.id')
+        ->leftJoin('promo_generations', 'promo_codes.generation_id', '=', 'promo_generations.id')
+        ->select(
+            'promo_codes.*',
+            'platforms.name as platform_name',
+            'promo_generations.type as generation_type'
+        );
+
+    foreach ($rules as $ruleValue) {
+        $key      = $ruleValue->rule->key;
+        $operator = $ruleValue->operator;
+        $values   = $ruleValue->values;
+
+        $query->where(function ($q) use ($key, $operator, $values) {
+            switch ($key) {
+                case 'code_length':
+                    foreach ($values as $value) {
+                        $q->orWhereRaw("CHAR_LENGTH(promocode) {$operator} ?", [$value]);
+                    }
+                    break;
+                case 'uppercase_count':
+                    foreach ($values as $value) {
+                        $q->orWhereRaw("LENGTH(REGEXP_REPLACE(promocode, '[^A-Z]', '', 'g')) {$operator} ?", [$value]);
+                    }
+                    break;
+                case 'lowercase_count':
+                    foreach ($values as $value) {
+                        $q->orWhereRaw("LENGTH(REGEXP_REPLACE(promocode, '[^a-z]', '', 'g')) {$operator} ?", [$value]);
+                    }
+                    break;
+                case 'digit_count':
+                    foreach ($values as $value) {
+                        $q->orWhereRaw("LENGTH(REGEXP_REPLACE(promocode, '[^0-9]', '', 'g')) {$operator} ?", [$value]);
+                    }
+                    break;
+                case 'special_char_count':
+                    foreach ($values as $value) {
+                        $q->orWhereRaw("LENGTH(REGEXP_REPLACE(promocode, '[a-zA-Z0-9]', '', 'g')) {$operator} ?", [$value]);
+                    }
+                    break;
+                case 'unique_char_count':
+                    foreach ($values as $value) {
+                        $q->orWhereRaw("LENGTH(REGEXP_REPLACE(promocode, '(.)(?=.*\\1)', '', 'g')) {$operator} ?", [$value]);
+                    }
+                    break;
+
+                case 'starts_with':
+                    foreach ($values as $value) {
+                        $q->orWhere('promocode', 'LIKE', "$value%");
+                    }
+                    break;
+                case 'not_starts_with':
+                    foreach ($values as $value) {
+                        $q->where('promocode', 'NOT LIKE', "$value%");
+                    }
+                    break;
+                case 'ends_with':
+                    foreach ($values as $value) {
+                        $q->orWhere('promocode', 'LIKE', "%$value");
+                    }
+                    break;
+                case 'not_ends_with':
+                    foreach ($values as $value) {
+                        $q->where('promocode', 'NOT LIKE', "%$value");
+                    }
+                    break;
+                case 'contains':
+                case 'contains_sequence':
+                    foreach ($values as $value) {
+                        $q->orWhere('promocode', 'LIKE', "%$value%");
+                    }
+                    break;
+                case 'not_contains':
+                    foreach ($values as $value) {
+                        $q->where('promocode', 'NOT LIKE', "%$value%");
+                    }
+                    break;
+            }
+        });
+    }
+
+    Log::info("getBindings", $query->getBindings());
+    Log::info("toSql", ['sql' => $query->toSql()]);
+
+    return DataTables::of($query)
+        ->filterColumn('platform_name', function ($query, $keyword) {
+            $query->whereRaw('LOWER(platforms.name) LIKE ?', ["%" . strtolower($keyword) . "%"]);
+        })
+        ->addColumn('promocode', fn($item) => $item->promocode)
+        ->addColumn('is_used', function ($item) {
+            return $item->is_used
+                ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
+                : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
+        })
+        ->addColumn('used_at', function ($item) {
+            return $item->used_at
+                ? date('d.m.Y H:i', strtotime($item->used_at))
+                : '-';
+        })
+        ->addColumn('generation_name', function ($item) {
+            if (! $item->generation_id) {
+                return '-';
+            }
+            $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
+            return "{$item->generation_id}-idli {$label}";
+        })
+        ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
+        ->addColumn('actions', function ($item) {
+            return view('admin.actions', [
+                'row'    => $item,
+                'routes' => [
+                    'show' => "/admin/promocode/{$item->id}/show",
+                ],
+            ])->render();
+        })
+        ->addColumn('created_at', function ($item) {
+            return $item->created_at
+                ? date('d.m.Y H:i', strtotime($item->created_at))
+                : '-';
+        })
         ->rawColumns(['is_used', 'actions'])
         ->make(true);
 }

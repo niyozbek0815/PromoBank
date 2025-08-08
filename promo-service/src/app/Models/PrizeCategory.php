@@ -9,6 +9,7 @@ class PrizeCategory extends Model
 
     protected $fillable = [
         'name',
+        'display_name',
         'description',
     ];
 

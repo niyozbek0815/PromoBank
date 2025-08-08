@@ -76,11 +76,12 @@ class PromotionController extends Controller
         $response = $this->forwardRequest("GET", $this->url, "front/promotion/{$id}/edit", $request);
         if ($response->ok()) {
             $data = $response->json();
-            return view('admin.promotion.edit', [
+                return view('admin.promotion.edit', [
                 'promotion'         => $data['promotion'],
                 'platforms'         => $data['platforms'],         // id => name format
                 'partisipants_type' => $data['partisipants_type'], // id => name format
-                'companies'         => $data['companies'],         // [id, name] list
+                'companies'         => $data['companies'],
+                'prizeCategories'=>$data['prizeCategories'],
             ]);
         }
         return redirect()->back()->with('error', 'Promoaksiya topilmadi.');

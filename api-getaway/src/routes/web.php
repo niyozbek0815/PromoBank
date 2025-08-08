@@ -3,6 +3,8 @@
 use App\Http\Controllers\Admin\Company\CompanyController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LoginController;
+use App\Http\Controllers\Admin\PrizeCategoryController;
+use App\Http\Controllers\Admin\PrizeController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\PromoCodeController;
 use App\Http\Controllers\Admin\Promo\PromotionController;
@@ -91,7 +93,30 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
         Route::get('/{promotion}/generatedata', 'generateData')->name('generatedata'); // AJAX uchun server-side table
         Route::get('/{generate}/showgenerate', 'generateShow')->name('generateshow');
         Route::get('/{promotion}/generate/promocodedata', 'generatePromocodeData')->name('generate.promocodedata'); // AJAX uchun server-side table
-        Route::get('/{promotion}/promocodedata', 'promocodeData')->name('promocodedata'); // AJAX uchun server-side table
+        Route::get('/{promotion}/promocodedata', 'promocodeData')->name('promocodedata');
+        Route::get('/{prize}/prizedata', 'prizeData')->name('prizedata'); // AJAX uchun server-side table
     });
+    Route::prefix('prize-category')
+        ->name('admin.prize-category.')
+        ->controller(PrizeCategoryController::class)
+        ->where(['type' => 'manual|smart_random|auto_bind|weighted_random'])
+        ->group(function () {
+            Route::get('{promotion}/type/{type}', 'show')->name('show');
+            Route::get('{promotion}/type/{type}/data', 'data')->name('data');
+        });
+    Route::prefix('prize')
+        ->name('admin.prize.')
+        ->controller(PrizeController::class)
+        ->group(function () {
+            Route::get('/{prize}/status', 'changeStatus')->name('status');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{prize}/edit', 'edit')->name('edit');
+            Route::put('/{prize}', 'update')->name('update');
+            Route::get('/{prize}/delete', 'delete')->name('delete');
+            Route::post('/{prize}/message', 'storeMessage')->name('message.store');
+            Route::post('/{prize}/smartrules', 'storeRules')->name('smartrules.updateOrCreate');
+Route::post('/{prize}/smartrules/{rule}/delete', 'deleteRule')->name('smartrules.delete');
+        });
 
 });
