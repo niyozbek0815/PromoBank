@@ -18,22 +18,25 @@ class AuthService
 
     public function login($phone)
     {
+        // Userni yaratish yoki olish
         $user = User::firstOrCreate(
             ['phone' => $phone],
             [
                 'name'     => 'User' . rand(0, 100000),
                 'phone'    => $phone,
-                'is_guest' => false,
+                'is_guest' => false, // default - yangi user guest
                 'status'   => false,
             ]
         );
-        $is_new = true;
-        if (! $user->wasRecentlyCreated) {
-            $is_new = false;
 
-            // Mavjud foydalanuvchi qaytarildi
-            $userOtp = UserOtps::where('user_id', $user->id)->where("created_at", '>', Carbon::now()->subMinutes(2))->count();
-            if ($userOtp > 3) {
+        $is_new = $user->wasRecentlyCreated;
+
+        // Agar mavjud user bo‘lsa, is_guest ni false qilamiz va OTP cheklovini tekshiramiz
+        if (! $is_new) {
+            $recentOtpCount = UserOtps::where('user_id', $user->id)
+                ->where('created_at', '>', Carbon::now()->subMinutes(2))
+                ->count();
+            if ($recentOtpCount > 3) {
                 return [
                     "message" => "Juda ko'p urunishlar qildingiz. Iltimos keyinroq qayta urinib ko'ring!!!",
                     "code"    => 422,
@@ -41,12 +44,13 @@ class AuthService
             }
         }
 
-        $userOtp = $this->generateOtp($user, $user['phone']);
-        $this->smsService->sendMessage($userOtp['otp'], $phone);
+        // OTP generatsiya va sms yuborish
+        $userOtp = $this->generateOtp($user, $user->phone);
+        $this->smsService->sendMessage($userOtp->otp, $phone);
 
         return [
             'is_new'  => $is_new,
-            'token'   => $userOtp['token'],
+            'token'   => $userOtp->token,
             'user_id' => $user->id,
             "code"    => 200,
         ];
@@ -80,8 +84,12 @@ class AuthService
             }
             JWTAuth::factory()->setTTL(60);
             $token = JWTAuth::claims([
-                'ip' => $ip,
+                'user_id'  => $user->id,
+                'phone'    => $user->phone,
+                'is_guest' => $user->is_guest,
+                'ip'       => $ip,
             ])->fromUser($user);
+
             return ([
                 "user_id" => $user->id,
                 'token'   => $token,

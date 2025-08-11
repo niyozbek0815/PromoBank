@@ -19,7 +19,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'checkadmin'  => \App\Http\Middleware\CheckJwtMiddleware::class,
         ]);
         $middleware->web(append: [SetLocale::class]);
-
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

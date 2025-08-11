@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Services;
 
 use App\Jobs\CreatePromoActionJob;
@@ -27,55 +26,54 @@ class ViaPromocodeService
         private PromotionMessageRepository $promotionMessageRepository,
         private PrizeMessageRepository $prizeMessageRepository
     ) {
-        $this->promotionRepository = $promotionRepository;
-        $this->promoCodeRepository = $promoCodeRepository;
-        $this->platformRepository = $platformRepository;
+        $this->promotionRepository        = $promotionRepository;
+        $this->promoCodeRepository        = $promoCodeRepository;
+        $this->platformRepository         = $platformRepository;
         $this->promotionMessageRepository = $promotionMessageRepository;
-        $this->prizeMessageRepository = $prizeMessageRepository;
+        $this->prizeMessageRepository     = $prizeMessageRepository;
     }
-
 
     public function getPromotionById($id)
     {
         $cacheKey = 'HasPromotion:mobile' . $id;
-        $ttl = now()->addMinutes(5); // 5 daqiqa kesh
+        $ttl      = now()->addMinutes(5); // 5 daqiqa kesh
         return Cache::store('redis')->remember($cacheKey, $ttl, function () use ($id) {
-            return  $this->promotionRepository->getPromotionByIdforVia($id, ['text_code', 'qr_code']);
+            return $this->promotionRepository->getPromotionByIdforVia($id, ['text_code', 'qr_code']);
         });
     }
 
     public function proccess($req, $user, $id)
     {
         $promocodeInput = $req['promocode'];
-        $lang = $req['lang'];
-        $today = Carbon::today();
-        $action = "vote";
-        $status = "failed";
+        $lang           = $req['lang'];
+        $today          = Carbon::today();
+        $action         = "vote";
+        $status         = "failed";
 
         $platformId = $this->getPlatforms();
-        $data = [];
-        $promotion = $this->getPromotionById($id);
-        if (!$promotion) {
-            return ['promotion'=> true];
+        $data       = [];
+        $promotion  = $this->getPromotionById($id);
+        if (! $promotion) {
+            return ['promotion' => true];
         }
         $promocode = $this->promoCodeRepository->getPromoCodeByPromotionIdAndByPromocode($id, $promocodeInput);
 
-        if (!$promocode) {
-            return ['promocode'=> true];
+        if (! $promocode) {
+            return ['promocode' => true];
         }
         // return $this->successResponse(['promotions' => $promocode], "success");
 
         if ($promocode->is_used) {
-            $action = "claim";
-            $status = "blocked";
+            $action  = "claim";
+            $status  = "blocked";
             $message = $this->getPromotionMessage($promotion->id, $lang, 'claim');
         } else {
             if (in_array($promotion->winning_strategy, ['immediate', 'hybrid'])) {
                 $prizeId = $this->handlePrizeEvaluation($promocode, $promotion, $today, $lang, $action, $status, $message);
             }
-            if (!in_array($promotion->winning_strategy, ['immediate', 'hybrid']) || !$prizeId) {
-                $action = "vote";
-                $status = "pending";
+            if (! in_array($promotion->winning_strategy, ['immediate', 'hybrid']) || ! $prizeId) {
+                $action  = "vote";
+                $status  = "pending";
                 $message = $this->getPromotionMessage($promotion->id, $lang, 'success');
             }
 
@@ -92,28 +90,27 @@ class ViaPromocodeService
         }
 
         Queue::connection('rabbitmq')->push(new CreatePromoActionJob([
-            'promotion_id' => $promotion->id,
+            'promotion_id'  => $promotion->id,
             'promo_code_id' => $promocode->id,
-            'user_id' => $user['id'],
-            'prize_id' => $prizeId ?? null,
-            'action' => $action,
-            'status' => $status,
-            'attempt_time' => now(),
-            'message' => null,
+            'user_id'       => $user['id'],
+            'prize_id'      => $prizeId ?? null,
+            'action'        => $action,
+            'status'        => $status,
+            'attempt_time'  => now(),
+            'message'       => null,
         ]));
-        return  [
-            'action' => $action,
-            'status' => $status,
+        return [
+            'action'  => $action,
+            'status'  => $status,
             'message' => $message,
         ];
     }
     private function getPlatforms()
     {
-        return  Cache::store('redis')->remember('platform:mobile:id', now()->addMinutes(60), function () {
+        return Cache::store('redis')->remember('platform:mobile:id', now()->addMinutes(60), function () {
             return $this->platformRepository->getPlatformGetId('mobile');
         });
     }
-
 
     private function getPromotionMessage($promotionId, $lang, $type): string
     {
@@ -137,9 +134,9 @@ class ViaPromocodeService
             })->with('prize')->first();
 
         if ($prizePromo) {
-            $action = "auto_win";
-            $status = "won";
-            $message = $this->getPrizeMessage($prizePromo->prize, $lang);
+            $action   = "auto_win";
+            $status   = "won";
+            $message  = $this->getPrizeMessage($prizePromo->prize, $lang);
             $wonPrize = $prizePromo->prize;
             Queue::connection('rabbitmq')->push(new PrizePromoUpdateJob($prizePromo->id));
         }
@@ -150,9 +147,9 @@ class ViaPromocodeService
 
         foreach ($smartPrizes as $prize) {
             if ($this->isValidSmartPrize($prize, $promocode->promocode)) {
-                $action = "auto_win";
-                $status = "won";
-                $message = $this->getPrizeMessage($prize, $lang);
+                $action   = "auto_win";
+                $status   = "won";
+                $message  = $this->getPrizeMessage($prize, $lang);
                 $wonPrize = $prize;
                 break;
             }
@@ -164,12 +161,11 @@ class ViaPromocodeService
                 ->whereHas('category', fn($q) => $q->where('name', 'manual'))->exists();
 
             if ($hasManualPrize) {
-                $action = "vote";
-                $status = "pending";
+                $action  = "vote";
+                $status  = "pending";
                 $message = $this->getPromotionMessage($promotion->id, $lang, 'success');
             }
         }
-
 
         return isset($prize) ? $prize->id : null;
 
@@ -194,15 +190,17 @@ class ViaPromocodeService
                 'unique_char_count' => 'checkUniqueCharCount',
                 default => null
             };
+            Log::info("Validating smart prize: {$prize->id} with code: {$code}", ['data' => $ruleValue->values]);
 
-            if (!$method || !method_exists($this, $method)) {
+            if (! $method || ! method_exists($this, $method)) {
                 Log::warning("Unknown rule method for key: {$ruleValue->rule->key}");
                 return false;
             }
+            $values = is_string($ruleValue->values)
+            ? json_decode($ruleValue->values, true)
+            : $ruleValue->values;
 
-            $values = json_decode($ruleValue->values, true);
-
-            if (!$this->{$method}($code, $ruleValue->operator, $values)) {
+            if (! $this->{$method}($code, $ruleValue->operator, $values)) {
                 return false;
             }
         }
@@ -292,11 +290,11 @@ class ViaPromocodeService
             if ($type === 'starts_with') {
                 $isValid = str_starts_with($promocode, $value);
             } elseif ($type === 'not_starts_with') {
-                $isValid = !str_starts_with($promocode, $value);
+                $isValid = ! str_starts_with($promocode, $value);
             } elseif ($type === 'ends_with') {
                 $isValid = str_ends_with($promocode, $value);
             } elseif ($type === 'not_ends_with') {
-                $isValid = !str_ends_with($promocode, $value);
+                $isValid = ! str_ends_with($promocode, $value);
             } elseif ($type === 'contains') {
                 $isValid = strpos($promocode, $value) !== false;
             } elseif ($type === 'not_contains') {
@@ -304,7 +302,7 @@ class ViaPromocodeService
             } elseif ($type === 'contains_sequence') {
                 $isValid = strpos($promocode, $value) !== false;
             }
-            if ($operator === 'in' && !$isValid) {
+            if ($operator === 'in' && ! $isValid) {
                 return false;
             }
         }

@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Prize;
 use App\Models\PrizeCategory;
 use App\Models\PrizeMessage;
+use App\Models\PrizePromo;
 use App\Models\PromoCode;
 use App\Models\SmartRandomRule;
 use App\Models\SmartRandomValue;
@@ -37,14 +38,20 @@ class PrizeController extends Controller
             'promotion:id,name',
             'promotion.platforms:id,name',
             'promotion.participationTypes:id,name,slug',
-
             'message',
             'promoActions',
             'smartRandomValues',
         ])
-            ->where('id', $id)
-            ->select('prizes.*')
+            ->withCount([
+                'prizePromos as used_count'   => function ($query) {
+                    $query->where('is_used', true);
+                },
+                'prizePromos as unused_count' => function ($query) {
+                    $query->where('is_used', false);
+                },
+            ])
             ->findOrFail($id);
+
         $smartRule = [];
         if ($prize->category->name === 'smart_random') {
             $smartRule = SmartRandomRule::select('id', 'key', 'label', 'input_type', 'description', 'accepted_operators')->get();
@@ -354,4 +361,80 @@ class PrizeController extends Controller
             ->rawColumns(['is_used'])
             ->make(true);
     }
+    public function autobind(Request $request, $prizeId)
+    {
+        $request->validate([
+            'promocodes'   => 'required|array',
+            'promocodes.*' => 'exists:promo_codes,id',
+        ]);
+
+        $prize = Prize::with('category')->findOrFail($prizeId);
+
+        if ($prize->category->name !== 'auto_bind') {
+            return response()->json([
+                'error' => 'Bu amal faqat auto_bind kategoriyasidagi sovg‘alar uchun amal qiladi.',
+            ], 400);
+        }
+
+        DB::transaction(function () use ($prize, $request) {
+            foreach ($request->promocodes as $promoId) {
+                PrizePromo::updateOrCreate(
+                    [
+                        'prize_id'      => $prize->id,
+                        'promo_code_id' => $promoId,
+                    ],
+                    [
+                        'promotion_id' => $prize->promotion_id,
+                        'category_id'  => $prize->category_id,
+                        'sub_prize'    => null,
+                        'is_used'      => false,
+                    ]
+                );
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Promo kodlar muvaffaqiyatli auto-bind qilindi (ustiga yozildi).',
+        ]);
+    }
+
+    public function autobindDelete(Request $request, $prizeId, $promocodeId)
+    {
+
+        $prize = Prize::with('category')->findOrFail($prizeId);
+
+        if ($prize->category->name !== 'auto_bind') {
+            return response()->json([
+                'error' => 'Bu amal faqat auto_bind kategoriyasidagi sovg‘alar uchun amal qiladi.',
+            ], 400);
+        }
+
+        $promoBind = PrizePromo::where('prize_id', $prize->id)
+            ->where('promo_code_id', $promocodeId)
+            ->first();
+
+        if (! $promoBind) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bunday promo kod topilmadi yoki bog‘lanmagan.',
+            ], 404);
+        }
+
+        if ($promoBind->is_used) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ushbu promo kod ishlatilgan, o‘chirish mumkin emas.',
+            ], 403);
+        }
+
+        $promoBind->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Promo kod muvaffaqiyatli o‘chirildi.',
+        ]);
+
+    }
+
 }

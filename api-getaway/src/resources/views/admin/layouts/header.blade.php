@@ -8,6 +8,8 @@
 <link href="{{ asset('adminpanel/assets/css/ltr/all.min.css') }}" id="stylesheet" rel="stylesheet" type="text/css">
 <link href="{{ asset('adminpanel/assets/phosphor-icons/phosphor-icons.css') }}" rel="stylesheet" type="text/css" />
 <link rel="stylesheet" href="{{ asset('adminpanel/assets/css/toastr.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
 <!-- /global stylesheets -->
 <script src="{{ asset('adminpanel/assets/js/configurator.js') }}"></script>
 <script src="{{ asset('adminpanel/assets/js/app.js') }}"></script>

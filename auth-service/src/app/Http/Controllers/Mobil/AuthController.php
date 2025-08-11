@@ -38,10 +38,14 @@ class AuthController extends Controller
                 'is_guest' => true,
             ]
         );
-        JWTAuth::factory()->setTTL(1);
+        JWTAuth::factory()->setTTL(10);
         $token = JWTAuth::claims([
-            'ip' => $request->header('User-Ip'),
+            'user_id'  => $user->id,
+            'phone'    => $user->phone,
+            'is_guest' => $user->is_guest,
+            'ip'       => $request->header('User-Ip'),
         ])->fromUser($user);
+
         Queue::connection('rabbitmq')->push(new UserSessionJob($user['id'], $request->header('User-Ip'), $req, $request->header('User-Agent')));
 
         // $session = DB::table('sessions')->insert([
@@ -114,7 +118,7 @@ class AuthController extends Controller
         $phone = $request->input('phone');
         $data  = $this->authService->login($phone);
         if ($data['code'] == 422) {
-            return $this->errorResponse($data["message"], ['error' => $data["message"]], 422);
+            return $this->errorResponse($data["message"], ['token' => [$data["message"]]], 422);
         } else {
             // return response()->json($data["result"]);
             return $this->successResponse(
@@ -141,7 +145,7 @@ class AuthController extends Controller
             if ($data['error']) {
                 return $this->errorResponse(
                     $data['success'],
-                    ['error' => $data['success']],
+                    ['token' => [$data['success']]],
                     422
                 );
             } else {
@@ -244,7 +248,7 @@ class AuthController extends Controller
         $data     = $this->authService->checkUpdate($user, $req, );
 
         if ($data['error_type'] == 422) {
-            return $this->errorResponse("Parol xato yoki eskirgan iltimos qayta urinib ko'ring !!!", ['error' => "Parol xato yoki eskirgan iltimos qayta urinib ko'ring !!!"], 422);
+            return $this->errorResponse("Parol xato yoki eskirgan iltimos qayta urinib ko'ring !!!", ['token' => ["Parol xato yoki eskirgan iltimos qayta urinib ko'ring !!!"]], 422);
         } else {
             return $this->successResponse(
                 new UserResource($user->load(['district', 'region'])),
@@ -257,6 +261,7 @@ class AuthController extends Controller
         $user_req = $request['auth_user'];
         $id       = $user_req['id'];
         $user     = User::with(['district', 'region'])->findOrFail($id);
+        Log::info("User retrieved", ['user_id' => $user]);
         return $this->successResponse(
             new UserResource($user),
             "User Get Successfully!!!"

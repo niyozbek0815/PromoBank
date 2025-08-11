@@ -2,6 +2,10 @@
 @section('title', "Sovg'ani tahrirlash")
 
 @push('scripts')
+    @php
+        // Maksimal tanlash mumkin bo'lgan son (quantity = used + unused)
+$maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_count']);
+    @endphp
     <style>
         .strategy-card {
             transition: all 0.3s ease;
@@ -98,7 +102,77 @@
     <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
+    <script src="https://themes.kopyov.com/limitless/demo/template/assets/demo/pages/form_select2.js"></script>
+    <script src="https://themes.kopyov.com/limitless/demo/template/assets/js/vendor/forms/selects/select2.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
+    <script>
+        $(function() {
+            let maxSelectable = {{ $maxSelectable }};
+
+            $('#promocodeSelect').select2({
+                placeholder: 'Promo kodlarni qidirish...',
+                width: '100%',
+                ajax: {
+                    url: '/admin/promocode/{{ $prize['promotion']['id'] }}/search',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            q: params.term || '',
+                            page: params.page || 1,
+                            per_page: 20,
+                            prize_id: '{{ $prize['id'] ?? ($prize->id ?? 'unknown') }}'
+                        };
+                    },
+                    processResults: function(data, params) {
+                        params.page = params.page || 1;
+                        return {
+                            results: data.data.map(function(item) {
+                                return {
+                                    id: item.id,
+                                    text: item.code
+                                };
+                            }),
+                            pagination: {
+                                more: data.current_page < data.last_page
+                            }
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            // Oldindan tanlangan kodlar
+            @if (!empty($selectedPromocodes))
+                let selectedData = @json($selectedPromocodes);
+                selectedData.forEach(function(item) {
+                    let option = new Option(item.code, item.id, true, true);
+                    $('#promocodeSelect').append(option).trigger('change');
+                });
+            @endif
+
+            // Tanlashda limit nazorati
+            $('#promocodeSelect').on('select2:select', function(e) {
+                let selectedCount = $(this).select2('data').length;
+                if (selectedCount > maxSelectable) {
+                    toastr.warning(`Siz faqat ${maxSelectable} ta kod tanlashingiz mumkin!`, 'Cheklov');
+                    // Oxirgi tanlanganini olib tashlash
+                    $(this).find(`option[value="${e.params.data.id}"]`).prop("selected", false);
+                    $(this).trigger('change');
+                }
+            });
+
+            // Form yuborishda limit tekshiruvi
+            $('#promocodeForm').on('submit', function(e) {
+                let selectedCount = $('#promocodeSelect').select2('data').length;
+                if (selectedCount > maxSelectable) {
+                    e.preventDefault();
+                    toastr.error(`Maksimal ${maxSelectable} ta kod tanlashingiz mumkin!`, 'Xatolik');
+                }
+            });
+        });
+    </script>
 
     <script>
         function confirmDelete(ruleId) {
@@ -303,6 +377,125 @@
             });
 
         });
+        $(document).ready(function() {
+            const promotionId = "{{ $prize['id'] ?? ($prize->id ?? 'unknown') }}";
+            const url = "{{ route('admin.promocode.autobindData', $prize['id'], false) }}";
+            // const promotionId = "3";
+            // const url = "{{ route('admin.promocode.promocodedata', 3, false) }}";
+            if ($.fn.DataTable.isDataTable('#auto-promocode-table')) {
+                $('#auto-promocode-table').DataTable().destroy();
+            }
+
+            $('#auto-promocode-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: url,
+                columns: [{
+                        data: 'id',
+                        name: 'promo_codes.id'
+                    },
+                    {
+                        data: 'promocode',
+                        name: 'promo_codes.promocode'
+                    },
+                    {
+                        data: 'is_used',
+                        name: 'promo_codes.is_used'
+                    },
+                    {
+                        data: 'used_at',
+                        name: 'promo_codes.used_at',
+                        searchable: false
+                    },
+                    {
+                        data: 'generation_name',
+                        name: 'promo_codes.generation_id',
+                        searchable: false
+                    },
+                    {
+                        data: 'platform',
+                        name: 'platform_name',
+                        searchable: false
+
+                    }, // ✅ ALIAS nomi
+                    {
+                        data: 'actions',
+                        name: 'actions',
+                        orderable: false,
+                        searchable: false
+                    },
+                ],
+                buttons: [{
+                        extend: 'copy',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all' // <-- all sahifalarni oladi
+                            }
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        filename: promotionId + '-promotion_promocodelari', // dinamik nom
+                        exportOptions: {
+                            modifier: {
+                                page: 'all' // <-- faqat ko‘rinayotgan emas, hammasini oladi
+                            }
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        filename: promotionId + '-promotion_promocodelari',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    }
+                ]
+            });
+
+        });
+        $(document).on('click', '#auto-promocode-table .delete-bind', function(e) {
+            e.preventDefault();
+            const promocodeId = $(this).data('id');
+            const url = $(this).data('url');
+
+            Swal.fire({
+                title: 'Ishonchingiz komilmi?',
+                text: "Bu amal promoaksiyani o‘chiradi!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ha, o‘chir!',
+                cancelButtonText: 'Bekor qilish'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: url,
+                        method: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(res) {
+                            toastr.success(res.message || 'promoaksiya o‘chirildi!');
+                            $('#auto-promocode-table').DataTable().ajax.reload(null, false);
+                        },
+                        error: function(xhr) {
+                            toastr.error('O‘chirishda xatolik yuz berdi!');
+                        }
+                    });
+                }
+            });
+        });
     </script>
 @endpush
 @section('content')
@@ -370,6 +563,14 @@
                         <small class="form-text text-muted d-block mt-1">
                             Foydalanuvchiga sovg‘a haqida ko‘proq ma'lumot bering. Bu joyda sovg‘aning qanday
                             ishlatilishi, unikal xususiyatlari yoki foydalanish qoidalari haqida yozishingiz mumkin.
+                        </small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">🎁 Berilgan miqdor (Awarded Quantity)</label>
+                        <input type="number" class="form-control" value="{{ $prize['awarded_quantity'] ?? 0 }}" readonly>
+                        <small class="form-text text-muted d-block mt-1">
+                            Bu raqam ushbu sovg‘adan nechta foydalanuvchiga topshirilgan yoki yutib olinganligini bildiradi.
+                            Qiymat avtomatik ravishda hisoblanadi va o‘zgartirib bo‘lmaydi.
                         </small>
                     </div>
                     <div class="col-md-4 mb-3">
@@ -679,20 +880,19 @@ $messageForms = [
                     <div class="mb-3">
                         <h6 class="fw-semibold text-muted mb-0">Smart Random shartlari va yutuqli promocodelar</h6>
                     </div>
-                     @php
-        // ruleValues ni string key qilib olish
-        $ruleValues = collect($prize['smart_random_values'] ?? [])
-            ->mapWithKeys(function ($item) {
-                return [(string) $item['rule_id'] => $item];
-            });
+                    @php
+                        // ruleValues ni string key qilib olish
+                        $ruleValues = collect($prize['smart_random_values'] ?? [])->mapWithKeys(function ($item) {
+                            return [(string) $item['rule_id'] => $item];
+                        });
 
-        // Smart rules ni tartiblash — avval qiymati borlari, keyin qolganlar
-        $sortedSmartRules = collect($smartRule)
-            ->sortByDesc(function ($rule) use ($ruleValues) {
-                return $ruleValues->has((string) $rule['id']) ? 1 : 0;
-            })
-            ->values();
-    @endphp
+                        // Smart rules ni tartiblash — avval qiymati borlari, keyin qolganlar
+                        $sortedSmartRules = collect($smartRule)
+                            ->sortByDesc(function ($rule) use ($ruleValues) {
+                                return $ruleValues->has((string) $rule['id']) ? 1 : 0;
+                            })
+                            ->values();
+                    @endphp
 
                     <ul class="nav nav-tabs mb-3 overflow-auto flex-nowrap border-bottom rule-tabs" role="tablist"
                         style="scrollbar-width: thin;">
@@ -717,9 +917,9 @@ $messageForms = [
                     <div class="tab-content">
                         @foreach ($smartRule as $index => $rule)
                             @php
-                                 $valueData = $ruleValues->get((string) $rule['id']) ?? [];
-    $operator = $valueData['operator'] ?? '';
-    $values = $valueData['values'] ?? [];
+                                $valueData = $ruleValues->get((string) $rule['id']) ?? [];
+                                $operator = $valueData['operator'] ?? '';
+                                $values = $valueData['values'] ?? [];
                             @endphp
 
                             <div class="tab-pane fade @if ($index === 0) show active @endif"
@@ -857,8 +1057,55 @@ $messageForms = [
             @endif
             @if ($hasAutoBind)
                 <div class="border rounded mt-4 p-3" id="collapse-auto">
+                    <div class="page-header-content d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="page-title mb-0">Yutuqga promocode bog'lash</h4>
+                    </div>
+
+                    {{-- Statistikalar bloki --}}
+                    <div class="row text-center mb-3">
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light shadow-sm">
+                                <div class="fw-bold text-secondary">Sovrin miqdori (quantity)</div>
+                                <div class="fs-4 text-primary fw-bold">{{ $prize['quantity'] }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light shadow-sm">
+                                <div class="fw-bold text-secondary">Auto-bind umumiy</div>
+                                <div class="fs-4 text-success fw-bold">{{ $prize['used_count'] + $prize['unused_count'] }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light shadow-sm">
+                                <div class="fw-bold text-secondary">Ishlatilganlar soni</div>
+                                <div class="fs-4 text-danger fw-bold">{{ $prize['used_count'] }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Promo code bog'lash formasi --}}
+                    <form action="{{ route('admin.prize.attachPromocodes', $prize['id']) }}" class="mt-3 row"
+                        method="POST" id="promocodeForm">
+                        @csrf
+                        <div class="col-lg-12">
+                            <label for="promocodeSelect" class="form-label fw-bold">
+                                Promo kodlarni tanlang
+                                <small class="text-muted">(maks: {{ $maxSelectable }})</small>
+                            </label>
+                            <select id="promocodeSelect" name="promocodes[]" class="form-control"
+                                multiple="multiple"></select>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary w-100">Saqlash</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="border rounded mt-4 p-3" id="collapse-auto">
                     <div class="page-header-content d-flex justify-content-between align-items-center">
-                        <h4 class="page-title mb-0">Shu yuquqga bog'langan promocodelar</h4>
+                        <h4 class="page-title mb-0">Shu yutuqqa bog'langan promocodelar</h4>
                     </div>
                     <table id="auto-promocode-table" class="table datatable-button-init-basic">
                         <thead>

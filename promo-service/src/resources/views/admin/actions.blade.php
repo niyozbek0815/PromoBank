@@ -30,6 +30,12 @@
                     {{ $row->is_public ? 'Maxfiy qilish' : 'Ommaviy qilish' }}
                 </a>
             @endisset
+                @if (!empty($routes['delete_bind']))
+                <a href="#" class="dropdown-item text-danger delete-bind" data-id="{{ $row->id }}"
+                    data-url="{{ $routes['delete_bind'] }}">
+                    <i class="ph-trash me-2"></i> Bog'lanishni o'chirish
+                </a>
+            @endif
             @if (!empty($routes['delete']))
                 <a href="#" class="dropdown-item text-danger delete-user" data-id="{{ $row->id }}"
                     data-url="{{ $routes['delete'] }}">

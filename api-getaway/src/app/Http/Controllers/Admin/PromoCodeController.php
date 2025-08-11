@@ -133,5 +133,31 @@ class PromoCodeController extends Controller
         }
         return response()->json(['message' => 'Promo service error'], 500);
     }
+    public function searchPromocodes(Request $request, $promotionId)
+    {
+        $query   = $request->input('q');
+        $perPage = $request->input('per_page', 20);
+
+        // Forward qilinadigan endpoint
+        $response = $this->forwardRequest(
+            "GET",
+            $this->url,
+            "front/promocode/{$promotionId}/search",
+            $request
+        );
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return response()->json(['message' => 'Promo service error'], 500);
+    }
+  public function autobindData(Request $request, $prizeId)
+    {
+        Log::info("Autobind data requested for prize: {$prizeId}");
+        $response = $this->forwardRequest("GET", $this->url, "front/promocode/{$prizeId}/autobinddata", $request);
+        Log::info("Response from autobind data: ", $response->json());
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return response()->json(['message' => 'Promo service error'], 500);
+    }
 }
-// Log::info("count:" . $query->count());

@@ -102,7 +102,7 @@ class GameController extends Controller
             if ($data['message']) {
                 return $this->errorResponse(
                     $data['message'],
-                    ['error' => $data['message']],
+                    ['error' => [$data['message']]],
                     422
                 );
             }

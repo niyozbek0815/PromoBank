@@ -70,8 +70,9 @@ Route::prefix('front')->group(function () {
             Route::get('/{generate}/showgenerate', 'generateShow')->name('generateshow');
             Route::get('/{promotion}/generate/promocodedata', 'generatePromocodeData')->name('generate.promocodedata'); // AJAX uchun server-side table
             Route::get('/{promotion}/promocodedata', 'promocodeData')->name('promocodedata');                           // AJAX uchun server-side table
-            Route::get('/{promotion}/prizedata', 'prizeData')->name('prizedata');                                       // AJAX uchun server-side table
-
+            Route::get('/{promotion}/prizedata', 'prizeData')->name('prizedata');
+            Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData');                                    // AJAX uchun server-side table
+            Route::get('/{promotion}/search', 'searchPromocodes')->name('search');
         });
     Route::prefix('prize-category')
         ->name('admin.prize-category.')
@@ -93,7 +94,9 @@ Route::prefix('front')->group(function () {
             Route::get('/{prize}/delete', 'delete')->name('delete');
             Route::post('/{prize}/message', 'storeMessage')->name('message.store');
             Route::post('/{prize}/smartrules', 'storeRules')->name('smartrules.updateOrCreate');
-            Route::delete('/{prize}/smartrules/{rule}', 'deleteRule')->name('smartrules.delete');
+            Route::post('/{prize}/autobind', 'autobind')->name('attachPromocodes');
+            Route::post('/{prize}/autobind/{promocodeId}', 'autobindDelete')->name('detachPromocodes');
+
         });
 
 });

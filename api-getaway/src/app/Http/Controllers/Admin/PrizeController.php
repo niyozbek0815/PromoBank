@@ -24,7 +24,7 @@ class PrizeController extends Controller
     public function edit(Request $request, $prize)
     {
         $response = $this->forwardRequest("GET", $this->url, "front/prize/{$prize}/edit", $request);
-        // dd( $response->json());
+        // dd( $response->json('prize'));
         if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
             $data = $response->json();
             // dd($data);
@@ -139,5 +139,42 @@ class PrizeController extends Controller
         // Boshqa xatoliklar
         abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
     }
+    public function autobind(Request $request, $prizeId)
+    {
 
+        $response = $this->forwardRequest(
+            "POST",
+            $this->url,
+            "front/prize/{$prizeId}/autobind",
+            $request
+        );
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            $settings = $response->json('settings');
+            if ($settings === null) {
+                return redirect()
+                    ->back()
+                    ->with(['success' => "Sovg'ani avtomatik bog'lash muvaffaqiyatli amalga oshirildi."]);
+            }
+        }
+        abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
+    }
+    public function autobindDelete(Request $request, $prizeId, $promocodeId)
+    {
+        Log::info("Autobind delete requested for prize ID: {$prizeId}");
+        $response = $this->forwardRequest(
+            "POST",
+            $this->url,
+            "front/prize/{$prizeId}/autobind/{$promocodeId}",
+            $request
+        );
+        Log::info("Autobind delete response: " . $response->body());
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            $settings = $response->json('settings');
+            if ($settings === null) {
+                return redirect()
+                    ->back()
+                    ->with(['success' => "Sovg'ani avtomatik bog'lash muvaffaqiyatli amalga oshirildi."]);
+            }
+        }
+    }
 }
