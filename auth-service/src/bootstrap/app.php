@@ -94,11 +94,11 @@ return Application::configure(basePath: dirname(__DIR__))
             return $errorResponse($msg, ['token' => [$msg]], $e->getStatusCode());
         });
 
-        $exceptions->renderable(function (Throwable $e, $request) use ($errorResponse, $onlyApi) {
-            if (! $onlyApi($request)) {
-                return null;
-            }
-            return $errorResponse('Ichki server xatosi', ['token' => ['Ichki server xatosi']], 500);
-        });
+        // $exceptions->renderable(function (Throwable $e, $request) use ($errorResponse, $onlyApi) {
+        //     if (! $onlyApi($request)) {
+        //         return null;
+        //     }
+        //     return $errorResponse('Ichki server xatosi', ['token' => ['Ichki server xatosi']], 500);
+        // });
 
     })->create();

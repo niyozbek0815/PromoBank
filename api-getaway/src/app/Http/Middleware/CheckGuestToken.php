@@ -66,7 +66,6 @@ class CheckGuestToken
                 'X-Forwarded-For' => $request->ip(),
                 'User-Agent'      => $request->userAgent(),
             ])->post(config('services.urls.auth_service') . '/refresh-token', $request->all());
-
             $data     = json_decode($res->getBody()->getContents(), true)['data'] ?? [];
             $newToken = $data['token'] ?? null;
             if (! $newToken) {

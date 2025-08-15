@@ -12,6 +12,19 @@ class PrizeController extends Controller
     {
         $this->url = config('services.urls.promo_service');
     }
+    public function index(Request $request)
+    {
+        return view('admin.prize.index');
+    }
+    public function data(Request $request)
+    {
+        Log::info("12Fetching prize data");
+        $response = $this->forwardRequest("GET", $this->url, "front/prize/data", $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return response()->json(['message' => 'Promo service error'], 500);
+    }
     public function changeStatus(Request $request, $id)
     {
         Log::info("data");

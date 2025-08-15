@@ -16,6 +16,52 @@ use Yajra\DataTables\Facades\DataTables;
 
 class PrizeController extends Controller
 {
+    public function index(Request $request)
+    {
+        $query = Prize::query();
+
+        return DataTables::of($query)
+            ->addColumn('action', function ($row) {
+                return view('admin.prizes.partials.actions', compact('row'));
+            })
+            ->make(true);
+    }
+    public function prizeData(Request $request)
+    {
+        $query = Prize::with([
+            'category:id,name,display_name',
+            'promotion:id,name', // faqat kerakli ustunlar
+        ])
+            ->orderBy('index', 'desc')
+            ->select('prizes.*');
+
+        return DataTables::of($query)
+            ->addColumn('index', fn($item) => $item->index)
+            ->addColumn('category', fn($item) => $item->category->display_name ?? '-')
+            ->addColumn('promotion_name', function ($item) {
+                // Promotion mavjud bo'lsa tarjimani olamiz
+                return $item->promotion
+                ? $item->promotion->getTranslation('name', 'uz') // Spatie translatable
+                : '-';
+            })
+            ->addColumn('valid_from', fn($item) => optional($item->valid_from)->format('d.m.Y'))
+            ->addColumn('valid_until', fn($item) => optional($item->valid_until)->format('d.m.Y'))
+            ->addColumn('awarded_quantity', fn($item) => $item->awarded_quantity)
+            ->addColumn('probability_weight', fn($item) => $item->probability_weight)
+            ->addColumn('status', fn($item) => $item->is_active
+                ? '<span class="badge bg-success">Faol</span>'
+                : '<span class="badge bg-danger">Nofaol</span>')
+            ->addColumn('actions', fn($row) => view('admin.actions', [
+                'row'    => $row,
+                'routes' => [
+                    'edit'   => "/admin/prize/{$row->id}/edit",
+                    'status' => "/admin/prize/{$row->id}/status",
+                ],
+            ])->render())
+            ->rawColumns(['status', 'actions'])
+            ->make(true);
+    }
+
     public function changeStatus(Request $request, $id)
     {
         Log::info('User status changed', [

@@ -12,6 +12,18 @@ class PromoCodeController extends Controller
     {
         $this->url = config('services.urls.promo_service');
     }
+    public function index(Request $request)
+    {
+        return view('admin.promocode.index');
+    }
+    public function data(Request $request)
+    {
+        $response = $this->forwardRequest("GET", $this->url, "front/promocode/data", $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return response()->json(['message' => 'Promocode service error'], 500);
+    }
     public function create(Request $request, $id = null)
     {
 
@@ -97,7 +109,6 @@ class PromoCodeController extends Controller
     public function generateData(Request $request, $promotionId)
     {
         $response = $this->forwardRequest("GET", $this->url, "front/promocode/{$promotionId}/generatedata", $request);
-        Log::info($response);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());
         }
@@ -110,7 +121,6 @@ class PromoCodeController extends Controller
     public function generatePromocodeData(Request $request, $generateId)
     {
         $response = $this->forwardRequest("GET", $this->url, "front/promocode/{$generateId}/generate/promocodedata", $request);
-        Log::info($response);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());
         }
@@ -119,7 +129,6 @@ class PromoCodeController extends Controller
     public function promocodeData(Request $request, $generateId)
     {
         $response = $this->forwardRequest("GET", $this->url, "front/promocode/{$generateId}/promocodedata", $request);
-        Log::info($response->json());
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());
         }
@@ -150,11 +159,9 @@ class PromoCodeController extends Controller
         }
         return response()->json(['message' => 'Promo service error'], 500);
     }
-  public function autobindData(Request $request, $prizeId)
+    public function autobindData(Request $request, $prizeId)
     {
-        Log::info("Autobind data requested for prize: {$prizeId}");
         $response = $this->forwardRequest("GET", $this->url, "front/promocode/{$prizeId}/autobinddata", $request);
-        Log::info("Response from autobind data: ", $response->json());
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());
         }

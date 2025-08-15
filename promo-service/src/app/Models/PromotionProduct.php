@@ -10,6 +10,10 @@ class PromotionProduct extends Model
         'promotion_id',
         'shop_id',
         'name',
+        'status'
+    ];
+    protected $casts = [
+        'status' => 'boolean',
     ];
 
     public function promotion()

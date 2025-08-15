@@ -107,7 +107,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const allPanels = document.querySelectorAll('.table-panel');
-            let currentlyOpen = document.querySelector('#collapse-prize');
+            let currentlyOpen = document.querySelector('#collapse-receipt');
             if (currentlyOpen) {
                 const defaultInstance = bootstrap.Collapse.getOrCreateInstance(currentlyOpen);
                 defaultInstance.show();
@@ -115,7 +115,7 @@
                 // Default aktiv tugma topiladi va unga active qo‘yiladi
                 document.querySelectorAll('.collapse-toggler').forEach(btn => {
                     const targetId = btn.getAttribute('data-target');
-                    if (targetId === '#collapse-prize') {
+                    if (targetId === '#collapse-receipt') {
                         btn.classList.add('active');
                     } else {
                         btn.classList.remove('active');
@@ -158,6 +158,218 @@
             }
         });
         $(document).ready(function() {
+            const url =
+                "{{ route('admin.promotion_shops.promotion_data', $promotion['id'], false) }}"; // serverdan malumot olish
+
+            if ($.fn.DataTable.isDataTable('#promotion-shops-table')) {
+                $('#promotion-shops-table').DataTable().destroy();
+            }
+
+            $('#promotion-shops-table').DataTable({
+                processing: true,
+                serverSide: false, // chunki biz to'liq malumotni olishimiz mumkin
+                ajax: {
+                    url: url,
+                    type: "GET",
+                },
+                columns: [{
+                        data: 'id',
+                        name: 'id'
+                    },
+
+                    {
+                        data: 'name',
+                        name: 'name'
+                    },
+                    {
+                        data: 'adress',
+                        name: 'adress'
+                    },
+                    {
+                        data: 'products_count',
+                        name: 'products_count',
+                        searchable: false
+                    },
+                    {
+                        data: 'promotion_name',
+                        name: 'promotion_name'
+                    },
+                    {
+                        data: 'created_at',
+                        name: 'created_at',
+                        searchable: false
+                    },
+                    {
+                        data: 'actions',
+                        name: 'actions',
+                        orderable: false,
+                        searchable: false
+                    },
+                ],
+                buttons: [{
+                        extend: 'copy',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        filename: 'promotion_shops_list',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        filename: 'promotion_shops_list',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    }
+                ]
+            });
+        });
+        $(document).ready(function() {
+            const url = "{{ route('admin.seles_receipts.won_seles_receipts', $promotion['id'], false) }}";
+
+            if ($.fn.DataTable.isDataTable('#promotion-receipts-table')) {
+                $('#promotion-receipts-table').DataTable().destroy();
+            }
+
+            $('#promotion-receipts-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: url,
+                    type: "GET",
+                },
+                columns: [{
+                        data: 'id',
+                        name: 'id'
+                    },
+                    {
+                        data: 'chek_id',
+                        name: 'chek_id'
+                    },
+                    {
+                        data: 'name',
+                        name: 'name'
+                    },
+                    {
+                        data: 'nkm_number',
+                        name: 'nkm_number'
+                    },
+                    {
+                        data: 'sn',
+                        name: 'sn'
+                    },
+
+                    {
+                        data: 'payment_type',
+                        name: 'payment_type'
+                    },
+                    {
+                        data: 'qqs_summa',
+                        name: 'qqs_summa',
+                        searchable: false
+                    },
+                    {
+                        data: 'summa',
+                        name: 'summa',
+                        searchable: false
+                    },
+                    {
+                        data: 'lat',
+                        name: 'lat',
+                        searchable: false
+                    },
+                    {
+                        data: 'long',
+                        name: 'long',
+                        searchable: false
+                    },
+                           { data: 'user_info', name: 'user_info', orderable: false, searchable: true }, // yangi ustun
+
+
+                    {
+                        data: 'manual_count',
+                        name: 'manual_count',
+                        searchable: false
+                    },
+                    {
+                        data: 'prize_count',
+                        name: 'prize_count',
+                        searchable: false
+                    },
+                       {
+                        data: 'check_date',
+                        name: 'check_date',
+                        searchable: false
+                    },
+                    {
+                        data: 'created_at',
+                        name: 'created_at',
+                        searchable: false
+                    },
+                    {
+                        data: 'actions',
+                        name: 'actions',
+                        orderable: false,
+                        searchable: false
+                    }
+                ],
+                buttons: [{
+                        extend: 'copy',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        filename: 'promotion_receipts_list',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        filename: 'promotion_receipts_list',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    }
+                ]
+            });
+        });
+        $(document).ready(function() {
             const promotionId = "{{ $promotion['id'] ?? ($promotion->id ?? 'unknown') }}";
             const url = "{{ route('admin.promocode.promocodedata', $promotion['id'], false) }}";
             if ($.fn.DataTable.isDataTable('#promocode-table')) {
@@ -170,13 +382,6 @@
                 ajax: {
                     url: url,
                     type: "GET",
-                    dataSrc: function(json) {
-                        console.log("Returned data:", json);
-                        return json.data;
-                    },
-                    error: function(xhr, error, thrown) {
-                        console.error("DataTable AJAX error", xhr.responseText);
-                    }
                 },
                 columns: [{
                         data: 'id',
@@ -634,13 +839,13 @@
                 @endif
                 @if ($hasReceiptType)
                     <div class="collapse table-panel" id="collapse-receipt">
-                        <div class="border rounded p-3">
+                        <div class="border rounded p-3 mb-4">
                             <div class="page-header-content d-flex justify-content-between align-items-center">
-                                <h4 class="page-title mb-0">PromoCodelar jadvali</h4>
+                                <h4 class="page-title mb-0">Promotion o'tqaziladigan filiallar</h4>
                                 <div>
-                                    <a href="{{ route('admin.promocode.create', ['promotion_id' => $promotion['id']]) }}"
+                                    <a href="{{ route('admin.promotion_shops.create', ['promotion_id' => $promotion['id']]) }}"
                                         class="btn btn-outline-success ms-3">
-                                        <i class="ph-plus-circle me-1"></i> Generate va Import
+                                        <i class="ph-plus-circle me-1"></i> Filial qo'shish
                                     </a>
                                     {{-- <button type="button" class="btn btn-outline-success ms-3" data-bs-toggle="modal"
                                             data-bs-target="#socialMediaModal">
@@ -648,19 +853,52 @@
                                         </button> --}}
                                 </div>
                             </div>
-                            {{-- <table id="promocode-table" class="table datatable-button-init-basic">
-                                        <thead>
-                                            <tr>
-                                                <th>#ID</th>
-                                                <th>Promocode</th>
-                                                <th>Foydalanilgan</th>
-                                                <th>Foydalanilgan vaqti</th>
-                                                <th>Generation</th>
-                                                <th>Platforma</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                    </table> --}}
+                            <table id="promotion-shops-table" class="table datatable-button-init-basic">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Do‘kon nomi</th>
+                                        <th>Manzil</th>
+                                        <th>Mahsulotlar soni</th>
+                                        <th>Aksiya nomi</th>
+                                        <th>Yaratilgan vaqti</th>
+                                        <th>Amallar</th>
+                                    </tr>
+                                </thead>
+                            </table>
+
+                        </div>
+                        <div class="border rounded p-3 mb-4">
+                            <div class="page-header-content ">
+                                <h4 class="page-title mb-0">Yutuqli harid cheklari</h4>
+                                <small>Bu yerda user tomonidan scaner qilingan yutuqli harid cheklari ko'rsatiladi. bu
+                                    cheklar ichida kamida bitta manual yoki extimollik nazaryasi bilan beriladigan yutuq
+                                    mavjud.</small>
+                            </div>
+                            <hr>
+                            <table id="promotion-receipts-table" class="table datatable-button-init-basic">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Chek ID</th>
+                                        <th>Do‘kon nomi</th>
+                                        <th>NKM raqami</th>
+                                        <th>SN</th>
+                                        <th>To‘lov turi</th>
+                                        <th>QQS summa</th>
+                                        <th>Umumiy summa</th>
+                                        <th>Latitude</th>
+                                        <th>Longitude</th>
+                                        <th>Foydalanuvchi</th>
+                                        <th>Manual count</th>
+                                        <th>Prize count</th>
+                                        <th>Chek sanasi</th>
+                                        <th>Yaratilgan</th>
+                                        <th>Amallar</th>
+                                    </tr>
+                                </thead>
+
+                            </table>
 
                         </div>
                     </div>
@@ -682,7 +920,7 @@
                                                     <h5 class="fw-semibold mb-1">
                                                         {{ $category['display_name'] }}</h5>
                                                     <p class="text-muted small mb-3">
-                {!! $category['description'] !!} </p>
+                                                        {!! $category['description'] !!} </p>
                                                     </p>
                                                 </div>
 

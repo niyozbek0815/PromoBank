@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\EncouragementPoint;
 use App\Models\Prize;
+use App\Models\PromoCodeUser;
 use App\Models\SalesProduct;
 use App\Models\SalesReceipt;
 use App\Models\UserPointBalance;
@@ -13,6 +14,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 
 class CreateReceiptAndProductJob implements ShouldQueue
@@ -53,6 +55,9 @@ class CreateReceiptAndProductJob implements ShouldQueue
     public function handle(): void
     {
         $user = $this->user;
+        // PromoCodeUser::query()->delete();
+        // SalesReceipt::query()->delete();
+        // SalesProduct::query()->delete();
         try {
             $receipt_id = DB::transaction(function () use ($user) {
                 $receipt = SalesReceipt::create([
@@ -83,7 +88,13 @@ class CreateReceiptAndProductJob implements ShouldQueue
                 SalesProduct::insert($products->toArray());
                 return $receipt['id'];
             });
-            if ($this->manualPrizeCount > 0 || !empty($thiss->selectedPrize)) {
+            if ($this->manualPrizeCount > 0 || !empty($this->selectedPrizes)) {
+                Log::info("Dispatching PromoCodeUserForReceiptJob", [
+                    'user_id' => $user['id'],
+                    'receipt_id' => $receipt_id,
+                    'manual_prize_count' => $this->manualPrizeCount,
+                    'selected_prizes' => $this->selectedPrizes,
+                ]);
                 $this->dispatchPromoCodeJob($user['id'], $receipt_id);
             };
             if ($this->manualPrizeCount == 0 && empty($thiss->selectedPrize)) {
@@ -91,9 +102,9 @@ class CreateReceiptAndProductJob implements ShouldQueue
             }
         } catch (\Exception $e) {
 
-            \Log::error("Error processing job: " . $e->getMessage());
-            \Log::info("Selected prizes count", ['count' => count($this->selectedPrizes)]);
-            \Log::info("Manual prize count", ['count' => $this->manualPrizeCount]);
+            Log::error("Error processing job: " . $e->getMessage());
+            Log::info("Selected prizes count", ['count' => count($this->selectedPrizes)]);
+            Log::info("Manual prize count", ['count' => $this->manualPrizeCount]);
         }
     }
     private function giveEncouragementPoints($user_id, $receipt_id)
@@ -108,7 +119,7 @@ class CreateReceiptAndProductJob implements ShouldQueue
         );
 
         // 2. So'ngra balansni oshirish
-        UserPointBalance::where(column: 'user_id', $user_id)->increment('balance', $encouragementPoints);
+        UserPointBalance::where('user_id', $user_id)->increment('balance', $encouragementPoints);
 
         // Log the awarded encouragement points
         EncouragementPoint::create([

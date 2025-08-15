@@ -11,6 +11,7 @@ use App\Repositories\PrizeMessageRepository;
 use App\Repositories\PromotionMessageRepository;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Termwind\Components\BreakLine;
@@ -49,6 +50,8 @@ class ReceiptService
             })
             ->first();
         if ($shop) {
+Log::info('Found shop: ', ['shop' => $shop]);
+
             $promotion = $shop->promotion;
             $prizes = Prize::where('promotion_id', $shop->promotion_id)
                 ->withCount(['prizeUsers as today_prize_users_count' => function ($query) use ($today) {
@@ -58,7 +61,7 @@ class ReceiptService
                     'category',
                     fn($q) =>
                     $q->whereIn('name', [
-                        'weighted random',
+                        'weighted_random',
                         'manual'
                     ])
                 )
@@ -66,11 +69,14 @@ class ReceiptService
                 ->whereColumn('awarded_quantity', '<', 'quantity')
                 ->with('category:id,name') // category.name kerak bo'ladi
                 ->orderBy('index', 'asc')
-                ->get()->filter(fn($prize) => $prize->today_prize_users_count < $prize->daily_limit);;
+                ->get()->filter(fn($prize) => $prize->today_prize_users_count < $prize->daily_limit);
+                Log::info('Filtered prizes: ', ['prizes' => $prizes]);
             $checkProducts = collect($req['products']);
             $groupedPrizes = $prizes->groupBy(fn($prize) => $prize->category->name);
-            $weighted_prizes =  $groupedPrizes['weighted random'] ?? collect();
+            $weighted_prizes =  $groupedPrizes['weighted_random'] ?? collect();
             $manual_prizes = $groupedPrizes['manual'] ?? collect();
+            Log::info('Weighted prizes: ', ['weighted_prizes' => $weighted_prizes]);
+            Log::info('Manual prizes: ', ['manual_prizes' => $manual_prizes]);
             $promoProductMap = collect($shop->products)
                 ->keyBy(fn($product) => Str::lower($product->name));
             $entries = $this->getEntries($checkProducts, $shop, $promoProductMap);
@@ -78,6 +84,7 @@ class ReceiptService
             foreach ($entries as $entry) {
                 $selected = false;
                 if ($weighted_prizes->isNotEmpty()) {
+                    Log::info('Trying to get weighted random prize for entry: ', $entry);
                     $this->getWeightedRandomPrize($weighted_prizes, $entry, $selectedPrizes, $selected);
                 }
                 if ($manual_prizes->isNotEmpty() &&  !$selected) {
@@ -87,7 +94,7 @@ class ReceiptService
             }
         }
 
-
+Log::info("selectedPrizes: ", $selectedPrizes);
         Queue::connection(name: 'rabbitmq')->push(new CreateReceiptAndProductJob(
             $req,
             $user,
@@ -176,6 +183,7 @@ class ReceiptService
                     'prize' => $prize,
                 ];
                 $selected = true;
+                Log::info("Prize selected: {$prize->name}", ['probability_weight' => $prize->probability_weight]);
                 break;
             }
         }
@@ -193,8 +201,9 @@ class ReceiptService
     }
     private function getPrizeMessage($prize, $lang)
     {
-        $message = $this->prizeMessageRepository->getMessageForPrize($prize, 'mobile', 'success');
-        return $message ? $message->getTranslation('message', $lang) : "Tabriklaymiz siz {$prize->name} yutdingiz.";
+        // $message = $this->prizeMessageRepository->getMessageForPrize($prize, 'mobile', 'success');
+        // return $message ? $message->getTranslation('message', $lang) : "Tabriklaymiz siz {$prize->name} yutdingiz.";
+return  "Tabriklaymiz siz {$prize->name} yutdingiz.";
     }
     private function failResponse($promotion, $lang, &$action, &$status, &$message)
     {

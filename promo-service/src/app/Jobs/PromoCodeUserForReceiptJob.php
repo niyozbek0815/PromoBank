@@ -9,6 +9,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PromoCodeUserForReceiptJob implements ShouldQueue
 {
@@ -47,50 +48,61 @@ class PromoCodeUserForReceiptJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            DB::transaction(function () {
-                $baseData = [
-                    'promo_code_id'        => $this->promoCodeId,
-                    'user_id'              => $this->userId,
-                    'platform_id'          => $this->platformId,
-                    'receipt_id'           => $this->receiptId,
-                    'promotion_product_id' => $this->promotionProductId,
-                    'sub_prize_id'         => $this->subPrizeId,
-                    'promotion_id'         => $this->promotionId,
-                ];
+         DB::transaction(function () {
+    $baseData = [
+        'promo_code_id'        => $this->promoCodeId,
+        'user_id'              => $this->userId,
+        'platform_id'          => $this->platformId,
+        'receipt_id'           => $this->receiptId,
+        'promotion_product_id' => $this->promotionProductId,
+        'sub_prize_id'         => $this->subPrizeId,
+        'promotion_id'         => $this->promotionId,
+    ];
 
-                // 1. Default promo code user rows
-                if ($this->count > 0) {
-                    PromoCodeUser::insert(array_fill(0, (int)$this->count, array_merge($baseData, [
-                        'prize_id' => null,
-                    ])));
-                }
+    // Transaction boshida oxirgi ID ni saqlab olamiz
+    $lastIdBeforeInsert = PromoCodeUser::max('id') ?? 0;
 
-                // 2. Selected prizes
-                if (!empty($this->selectedPrizes)) {
-                    $rows = [];
-                    $prizeIds = [];
+    // 1. Default promo code user rows
+    if ($this->count > 0) {
+        PromoCodeUser::insert(array_fill(0, (int) $this->count, array_merge($baseData, [
+            'prize_id' => null,
+        ])));
+    }
 
-                    foreach ($this->selectedPrizes as $item) {
-                        $prize = $item['prize'] ?? null;
-                        if (!isset($prize['id'])) continue;
+    // 2. Selected prizes
+    if (! empty($this->selectedPrizes)) {
+        $rows     = [];
+        $prizeIds = [];
 
-                        $rows[] = array_merge($baseData, [
-                            'prize_id' => $prize['id'],
-                        ]);
+        foreach ($this->selectedPrizes as $item) {
+            $prize = $item['prize'] ?? null;
+            if (! isset($prize['id'])) {
+                continue;
+            }
 
-                        $prizeIds[] = $prize['id'];
-                    }
+            $rows[] = array_merge($baseData, [
+                'prize_id' => $prize['id'],
+            ]);
+            $prizeIds[] = $prize['id'];
+        }
 
-                    if (!empty($rows)) {
-                        PromoCodeUser::insert($rows);
-                        foreach (array_count_values($prizeIds) as $id => $count) {
-                            Prize::where('id', $id)->increment('awarded_quantity', $count);
-                        }
-                    }
-                }
-            });
+        if (! empty($rows)) {
+            PromoCodeUser::insert($rows);
+
+            // Update awarded_quantity
+            foreach (array_count_values($prizeIds) as $id => $count) {
+                Prize::where('id', $id)->increment('awarded_quantity', $count);
+            }
+        }
+    }
+
+    // Transaction oxirida bazadan yangi qo‘shilganlarni olib logga yozamiz
+    $inserted = PromoCodeUser::where('id', '>', $lastIdBeforeInsert)->get();
+    Log::info('Inserted PromoCodeUsers from DB', $inserted->toArray());
+});
+
         } catch (\Throwable $e) {
-            \Log::error('PromoCodeUserForReceiptJob failed', [
+            Log::error('PromoCodeUserForReceiptJob failed', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'user_id' => $this->userId,

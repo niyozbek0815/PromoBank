@@ -9,6 +9,7 @@ use App\Models\PromoCode;
 use App\Models\PromoGeneration;
 use App\Models\PromotionSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Maatwebsite\Excel\Facades\Excel;
@@ -16,6 +17,51 @@ use Yajra\DataTables\Facades\DataTables;
 
 class PromoCodeController extends Controller
 {
+public function data(Request $request)
+{
+    $query = PromoCode::query()
+        ->leftJoin('platforms', 'promo_codes.platform_id', '=', 'platforms.id')
+        ->leftJoin('promotions', 'promo_codes.promotion_id', '=', 'promotions.id')
+        ->leftJoin('promo_generations', 'promo_codes.generation_id', '=', 'promo_generations.id')
+        ->select(
+            'promo_codes.*',
+            'platforms.name as platform_name',
+            'promo_generations.type as generation_type',
+DB::raw("promotions.name ->> 'uz' as promotion_name")
+        );
+
+    return DataTables::of($query)
+        ->filterColumn('platform_name', function ($query, $keyword) {
+            $query->whereRaw('LOWER(platforms.name) LIKE ?', ["%" . strtolower($keyword) . "%"]);
+        })
+        ->addColumn('promocode', fn($item) => $item->promocode)
+        ->addColumn('is_used', function ($item) {
+            return $item->is_used
+                ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
+                : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
+        })
+        ->editColumn('promotion_name', fn($item) => $item->promotion_name ?? '-')
+        ->addColumn('used_at', fn($item) => $item->used_at?->format('d.m.Y H:i') ?? '-')
+        ->addColumn('generation_name', function ($item) {
+            if (! $item->generation_id) {
+                return '-';
+            }
+            $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
+            return "{$item->generation_id}-idli {$label}";
+        })
+        ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
+        ->addColumn('actions', function ($item) {
+            return view('admin.actions', [
+                'row'    => $item,
+                'routes' => [
+                    'show' => "/admin/promocode/{$item->id}/show",
+                ],
+            ])->render();
+        })
+        ->addColumn('created_at', fn($item) => $item->created_at?->format('d.m.Y H:i') ?? '-')
+        ->rawColumns(['is_used', 'actions'])
+        ->make(true);
+}
     public function create(Request $request, $id)
     {
         $settings = PromotionSetting::where('promotion_id', $id)->first();

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BannersController;
 use App\Http\Controllers\Admin\Company\CompanyController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LoginController;
@@ -7,7 +8,10 @@ use App\Http\Controllers\Admin\PrizeCategoryController;
 use App\Http\Controllers\Admin\PrizeController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\PromoCodeController;
+use App\Http\Controllers\Admin\PromotionProductController;
+use App\Http\Controllers\Admin\PromotionShopController;
 use App\Http\Controllers\Admin\Promo\PromotionController;
+use App\Http\Controllers\Admin\SelesReceiptController;
 use App\Http\Controllers\Admin\SocialMediaController;
 use App\Http\Controllers\Admin\User\UserController;
 use Illuminate\Support\Facades\Http;
@@ -85,6 +89,8 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
         Route::post('{promotion}/platform/{platform}/update', 'updatePlatform')->name('platform.update');
     });
     Route::prefix('promocode')->name('admin.promocode.')->controller(PromoCodeController::class)->group(function () {
+        Route::get('/', 'index')->name('index');                         // GET /promocode
+        Route::get('/data', 'data')->name('data');                       // GET /promocode/data
         Route::get('/create/{promotion_id?}', 'create')->name('create'); // GET /promocode/create
         Route::post('/{promotion}/generate', 'generatePromoCodes')->name('generate');
         Route::post('/{promotion}/import', 'importPromoCodes')->name('import');
@@ -110,6 +116,8 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
         ->name('admin.prize.')
         ->controller(PrizeController::class)
         ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
             Route::get('/{prize}/status', 'changeStatus')->name('status');
             Route::get('/create', 'create')->name('create');
             Route::post('/store', 'store')->name('store');
@@ -122,5 +130,44 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::post('/{prize}/autobind', 'autobind')->name('attachPromocodes');
             Route::post('/{prize}/autobind/{promocodeId}', 'autobindDelete')->name('detachPromocodes');
         });
+    Route::prefix('promotion_shops')
+        ->name('admin.promotion_shops.')
+        ->controller(PromotionShopController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/create/{promotion_id?}', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{id}/edit', 'edit')->name('edit');
+            Route::put('/{id}', 'update')->name('update');
+            Route::get("/{promotion_id}/promotion_data", 'promotiondata')->name('promotion_data');
+        });
+    Route::prefix('promotion_products')
+        ->name('admin.promotion_products.')
+        ->controller(PromotionProductController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/create/{shop_id?}', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{id}/edit', 'edit')->name('edit');
+            Route::put('/{id}', 'update')->name('update');
+            Route::get("/{shop_id}/promotion_data", 'promotiondata')->name('promotion_data');
+            Route::post('/{id}/change_status', 'changeStatus')->name('change_status');
+        });
+    Route::prefix('seles_receipts')->name('admin.seles_receipts.')
+        ->controller(SelesReceiptController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/{promotion_id}/promotion_receipt', 'wonPromotionSelesReceipts')->name('won_seles_receipts');
+        });
+Route::prefix('banners')->name('admin.banners.')
+    ->controller(BannersController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/data', 'data')->name('data');
+        Route::post('/create', 'create')->name('create');
+    });
 
 });

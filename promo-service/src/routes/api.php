@@ -1,10 +1,14 @@
 <?php
 
+use App\Http\Controllers\Admin\BannersController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\PrizeCategoryController;
 use App\Http\Controllers\Admin\PrizeController;
 use App\Http\Controllers\Admin\PromoCodeController;
 use App\Http\Controllers\Admin\PromotionController;
+use App\Http\Controllers\Admin\PromotionProductController;
+use App\Http\Controllers\Admin\PromotionShopController;
+use App\Http\Controllers\Admin\SelesReceiptController;
 use App\Http\Controllers\Admin\SocialMediaController;
 use App\Http\Controllers\Mobil\PromoController;
 use App\Http\Controllers\Mobil\ReceiptController;
@@ -14,7 +18,7 @@ Route::controller(PromoController::class)->prefix('promotions')->group(function 
     // Route::get('/', 'index');
     Route::get('/', 'index');
     Route::post('/{promotion}/participate/promocode', 'viaPromocode');
-    Route::post('/{promotion}/participate/receipt', 'viaReceipt');
+    // Route::post('/{promotion}/participate/receipt', 'viaReceipt');
     Route::post('/{promotion}/participations', 'listParticipationHistory');
 });
 Route::controller(ReceiptController::class)->prefix('receipt')->group(function () {
@@ -61,6 +65,8 @@ Route::prefix('front')->group(function () {
         ->prefix('promocode')
         ->name('admin.promocode.')
         ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data'); // GET /promocode/data
             Route::get('/create/{promotion_id?}', 'create')->name('create');
             Route::post('/{promotion}/generate', 'generatePromoCodes')->name('generate');
             Route::post('/{promotion}/import', 'importPromoCodes')->name('import');
@@ -71,7 +77,7 @@ Route::prefix('front')->group(function () {
             Route::get('/{promotion}/generate/promocodedata', 'generatePromocodeData')->name('generate.promocodedata'); // AJAX uchun server-side table
             Route::get('/{promotion}/promocodedata', 'promocodeData')->name('promocodedata');                           // AJAX uchun server-side table
             Route::get('/{promotion}/prizedata', 'prizeData')->name('prizedata');
-            Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData');                                    // AJAX uchun server-side table
+            Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData'); // AJAX uchun server-side table
             Route::get('/{promotion}/search', 'searchPromocodes')->name('search');
         });
     Route::prefix('prize-category')
@@ -86,6 +92,8 @@ Route::prefix('front')->group(function () {
         ->name('admin.prize.')
         ->controller(PrizeController::class)
         ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'prizeData')->name('data');
             Route::get('/{prize}/status', 'changeStatus')->name('status');
             Route::get('/create', 'create')->name('create');
             Route::post('/store', 'store')->name('store');
@@ -96,7 +104,45 @@ Route::prefix('front')->group(function () {
             Route::post('/{prize}/smartrules', 'storeRules')->name('smartrules.updateOrCreate');
             Route::post('/{prize}/autobind', 'autobind')->name('attachPromocodes');
             Route::post('/{prize}/autobind/{promocodeId}', 'autobindDelete')->name('detachPromocodes');
-
+        });
+    Route::prefix('promotion_shops')
+        ->name('admin.promotion_shops.')
+        ->controller(PromotionShopController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/create/{promotion_id?}', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{id}/edit', 'edit')->name('edit');
+            Route::put('/{id}', 'update')->name('update');
+            Route::get("/{promotion_id}/promotion_data", 'promotiondata')->name('promotion_data');
+        });
+    Route::prefix('promotion_products')
+        ->name('admin.promotion_products.')
+        ->controller(PromotionProductController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/create/{shop_id?}', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{id}/edit', 'edit')->name('edit');
+            Route::put('/{id}', 'update')->name('update');
+            Route::get("/{shop_id}/promotion_data", 'promotiondata')->name('promotion_data');
+            Route::post('/{id}/change_status', 'changeStatus')->name('change_status');
+        });
+    Route::prefix('seles_receipts')
+        ->name('admin.seles_receipts.')
+        ->controller(SelesReceiptController::class)
+        ->group(function () {
+            Route::get('/data', 'data')->name('data');
+            Route::get('/{promotion_id}/promotion_receipt', 'wonPromotionSelesReceipts')->name('won_seles_receipts');
+        });
+    Route::prefix('banners')->name('admin.banners.')
+        ->controller(BannersController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::post('/create', 'create')->name('create');
         });
 
 });

@@ -63,7 +63,7 @@ class BannerController extends Controller
                     'kr' =>  ['url' => 'https://qadarun.com/namuna/7.jpeg', 'mime_type' => 'image/jpeg'],
                 ],
                 'url'         => '4',
-                'banner_type' => 'promotion',
+                'banner_type' => 'game',
             ],
         ];
         return $this->successResponse( $banners);
