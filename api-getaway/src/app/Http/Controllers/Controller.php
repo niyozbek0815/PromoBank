@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 abstract class Controller
 {
@@ -80,107 +81,112 @@ abstract class Controller
         }
     }
 
-    protected function forwardRequestMedias(
-        string $method,
-        string $baseUrl,
-        string $path,
-        Request $request,
-        array $fileKeys = ['image'],
-        int $successCode = 200
-    ) {
-        try {
-            $headers = [
-                'Accept'     => 'application/json',
-                'User-Ip'    => $request->ip(),
-                'User-Agent' => $request->userAgent(),
-            ];
+protected function forwardRequestMedias(
+    string $method,
+    string $baseUrl,
+    string $path,
+    Request $request,
+    array $fileKeys = ['image', 'media'],
+    int $successCode = 200
+) {
+    try {
+        $headers = [
+            'Accept'     => 'application/json',
+            'User-Ip'    => $request->ip(),
+            'User-Agent' => $request->userAgent(),
+        ];
 
-            $url    = rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
-            $http   = Http::withHeaders($headers);
-            $method = strtoupper($method);
+        $url    = rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
+        $http   = Http::withHeaders($headers);
+        $method = strtoupper($method);
 
-            $hasFiles = collect($fileKeys)->some(fn($key) => $request->hasFile($key));
+        $hasFiles = collect($fileKeys)->some(fn($key) => $request->hasFile($key));
 
-            if (in_array($method, ['POST', 'PUT']) && $hasFiles) {
-                $multipartData = collect();
+        if (in_array($method, ['POST', 'PUT']) && $hasFiles) {
+            $multipartData = collect();
 
-                // 🔹 1. Oddiy fieldlar (text, array, translations, etc.)
-                foreach ($request->except($fileKeys) as $key => $value) {
-                    if (is_array($value)) {
-                        foreach ($value as $subKey => $subVal) {
-                            $fieldName = is_numeric($subKey) ? "{$key}[]" : "{$key}[{$subKey}]";
-                            $multipartData->push([
-                                'name'     => $fieldName,
-                                'contents' => $subVal,
-                            ]);
-                        }
-                    } else {
+            // 🔹 1. Oddiy fieldlar
+            foreach ($request->except($fileKeys) as $key => $value) {
+                if (is_array($value)) {
+                    foreach ($value as $subKey => $subVal) {
+                        $fieldName = is_numeric($subKey) ? "{$key}[]" : "{$key}[{$subKey}]";
                         $multipartData->push([
-                            'name'     => $key,
-                            'contents' => $value,
+                            'name'     => $fieldName,
+                            'contents' => $subVal,
                         ]);
                     }
+                } else {
+                    $multipartData->push([
+                        'name'     => $key,
+                        'contents' => $value,
+                    ]);
                 }
+            }
 
-                // 🔹 2. Fayllar
-                foreach ($fileKeys as $fileKey) {
-                    if ($request->hasFile($fileKey)) {
-                        $files = $request->file($fileKey);
+            // 🔹 2. Fayllar
+            foreach ($fileKeys as $fileKey) {
+                if ($request->hasFile($fileKey)) {
+                    $files = $request->file($fileKey);
 
-                        if ($files instanceof UploadedFile) {
-                            Log::info("media_name=" . $files->getClientOriginalName());
+                    // 2.1 Bitta fayl
+                    if ($files instanceof UploadedFile) {
+                        $multipartData->push([
+                            'name'     => $fileKey,
+                            'contents' => fopen($files->getPathname(), 'r'),
+                            'filename' => $files->getClientOriginalName(),
+                        ]);
+                    }
 
-                            // Bitta fayl
-                            $multipartData->push([
-                                'name'     => $fileKey,
-                                'contents' => fopen($files->getPathname(), 'r'),
-                                'filename' => $files->getClientOriginalName(),
-                            ]);
-                        } elseif (is_array($files)) {
-                            // Ko‘p fayl
-                            foreach ($files as $file) {
-                                if ($file instanceof UploadedFile) {
-                                    $multipartData->push([
-                                        'name'     => "{$fileKey}[]", // ❗️❗️ NOT "{$fileKey}[]"!
-                                        'contents' => fopen($file->getPathname(), 'r'),
-                                        'filename' => $file->getClientOriginalName(),
-                                    ]);
-                                }
+                    // 2.2 Fayl massivi (indexlangan yoki keylangan)
+                    elseif (is_array($files)) {
+                        foreach ($files as $langKey => $file) {
+                            if ($file instanceof UploadedFile) {
+                                // agar arrayda indexlangan bo‘lsa → image[]
+                                // agar associative bo‘lsa → image[uz], image[ru] ...
+                                $fieldName = is_numeric($langKey)
+                                    ? "{$fileKey}[]"
+                                    : "{$fileKey}[{$langKey}]";
+
+                                $multipartData->push([
+                                    'name'     => $fieldName,
+                                    'contents' => fopen($file->getPathname(), 'r'),
+                                    'filename' => $file->getClientOriginalName(),
+                                ]);
                             }
-
                         }
                     }
                 }
+            }
 
-                // 🔹 3. PUT bo‘lsa _method=PUT kerak
-                if ($method === 'PUT') {
-                    $multipartData->push([
-                        'name'     => '_method',
-                        'contents' => 'PUT',
-                    ]);
-                }
-
-                // 🔹 4. So‘rovni yuborish
-                return $http->send('POST', $url, [
-                    'multipart' => $multipartData->toArray(),
+            // 🔹 3. PUT bo‘lsa _method=PUT kerak
+            if ($method === 'PUT') {
+                $multipartData->push([
+                    'name'     => '_method',
+                    'contents' => 'PUT',
                 ]);
             }
 
-            // 🔹 5. Faylsiz oddiy so‘rovlar
-            return match ($method) {
-                'GET' => $http->get($url, $request->query()),
-                'POST' => $http->post($url, $request->all()),
-                'PUT' => $http->put($url, $request->all()),
-                'DELETE' => $http->delete($url, $request->all()),
-                default => throw new \InvalidArgumentException("Unsupported HTTP method: $method"),
-            };
-
-        } catch (Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Internal error from external service',
-                'errors'  => $e->getMessage(),
-            ], 503);
+            // 🔹 4. So‘rovni yuborish
+            return $http->send('POST', $url, [
+                'multipart' => $multipartData->toArray(),
+            ]);
         }
+
+        // 🔹 5. Faylsiz oddiy so‘rovlar
+        return match ($method) {
+            'GET' => $http->get($url, $request->query()),
+            'POST' => $http->post($url, $request->all()),
+            'PUT' => $http->put($url, $request->all()),
+            'DELETE' => $http->delete($url, $request->all()),
+            default => throw new \InvalidArgumentException("Unsupported HTTP method: $method"),
+        };
+
+    } catch (Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Internal error from external service',
+            'errors'  => $e->getMessage(),
+        ], 503);
     }
+}
 }

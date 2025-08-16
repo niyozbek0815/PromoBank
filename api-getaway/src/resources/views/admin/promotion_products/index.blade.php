@@ -1,5 +1,5 @@
 @extends('admin.layouts.app')
-@section('title', 'Promoacode')
+@section('title', 'Promoaksiya mahsulotlari')
 @push('scripts')
     <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
@@ -103,7 +103,7 @@
         <div class="tab-pane fade show active" id="settings">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">Promocodelar jadvali</h5>
+                    <h5 class="mb-0">Bannerlar jadvali(Mobile)</h5>
                 </div>
                 <div class="card-body">
                     <table id="promotion-products-table" class="table datatable-button-init-basic">

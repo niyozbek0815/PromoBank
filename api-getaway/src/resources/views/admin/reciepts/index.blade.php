@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Qoʻlda tanlash')
+@section('title', 'Check skaneri')
 
 @push('scripts')
     <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
@@ -144,11 +144,12 @@
 
 @section('content')
 
-    <div class="page-header-content d-flex justify-content-between align-items-center">
-        <h4 class="page-title mb-0">Prizes</h4>
-    </div>
+
     @php($locale = app()->getLocale())
     <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0">Cheklar jadvali</h4>
+        </div>
         <div class="card-body">
             <table id="receipts-table" class="table datatable-button-init-basic">
                 <thead>

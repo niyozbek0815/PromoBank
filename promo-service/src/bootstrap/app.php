@@ -74,12 +74,12 @@ return Application::configure(basePath: dirname(__DIR__))
             return $errorResponse('Token noto‘g‘ri', ['token' => ['Token noto‘g‘ri']], 401);
         });
 
-        $exceptions->renderable(function (NotFoundHttpException $e, $request) use ($errorResponse, $onlyApi) {
-            if (! $onlyApi($request)) {
-                return null;
-            }
-            return $errorResponse('Resurs topilmadi', ['token' => ['Resurs topilmadi']], 404);
-        });
+        // $exceptions->renderable(function (NotFoundHttpException $e, $request) use ($errorResponse, $onlyApi) {
+        //     if (! $onlyApi($request)) {
+        //         return null;
+        //     }
+        //     return $errorResponse('Resurs topilmadi', ['token' => ['Resurs topilmadi']], 404);
+        // });
 
         $exceptions->renderable(function (MethodNotAllowedHttpException $e, $request) use ($errorResponse, $onlyApi) {
             if (! $onlyApi($request)) {

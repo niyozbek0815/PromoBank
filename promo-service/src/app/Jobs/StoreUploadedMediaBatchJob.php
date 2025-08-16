@@ -129,6 +129,7 @@ class StoreUploadedMediaBatchJob implements ShouldQueue
         return match ($context) {
             'promotion-gallary' => \App\Models\Promotions::class,
             'user_avatar' => \App\Models\User::class,
+            'banners'     => \App\Models\Banner::class,
             default       => throw new \InvalidArgumentException("Noma'lum context: {$context}"),
         };
     }

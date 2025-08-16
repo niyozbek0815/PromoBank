@@ -60,6 +60,7 @@ Route::prefix('front')->group(function () {
             Route::get('/create', 'create')->name('create');
             Route::post('/{promotion}/participant-type/{participant_type}/update', 'updateParticipantType')->name('participant-type.update');
             Route::post('{promotion}/platform/{platform}/update', 'updatePlatform')->name('platform.update');
+            Route::get("/gettypes", 'getTypes')->name('gettypes');
         });
     Route::controller(PromoCodeController::class)
         ->prefix('promocode')
@@ -99,7 +100,7 @@ Route::prefix('front')->group(function () {
             Route::post('/store', 'store')->name('store');
             Route::get('/{prize}/edit', 'edit')->name('edit');
             Route::match(['POST', 'PUT'], '/{prize}/update', 'update')->name('update');
-            Route::get('/{prize}/delete', 'delete')->name('delete');
+            Route::post('/{prize}/delete', 'delete')->name('delete');
             Route::post('/{prize}/message', 'storeMessage')->name('message.store');
             Route::post('/{prize}/smartrules', 'storeRules')->name('smartrules.updateOrCreate');
             Route::post('/{prize}/autobind', 'autobind')->name('attachPromocodes');
@@ -142,7 +143,11 @@ Route::prefix('front')->group(function () {
         ->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/data', 'data')->name('data');
-            Route::post('/create', 'create')->name('create');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::post('/{banner}/status', 'changeStatus')->name('status');
+            Route::post('/{banner}/delete', 'destroy')->name('delete');
+            Route::get('/{banner}/edit', 'edit')->name('edit');
         });
 
 });

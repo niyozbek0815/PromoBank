@@ -167,7 +167,12 @@ Route::prefix('banners')->name('admin.banners.')
     ->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/data', 'data')->name('data');
-        Route::post('/create', 'create')->name('create');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/store', 'store')->name('store');
+        Route::get('/{type}/urls', 'getUrls')->name('getUrls');
+        Route::post('/{banner}/status', 'changeStatus')->name('status');
+        Route::post('/{banner}/delete', 'destroy')->name('delete');
+        Route::get('/{banner}/edit', 'edit')->name('edit');
     });
 
 });

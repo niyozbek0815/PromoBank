@@ -57,13 +57,11 @@ public function index(Request $request)
         abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
     }
 
-    public function data(Request $request)
+    public function data(Request $request, $promotionId)
     {
         $endpoint = "front/promotion_products/data";
-        Log::info("Querying promotion products", ['request' => $request->all()]);
         $response = $this->forwardRequest("GET", $this->url, $endpoint, $request);
         if ($response instanceof \Illuminate\Http\Client\Response) {
-            Log::info("Received promotion products data", ['data' => $response->json()]);
             return response()->json($response->json(), $response->status());
         }
 

@@ -11,6 +11,7 @@ use App\Services\GameStartService;
 use App\Services\OpenCardsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class GameController extends Controller
 {
@@ -18,6 +19,21 @@ class GameController extends Controller
     {
         $this->gameStartService = $gameStartService;
         $this->openCardsService = $openCardsService;
+    }
+
+    public function getTypes(Request $request)
+    {
+        $games = Game::select('id', 'name')->get();
+
+        $data = $games->map(function ($game) {
+            return [
+                'value' => $game->id,
+                'label' => $game->getTranslation('name', 'uz'),
+            ];
+        })->toArray();
+
+        Log::info('Game Types', ['data' => $data]);
+        return response()->json($data);
     }
 
     public function index(Request $request)

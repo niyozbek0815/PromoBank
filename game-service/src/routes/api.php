@@ -8,4 +8,5 @@ Route::controller(GameController::class)->group(function () {
     Route::post('/start_next', 'startNext');
     Route::post('/open_cards', 'openCards');
     Route::post('/reject-stage2', 'rejectStage2');
+    Route::get('/front/games/gettypes', 'getTypes');
 });

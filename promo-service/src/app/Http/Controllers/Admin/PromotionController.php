@@ -23,6 +23,22 @@ class PromotionController extends Controller
     {
 
     }
+    public function getTypes(Request $request)
+    {
+        $promotions = Promotions::where('is_public', true)
+            ->where('status', true)
+            ->get(['id', 'name']);
+
+        $data =
+          $promotions->map(function ($promo) {
+                return [
+                    'value' => $promo->id,
+                    'label' => $promo->getTranslation('name', 'uz'),
+                ];
+            })->toArray();
+        Log::info('Promotion Types', ['data' => $data]);
+        return response()->json($data);
+    }
     public function companydata(Request $request, $id)
     {
 

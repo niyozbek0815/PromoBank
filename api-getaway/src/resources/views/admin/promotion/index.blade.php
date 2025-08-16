@@ -1,11 +1,7 @@
 @extends('admin.layouts.app')
 
 @section('title', 'Promotion')
-@section('header-actions')
-    <a href="{{ route('admin.promotion.create') }}" class="btn btn-primary ms-3">
-        <i class="ph-plus-circle me-1"></i> Yangi promoaksiya
-    </a>
-@endsection
+
 @push('scripts')
     <!-- Toastr CSS -->
     <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
@@ -217,10 +213,15 @@
 
     <div class="page-header-content d-lg-flex">
         <div class="d-flex">
-            <h4 class="page-title mb-0">Promoaksiyalar</h4>
         </div>
     </div>
     <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="page-title mb-0">Promoaksiyalar</h4>
+            <a href="{{ route('admin.promotion.create') }}" class="btn btn-primary ms-3">
+                <i class="ph-plus-circle me-1"></i> Yangi promoaksiya
+            </a>
+        </div>
         <div class="card-body">
             <table id="promo-table" class="table datatable-button-init-basic">
                 <thead>
