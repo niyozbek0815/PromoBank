@@ -6,9 +6,20 @@ use Illuminate\Http\Request;
 
 class BannerController extends Controller
 {
+    protected $url;
+
+    public function __construct()
+    {
+        $this->url = config('services.urls.promo_service');
+    }
+
     public function index(Request $request)
     {
-        $banners = [
+        // 🔹 Promo-service’dan ma’lumot olish
+        $response = $this->forwardRequest("GET", $this->url, '/banners', $request);
+
+        // 🔹 Default mock data
+        $defaultBanners = [
             [
                 'title'       => [
                     'uz' => 'Yozgi aksiya boshlandi!',
@@ -16,9 +27,9 @@ class BannerController extends Controller
                     'kr' => 'Йозги акция бошланди!',
                 ],
                 'media'       => [
-                    'uz' =>  ['url' => 'https://qadarun.com/namuna/1.gif', 'mime_type' => 'image/gif'],
-                    'ru' =>  ['url' => 'https://qadarun.com/namuna/1.gif', 'mime_type' => 'image/gif'],
-                    'kr' =>  ['url' => 'https://qadarun.com/namuna/1.gif', 'mime_type' => 'image/gif'],
+                    'uz' => ['url' => 'https://qadarun.com/namuna/1.gif', 'mime_type' => 'image/gif'],
+                    'ru' => ['url' => 'https://qadarun.com/namuna/1.gif', 'mime_type' => 'image/gif'],
+                    'kr' => ['url' => 'https://qadarun.com/namuna/1.gif', 'mime_type' => 'image/gif'],
                 ],
                 'url'         => '12',
                 'banner_type' => 'promotion',
@@ -58,14 +69,25 @@ class BannerController extends Controller
                     'kr' => 'Қишги чегирмалар!',
                 ],
                 'media'       => [
-                    'uz' =>  ['url' => 'https://qadarun.com/namuna/7.jpeg', 'mime_type' => 'image/jpeg'],
-                    'ru' =>  ['url' => 'https://qadarun.com/namuna/7.jpeg', 'mime_type' => 'image/jpeg'],
-                    'kr' =>  ['url' => 'https://qadarun.com/namuna/7.jpeg', 'mime_type' => 'image/jpeg'],
+                    'uz' => ['url' => 'https://qadarun.com/namuna/7.jpeg', 'mime_type' => 'image/jpeg'],
+                    'ru' => ['url' => 'https://qadarun.com/namuna/7.jpeg', 'mime_type' => 'image/jpeg'],
+                    'kr' => ['url' => 'https://qadarun.com/namuna/7.jpeg', 'mime_type' => 'image/jpeg'],
                 ],
                 'url'         => '4',
                 'banner_type' => 'game',
             ],
         ];
-        return $this->successResponse( $banners);
+
+        // 🔹 Agar promo-service’dan ma’lumot kelmasa yoki bo‘sh bo‘lsa → default qaytar
+        if (
+            ! $response instanceof \Illuminate\Http\Client\Response  ||
+            ! $response->ok() ||
+            empty($response->json())
+        ) {
+            return $this->successResponse($defaultBanners);
+        }
+return $this->successResponse($response->json());
+
+        // 🔹 Aks holda real datani qaytar
     }
 }

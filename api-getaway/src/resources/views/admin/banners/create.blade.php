@@ -143,7 +143,7 @@
                 <h5 class="mb-0">Promoaksiya qo'shish</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.banners.data') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('admin.banners.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     {{-- TITLE (multi-language) --}}

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PromotionProductController;
 use App\Http\Controllers\Admin\PromotionShopController;
 use App\Http\Controllers\Admin\SelesReceiptController;
 use App\Http\Controllers\Admin\SocialMediaController;
+use App\Http\Controllers\Mobil\BannerController;
 use App\Http\Controllers\Mobil\PromoController;
 use App\Http\Controllers\Mobil\ReceiptController;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +26,10 @@ Route::controller(ReceiptController::class)->prefix('receipt')->group(function (
     Route::post('/', 'index');
     Route::post('/user_points', 'points');
 });
+Route::controller(BannerController::class)->prefix('banners')->group(function () {
+    Route::get('/', 'index');
+});
+
 
 Route::prefix('front')->group(function () {
 
@@ -148,6 +153,7 @@ Route::prefix('front')->group(function () {
             Route::post('/{banner}/status', 'changeStatus')->name('status');
             Route::post('/{banner}/delete', 'destroy')->name('delete');
             Route::get('/{banner}/edit', 'edit')->name('edit');
+            Route::put('/{banner}', 'update')->name('update');
         });
 
 });

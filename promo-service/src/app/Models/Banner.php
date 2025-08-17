@@ -1,17 +1,17 @@
 <?php
 namespace App\Models;
 
+use App\Traits\HasMedia;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
 class Banner extends Model
 {
-    use SoftDeletes, HasTranslations;
+    use SoftDeletes, HasMedia, HasTranslations;
 
     protected $fillable = [
         'title',
-        'media',
         'url',
         'banner_type',
         'status',
@@ -24,14 +24,34 @@ class Banner extends Model
     // 🔹 Casting
     protected $casts = [
         'title'  => 'array',
-        'media'  => 'array', // {uz: {url, mime_type}, ru: {...}, kr: {...}}
         'status' => 'boolean',
+    ];
+
+    protected $appends = [
+        'banners_uz',
+        'banners_ru',
+        'banners_kr',
     ];
 
     // 🔹 Banner active scope
     public function scopeActive($query)
     {
         return $query->where('status', true);
+    }
+
+    public function getBannersUzAttribute()
+    {
+        return $this->getMedia('banners_uz');
+    }
+
+    public function getBannersRuAttribute()
+    {
+        return $this->getMedia('banners_ru');
+    }
+
+    public function getBannersKrAttribute()
+    {
+        return $this->getMedia('banners_kr');
     }
 
     // 🔹 Banner kim tomonidan yaratilgan (agar users jadvali bo‘lsa)

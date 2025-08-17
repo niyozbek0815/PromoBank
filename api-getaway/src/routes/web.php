@@ -162,17 +162,18 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::get('/data', 'data')->name('data');
             Route::get('/{promotion_id}/promotion_receipt', 'wonPromotionSelesReceipts')->name('won_seles_receipts');
         });
-Route::prefix('banners')->name('admin.banners.')
-    ->controller(BannersController::class)
-    ->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::get('/data', 'data')->name('data');
-        Route::get('/create', 'create')->name('create');
-        Route::post('/store', 'store')->name('store');
-        Route::get('/{type}/urls', 'getUrls')->name('getUrls');
-        Route::post('/{banner}/status', 'changeStatus')->name('status');
-        Route::post('/{banner}/delete', 'destroy')->name('delete');
-        Route::get('/{banner}/edit', 'edit')->name('edit');
-    });
+    Route::prefix('banners')->name('admin.banners.')
+        ->controller(BannersController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{type}/urls', 'getUrls')->name('getUrls');
+            Route::post('/{banner}/status', 'changeStatus')->name('status');
+            Route::post('/{banner}/delete', 'destroy')->name('delete');
+            Route::get('/{banner}/edit', 'edit')->name('edit');
+            Route::put('/{banner}', 'update')->name('update');
+        });
 
 });

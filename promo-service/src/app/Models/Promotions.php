@@ -36,18 +36,18 @@ class Promotions extends Model
         'start_date'       => 'datetime',
         'end_date'         => 'datetime',
     ];
-      public function getOfferAttribute()
+    public function getOfferAttribute()
     {
         return $this->getMedia('promotion-offer');
     }
-        public function getBannerAttribute()
+    public function getBannerAttribute()
     {
         return $this->getMedia('promotion-banner');
     }
-public function getGalleryAttribute()
-{
-    return $this->getMediaCollection('promotion-gallary');
-}
+    public function getGalleryAttribute()
+    {
+        return $this->getMediaCollection('promotion-gallary');
+    }
     public function company()
     {
         return $this->belongsTo(Company::class)->select(['id', 'name']);
@@ -103,7 +103,7 @@ public function getGalleryAttribute()
     public function platforms()
     {
         return $this->belongsToMany(Platform::class, 'platform_promotions', 'promotion_id', 'platform_id')
-            ->withPivot(['is_enabled', 'additional_rules','phone'])
+            ->withPivot(['is_enabled', 'additional_rules', 'phone'])
             ->withTimestamps();
     }
 
