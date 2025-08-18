@@ -36,19 +36,7 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable();
         });
 
-        Schema::create('sessions', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->unsignedBigInteger('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->string('ip_address', 45)->nullable();
-            $table->string('device', 50); // mobile, desktop, telegram
-            $table->string('device_model', 50);
-            $table->string('platform', 50); // Android, iOS, Telegram
-            $table->longText('payload');
-            $table->string('user_agent')->nullable();
-            $table->integer('last_activity')->index();
-            $table->timestamp('otp_sent_at')->nullable(); // OTP yuborilgan vaqt
-            $table->timestamps();
-        });
+
     }
 
     /**

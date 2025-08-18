@@ -21,9 +21,12 @@ class LoginCheckRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'password' => 'required',
-            // 'token' => 'required',
-            'uuid'     => 'required',
+            'password'     => 'required',
+            'uuid'         => 'required|string',
+            'model'        => "required|string",
+            'platform'     => "required|string|in:ios,android,linux",
+            'device_token' => 'required|string|max:255',
+            'app_version'  => 'nullable|string|max:100',
         ];
     }
 }

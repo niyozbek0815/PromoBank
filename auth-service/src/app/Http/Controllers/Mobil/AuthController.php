@@ -10,7 +10,7 @@ use App\Http\Requests\Mobil\RegisterRequest;
 use App\Http\Requests\Mobil\UserUpdateRequest;
 use App\Http\Resources\Mobil\UserResource;
 use App\Jobs\StoreBase64MediaJob;
-use App\Jobs\UserSessionJob;
+use App\Jobs\SyncUserToNotificationJob;
 use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
@@ -45,22 +45,16 @@ class AuthController extends Controller
             'is_guest' => $user->is_guest,
             'ip'       => $request->header('User-Ip'),
         ])->fromUser($user);
-
-        Queue::connection('rabbitmq')->push(new UserSessionJob($user['id'], $request->header('User-Ip'), $req, $request->header('User-Agent')));
-
-        // $session = DB::table('sessions')->insert([
-        //     'id' => Str::random(32), // Random id
-        //     'user_id' => $user->id,
-        //     'ip_address' => $request->header('User-Ip'),
-        //     'device' => $req['device'] ?? 'mobile', // Qurilma turi, agar yuborilmasa, "mobile" bo'ladi
-        //     'device_model' => $req['model'] ?? 'Unknown', // Qurilma modeli, agar yuborilmasa, 'Unknown'
-        //     'platform' => $req['platform'] ?? 'Unknown', // Platforma, agar yuborilmasa, 'Unknown'
-        //     'payload' => json_encode($req), // Requestning barcha ma'lumotlari
-        //     'user_agent' => $request->header('User-Agent'), // User agent
-        //     'last_activity' => now()->timestamp, // Faoliyat vaqti
-        //     'created_at' => now(), // Yaratilgan vaqt
-        //     'updated_at' => now(), // Yangilangan vaqt
-        // ]);
+        SyncUserToNotificationJob::dispatch(
+            $user->id,
+            $user->is_guest,
+            $request->header('User-Ip'),
+            $req['device_token'],
+            $req['platform'],
+            $req['model'],
+            $req['app_version'] ?? null,
+            $request->header('User-Agent')
+        )->onQueue('notification_queue');
         return $this->successResponse(
             [
                 'token' => $token,
@@ -140,7 +134,7 @@ class AuthController extends Controller
             $user    = User::findOrFail($id)->load('userOtps');
             $userOld = User::where('phone', $req['uuid'])->latest()->first();
 
-            $data = $this->authService->check($user, $userOld, $req, $request->header('User-Ip'));
+            $data = $this->authService->check($user, $userOld, $req,  $request);
 
             if ($data['error']) {
                 return $this->errorResponse(

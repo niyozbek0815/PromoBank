@@ -136,15 +136,15 @@
     </a>
     <ul class="nav-group-sub collapse">
         <li class="nav-item">
-            <a href="{{ route('admin.company.index') }}"
-               class="nav-link{{ request()->routeIs('admin.company.index') ? ' active' : '' }}">
+            <a href="{{ route('admin.notifications.create') }}"
+               class="nav-link{{ request()->routeIs('admin.notifications.create') ? ' active' : '' }}">
                 <i class="ph-paper-plane-tilt"></i> {{-- Yuborish --}}
                 Yuborish
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('admin.company.index') }}"
-               class="nav-link{{ request()->routeIs('admin.company.index') ? ' active' : '' }}">
+            <a href="{{ route('admin.notifications.index') }}"
+               class="nav-link{{ request()->routeIs('admin.notifications.index') ? ' active' : '' }}">
                 <i class="ph-clock-counter-clockwise"></i> {{-- Tarix --}}
                 Tarixi
             </a>

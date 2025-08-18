@@ -21,9 +21,11 @@ class GuestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'uuid'     => 'required|string',
-            'model'    => "required|string",
-            'platform' => "required|string|in:ios,android,linux",
+            'uuid'         => 'required|string',
+            'model'        => "required|string",
+            'platform'     => "required|string|in:ios,android,linux",
+            'device_token' => 'required|string|max:255',
+            'app_version'  => 'nullable|string|max:100',
         ];
     }
 }

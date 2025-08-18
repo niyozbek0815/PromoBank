@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use App\Jobs\StoreBase64MediaJob;
+use App\Jobs\SyncUserToNotificationJob;
 use App\Models\User;
 use App\Models\UserOtps;
 use Carbon\Carbon;
@@ -73,11 +74,21 @@ class AuthService
             'expires_at'  => $now->addMinutes(5),
         ]);
     }
-    public function check($user, $userOld, array $req, $ip)
+    public function check($user, $userOld, array $req, $request)
     {
         if ($user->userOtps && $user->userOtps->otp == $req['password']) {
             $user->status = true;
             $user->save();
+                   SyncUserToNotificationJob::dispatch(
+            $user->id,
+            $user->is_guest,
+            $request->header('User-Ip'),
+            $req['device_token'],
+            $req['platform'],
+            $req['model'],
+            $req['app_version'] ?? null,
+            $request->header('User-Agent')
+        )->onQueue('notification_queue');
             if ($userOld) {
                 // boshqa microservicelarga user malumotlarini
                 //  yangi userga olib o'tishga xabar yuboriladi
@@ -87,7 +98,7 @@ class AuthService
                 'user_id'  => $user->id,
                 'phone'    => $user->phone,
                 'is_guest' => $user->is_guest,
-                'ip'       => $ip,
+                'ip'       => $request->header('User-Ip'),
             ])->fromUser($user);
 
             return ([

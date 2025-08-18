@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BannersController;
 use App\Http\Controllers\Admin\Company\CompanyController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LoginController;
+use App\Http\Controllers\Admin\NotificationsController;
 use App\Http\Controllers\Admin\PrizeCategoryController;
 use App\Http\Controllers\Admin\PrizeController;
 use App\Http\Controllers\Admin\ProfileController;
@@ -175,5 +176,18 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::get('/{banner}/edit', 'edit')->name('edit');
             Route::put('/{banner}', 'update')->name('update');
         });
+Route::prefix('notifications')->name('admin.notifications.')
+    ->controller(NotificationsController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/data', 'data')->name('data');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/store', 'store')->name('store');
+        Route::get('/{banner}/edit', 'edit')->name('edit');
+        Route::put('/{banner}', 'update')->name('update');
+        Route::post('/{banner}/delete', 'destroy')->name('delete');
+        Route::post('/{notification}/resent', 'resent')->name('resent');
+        Route::get('/{type}/urls', 'getUrls')->name('getUrls');
+    });
 
 });
