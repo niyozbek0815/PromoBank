@@ -83,11 +83,12 @@ class AuthService
             $user->id,
             $user->is_guest,
             $request->header('User-Ip'),
-            $req['device_token'],
+            $req['fcm_token'],
             $req['platform'],
             $req['model'],
             $req['app_version'] ?? null,
-            $request->header('User-Agent')
+            $request->header('User-Agent'),
+            $user->phone
         )->onQueue('notification_queue');
             if ($userOld) {
                 // boshqa microservicelarga user malumotlarini

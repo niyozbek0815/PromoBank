@@ -10,14 +10,18 @@ use Spatie\Translatable\HasTranslations;
 
 class Notification extends Model
 {
-        use  HasFactory, Notifiable, HasTranslations, HasMedia;
+    use HasFactory, Notifiable, HasTranslations, HasMedia;
 
-    protected $fillable = ['type', 'link_type', 'link', 'text', 'title'];
+    protected $fillable  = ['type', 'link_type', 'link', 'text', 'title', 'user_ids'];
     public $translatable = ['text', 'title'];
+
+    protected $casts = [
+        'user_ids' => 'array', // bu user_ids ni avtomatik arrayga aylantiradi
+    ];
 
     public function getImageAttribute()
     {
-return $this->getFirstMediaUrl('notification-image') ?: null;
+        return $this->getFirstMediaUrl('notification-image') ?: null;
     }
 
     public function notificationwiew()
@@ -25,3 +29,4 @@ return $this->getFirstMediaUrl('notification-image') ?: null;
         return $this->hasMany(NotificationWiew::class, 'notification_id');
     }
 }
+

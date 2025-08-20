@@ -49,11 +49,12 @@ class AuthController extends Controller
             $user->id,
             $user->is_guest,
             $request->header('User-Ip'),
-            $req['device_token'],
+            $req['fcm_token'],
             $req['platform'],
             $req['model'],
             $req['app_version'] ?? null,
-            $request->header('User-Agent')
+            $request->header('User-Agent'),
+            null
         )->onQueue('notification_queue');
         return $this->successResponse(
             [
@@ -255,7 +256,6 @@ class AuthController extends Controller
         $user_req = $request['auth_user'];
         $id       = $user_req['id'];
         $user     = User::with(['district', 'region'])->findOrFail($id);
-        Log::info("User retrieved", ['user_id' => $user]);
         return $this->successResponse(
             new UserResource($user),
             "User Get Successfully!!!"

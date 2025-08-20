@@ -11,7 +11,7 @@ class UserDevice extends Model
         'user_id',
         'ip_address',
         'is_guest',
-        'device_token',
+        'fcm_token',
         'device_type',
         'device_name',
         'app_version',

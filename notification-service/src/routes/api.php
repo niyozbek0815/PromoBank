@@ -20,6 +20,7 @@ Route::prefix('front')->group(function () {
             Route::post('/{banner}/delete', 'destroy')->name('delete');
             Route::post('/{notification}/resent', 'resent')->name('resent');
             Route::get('/{type}/urls', 'getUrls')->name('getUrls');
+            Route::get('/users', 'getUsers')->name('getUsers');
         });
 
 });

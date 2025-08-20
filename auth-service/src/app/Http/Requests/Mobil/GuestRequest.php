@@ -24,7 +24,7 @@ class GuestRequest extends FormRequest
             'uuid'         => 'required|string',
             'model'        => "required|string",
             'platform'     => "required|string|in:ios,android,linux",
-            'device_token' => 'required|string|max:255',
+            'fcm_token'    => 'required|string|max:255',
             'app_version'  => 'nullable|string|max:100',
         ];
     }

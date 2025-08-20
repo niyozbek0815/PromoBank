@@ -10,6 +10,7 @@ use App\Repositories\PromotionRepository;
 use App\Services\ViaPromocodeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class PromoController extends Controller
 {
@@ -35,6 +36,8 @@ class PromoController extends Controller
     public function viaPromocode(SendPromocodeRequest $request, $id)
     {
         $user = $request['auth_user'];
+        $ids       = $user['id'];
+        Log::info("User ID: $ids");
         $req  = $request->validated();
 
         $data = $this->viaPromocodeService->proccess($req, $user, $id);

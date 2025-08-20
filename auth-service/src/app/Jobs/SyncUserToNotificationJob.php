@@ -15,11 +15,12 @@ class SyncUserToNotificationJob implements ShouldQueue
     protected int $userId;
     protected bool $isGuest;
     protected ?string $userIp;
-    protected ?string $deviceToken;
+    protected ?string $fcmToken;
     protected ?string $platform;
     protected ?string $deviceName;
     protected ?string $appVersion;
     protected $userAgent;
+    protected $phone;
 
     /**
      * Create a new job instance.
@@ -28,20 +29,22 @@ class SyncUserToNotificationJob implements ShouldQueue
         int $userId,
         bool $isGuest,
         ?string $userIp,
-        ?string $deviceToken,
+        ?string $fcmToken,
         ?string $platform,
         ?string $deviceName,
         ?string $appVersion = null,
-        ?string $userAgent = null
+        ?string $userAgent = null,
+        ?string $phone = null
     ) {
         $this->userId      = $userId;
         $this->isGuest     = $isGuest;
         $this->userIp      = $userIp;
-        $this->deviceToken = $deviceToken;
+        $this->fcmToken    = $fcmToken;
         $this->platform    = $platform;
         $this->deviceName  = $deviceName;
         $this->appVersion  = $appVersion;
         $this->userAgent   = $userAgent;
+        $this->phone       = $phone;
     }
 
     /**
@@ -53,7 +56,7 @@ class SyncUserToNotificationJob implements ShouldQueue
             'user_id'      => $this->userId,
             'is_guest'     => $this->isGuest,
             'user_ip'      => $this->userIp,
-            'device_token' => $this->deviceToken,
+            'fcm_token'    => $this->fcmToken,
             'platform'     => $this->platform,
             'device_name'  => $this->deviceName,
             'app_version'  => $this->appVersion,
