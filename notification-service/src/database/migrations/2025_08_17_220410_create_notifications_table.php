@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->string('type');
-            $table->string('link_type');
-            $table->string('link')->nullable();
-            $table->json('title');
-            $table->json('text');
-            $table->json('user_ids')->nullable();
+            $table->json('title'); // { "uz": "Sarlavha", "ru": "...", "kr": "..." }
+            $table->json('text');  // { "uz": "Matn", ... }
+            $table->enum('target_type', ['platform', 'users', 'excel']);
+            $table->enum('link_type', ['game', 'promotion', 'url', 'message']);
+            $table->string('link')->nullable(); // id yoki url
+            $table->enum('status', ['draft', 'scheduled', 'sent', 'failed'])->default('draft');
+            $table->timestamp('scheduled_at')->nullable();
             $table->timestamps();
         });
     }

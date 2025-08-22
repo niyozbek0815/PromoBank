@@ -2,6 +2,7 @@
 namespace App\Traits;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 trait HasMedia
 {
@@ -12,17 +13,25 @@ trait HasMedia
     /**
      * Bitta media'ni olish va faqat full_url qaytarish
      */
-    public function getMedia(?string $collectionName = null, ?string $fallback = null)
+   public function getMedia(?string $collectionName = null, ?string $fallback = null)
     {
         // Agar media aloqasi allaqachon yuklangan bo'lsa
         if (! $this->relationLoaded('media')) {
             $this->load('media'); // Agar yuklanmagan bo'lsa, uni yuklab olish
         }
-
-        $media = $this->media
-            ->when($collectionName, fn($collection) => $collection->where('collection_name', $collectionName))
-            ->sortByDesc('created_at')
+        $media = $this->media()
+            ->when($collectionName, function ($query) use ($collectionName) {
+            $query->where('collection_name', $collectionName);
+            })
+            ->orderByDesc('created_at')
             ->first();
+
+Log::info('Getting media', [
+    'media' => $media,
+]);
+
+
+
 
         if ($media) {
             return [
@@ -45,8 +54,8 @@ trait HasMedia
         if (! $this->relationLoaded('media')) {
             $this->load('media');
         }
-
-        return $this->media
+        $mediaCollection = $this->media ?? collect();
+        return $mediaCollection
             ->when($collectionName, fn($collection) => $collection->where('collection_name', $collectionName))
             ->sortByDesc('created_at')
             ->map(fn($media) => [

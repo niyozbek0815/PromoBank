@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use App\Traits\HasMedia;
@@ -7,26 +6,45 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Translatable\HasTranslations;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Notification extends Model
 {
-    use HasFactory, Notifiable, HasTranslations, HasMedia;
+    use HasFactory, Notifiable, HasTranslations, HasMedia, SoftDeletes;
 
-    protected $fillable  = ['type', 'link_type', 'link', 'text', 'title', 'user_ids'];
+    protected $fillable = [
+        'title', 'text', 'target_type', 'link_type', 'link', 'status', 'scheduled_at',
+    ];
+    protected $casts = [
+        'title'        => 'array',
+        'text'         => 'array',
+        'scheduled_at' => 'datetime',
+    ];
+    protected $appends = ['image'];
     public $translatable = ['text', 'title'];
 
-    protected $casts = [
-        'user_ids' => 'array', // bu user_ids ni avtomatik arrayga aylantiradi
-    ];
-
-    public function getImageAttribute()
-    {
-        return $this->getFirstMediaUrl('notification-image') ?: null;
-    }
+public function getImageAttribute()
+{
+    $media = $this->getMedia('notification-image');
+    return $media['url'] ?? null;
+}
 
     public function notificationwiew()
     {
         return $this->hasMany(NotificationWiew::class, 'notification_id');
     }
-}
+    public function platforms()
+    {
+        return $this->hasMany(NotificationPlatform::class);
+    }
 
+    public function users()
+    {
+        return $this->hasMany(NotificationUser::class);
+    }
+
+    public function excel()
+    {
+        return $this->hasOne(NotificationExcel::class);
+    }
+}

@@ -118,6 +118,7 @@ class StoreUploadedMediaJob implements ShouldQueue
         return match ($context) {
             'user_avatar' => \App\Models\User::class,
             'notification-image' => \App\Models\Notification::class,
+            'notification-excel' => \App\Models\NotificationExcel::class,
         // kerak bo‘lsa yana qo‘sh
             default => throw new \InvalidArgumentException("Unknown context: {$context}"),
         };

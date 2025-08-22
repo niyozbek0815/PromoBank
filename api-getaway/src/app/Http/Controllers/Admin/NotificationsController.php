@@ -28,7 +28,6 @@ class NotificationsController extends Controller
      */
     public function data(Request $request)
     {
-        Log::info("Fetching notifications data", ['request' => $request->all()]);
         $endpoint = "front/notifications/data";
 
         $response = $this->forwardRequest("GET", $this->url, $endpoint, $request);
@@ -82,7 +81,12 @@ class NotificationsController extends Controller
             $gameUrls = $resp2->json() ?? [];
         }
 
-        return view('admin.notifications.create', compact('promotionUrls', 'gameUrls'));
+        return view('admin.notifications.create', [
+            'promotionUrls' => $promotionUrls,
+            'gameUrls'      => $gameUrls,
+            'notification'  => null,
+            'isEdit'        => false,
+        ]);
     }
 
     /**
@@ -90,96 +94,41 @@ class NotificationsController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
         $response = $this->forwardRequestMedias(
             'POST',
             $this->url,
             'front/notifications/store',
             $request,
-            ['media']// Fayl input name
+            ['media', 'excel_file']
         );
-dd($response->json());
-        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
-            return redirect()
-                ->route('admin.notifications.index')
-                ->with('success', "Notification muvaffaqiyatli qo‘shildi.");
-        }
 
-        if ($response->status() === 422) {
-            return redirect()
-                ->back()
-                ->withErrors($response->json('errors'))
-                ->withInput();
-        }
-
-        abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
+        return $this->handleResponse($response, 'qo‘shildi');
     }
 
     /**
      * Edit form
      */
-    public function edit(Request $request, $id)
+
+    public function getUrls(Request $request, string $type)
     {
-        $serviceUrls = [
-            'promotion' => config('services.urls.promo_service'),
-            'game'      => config('services.urls.game_service'),
+        $map = [
+            'promotion' => [config('services.urls.promo_service'), 'front/promotion/gettypes'],
+            'game'      => [config('services.urls.game_service'), 'front/games/gettypes'],
         ];
 
-        $endpoints = [
-            'promotion'    => 'front/promotion/gettypes',
-            'game'         => 'front/games/gettypes',
-            'notification' => "front/notifications/{$id}/edit",
-        ];
-
-        $promotionUrls = [];
-        $gameUrls      = [];
-        $notification  = "";
-
-        $resp1 = $this->forwardRequest("GET", $serviceUrls['promotion'], $endpoints['promotion'], $request);
-        if ($resp1 instanceof \Illuminate\Http\Client\Response  && $resp1->successful()) {
-            $promotionUrls = $resp1->json() ?? [];
+        if (! isset($map[$type])) {
+            return response()->json(['message' => 'Invalid type'], 400);
         }
 
-        $resp2 = $this->forwardRequest("GET", $this->url, $endpoints['notification'], $request);
-        if ($resp2 instanceof \Illuminate\Http\Client\Response  && $resp2->successful()) {
-            $notification = $resp2->json() ?? [];
-        }
+        [$serviceUrl, $endpoint] = $map[$type];
 
-        $resp3 = $this->forwardRequest("GET", $serviceUrls['game'], $endpoints['game'], $request);
-        if ($resp3 instanceof \Illuminate\Http\Client\Response  && $resp3->successful()) {
-            $gameUrls = $resp3->json() ?? [];
-        }
-
-        return view('admin.notifications.edit', compact('promotionUrls', 'gameUrls', 'notification'));
-    }
-
-    /**
-     * Update notification
-     */
-    public function update(Request $request, $id)
-    {
-        $response = $this->forwardRequestMedias(
-            'PUT',
-            $this->url,
-            "front/notifications/{$id}",
-            $request,
-            ['media']
-        );
+        $response = $this->forwardRequest("GET", $serviceUrl, $endpoint, $request);
 
         if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
-            return redirect()
-                ->route('admin.notifications.index')
-                ->with('success', "Notification muvaffaqiyatli yangilandi.");
+            return response()->json($response->json(), 200);
         }
 
-        if ($response->status() === 422) {
-            return redirect()
-                ->back()
-                ->withErrors($response->json('errors'))
-                ->withInput();
-        }
-
-        abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
+        return response()->json(['message' => 'Xatolik yuz berdi'], $response->status());
     }
 
     /**
@@ -216,26 +165,90 @@ dd($response->json());
 
     /**
      * Get urls by type (for dropdown select)
+
      */
-    public function getUrls(Request $request, string $type)
+
+  public function edit(Request $request, int $id)
+{
+    // --- Microservice URL larni yig‘ish ---
+    $serviceUrls = [
+        'promotion' => config('services.urls.promo_service'),
+        'game'      => config('services.urls.game_service'),
+        'notify'    => $this->url, // notification service bazaviy URL
+    ];
+
+    $endpoints = [
+        'promotion' => 'front/promotion/gettypes',
+        'game'      => 'front/games/gettypes',
+        'notify'    => "front/notifications/{$id}/edit",
+    ];
+
+    $promotionUrls = [];
+    $gameUrls      = [];
+    $notification  = [];
+
+    try {
+        // --- Promotion linklari ---
+        $resp1 = $this->forwardRequest("GET", $serviceUrls['promotion'], $endpoints['promotion'], $request);
+        if ($resp1 instanceof \Illuminate\Http\Client\Response && $resp1->successful()) {
+            $promotionUrls = $resp1->json() ?? [];
+        }
+
+        // --- Notification ma’lumotlari ---
+        $resp2 = $this->forwardRequest("GET", $serviceUrls['notify'], $endpoints['notify'], $request);
+
+        if ($resp2 instanceof \Illuminate\Http\Client\Response && $resp2->successful()) {
+            $notification = $resp2->json('notification') ?? [];
+            $selectedUsers = $resp2->json('selected_users') ?? [];
+        } else {
+            return redirect()->route('admin.notifications.index')
+                ->with('error', 'Notification topilmadi yoki xizmat ishlamadi.');
+        }
+
+        // --- Game linklari ---
+        $resp3 = $this->forwardRequest("GET", $serviceUrls['game'], $endpoints['game'], $request);
+        if ($resp3 instanceof \Illuminate\Http\Client\Response && $resp3->successful()) {
+            $gameUrls = $resp3->json() ?? [];
+        }
+
+    } catch (\Throwable $e) {
+        report($e);
+        return redirect()->route('admin.notifications.index')
+            ->with('error', 'Xizmatlarga ulanishda xatolik: ' . $e->getMessage());
+    }
+    return view('admin.notifications.edit', [
+        'promotionUrls' => $promotionUrls,
+        'gameUrls'      => $gameUrls,
+        'notification'  => $notification,
+        'selectedUsers' => $selectedUsers,
+        'isEdit'        => true,
+    ]);
+}
+
+    /**
+     * Update notification
+     */
+    public function update(Request $request, $id)
     {
-        $map = [
-            'promotion' => [config('services.urls.promo_service'), 'front/promotion/gettypes'],
-            'game'      => [config('services.urls.game_service'), 'front/games/gettypes'],
-        ];
+        $response = $this->forwardRequestMedias(
+            'PUT',
+            $this->url,
+            "front/notifications/{$id}",
+            $request,
+            ['media', 'excel_file']
+        );
 
-        if (! isset($map[$type])) {
-            return response()->json(['message' => 'Invalid type'], 400);
-        }
+        return $this->handleResponse($response, 'yangilandi');
+    }
 
-        [$serviceUrl, $endpoint] = $map[$type];
-
-        $response = $this->forwardRequest("GET", $serviceUrl, $endpoint, $request);
-
+    private function handleResponse($response, string $action)
+    {
         if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
-            return response()->json($response->json(), 200);
+            return redirect()->route('admin.notifications.index')->with('success', "Notification muvaffaqiyatli {$action}.");
         }
-
-        return response()->json(['message' => 'Xatolik yuz berdi'], $response->status());
+        if ($response->status() === 422) {
+            return back()->withErrors($response->json('errors'))->withInput();
+        }
+        abort($response->status(), 'Xatolik: ' . $response->body());
     }
 }

@@ -2,7 +2,7 @@
 @section('title', "Notification qo'shish")
 
 @push('scripts')
-    {{-- FilePond --}}
+    {{-- === FilePond kutubxonalari === --}}
     <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
     <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
     <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
@@ -10,13 +10,13 @@
     <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
     <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
 
-    {{-- Select2 --}}
+    {{-- === Select2 kutubxonalari === --}}
     <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
     <link href="{{ asset('adminpanel/assets/css/select2.min.css') }}" rel="stylesheet" />
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // === FilePond init ===
+        document.addEventListener('DOMContentLoaded', function() {
+            // === FilePond (media fayl uchun) ===
             FilePond.registerPlugin(
                 FilePondPluginFileValidateType,
                 FilePondPluginFileValidateSize,
@@ -31,53 +31,51 @@
                 credits: false
             });
 
-            // === Select2 for platforms ===
+            // === Platforma select2 ===
             $('#types').select2({
                 placeholder: "Platformalarni tanlang",
                 width: '100%'
             });
 
-            // === Select2 for users (AJAX + old selected + duplicate prevent) ===
-  $('#users').select2({
-    placeholder: "Foydalanuvchilarni qidirish...",
-    width: '100%',
-    ajax: {
-        url: "/admin/notifications/users",
-        dataType: 'json',
-        delay: 250,
-        data: params => ({
-            q: params.term || '',
-            page: params.page || 1,
-            per_page: 20
-        }),
-        processResults: (data, params) => {
-            params.page = params.page || 1;
-            return {
-                results: data.data.map(item => ({
-                    id: item.id,   // bu yerda id = phone
-                    text: item.text // bu yerda text = phone
-                })),
-                pagination: {
-                    more: data.current_page < data.last_page
+            // === Users select2 (AJAX + duplicate check) ===
+            $('#users').select2({
+                placeholder: "Foydalanuvchilarni qidirish...",
+                width: '100%',
+                ajax: {
+                    url: "/admin/notifications/users",
+                    dataType: 'json',
+                    delay: 250,
+                    data: params => ({
+                        q: params.term || '',
+                        page: params.page || 1,
+                        per_page: 20
+                    }),
+                    processResults: (data, params) => {
+                        params.page = params.page || 1;
+                        return {
+                            results: data.data.map(item => ({
+                                id: item.id,
+                                text: item.text
+                            })),
+                            pagination: {
+                                more: data.current_page < data.last_page
+                            }
+                        };
+                    },
+                    cache: true
                 }
-            };
-        },
-        cache: true
-    }
-});
+            });
 
+            // Oldindan tanlangan userlarni ko‘rsatish
+            @if (!empty($selectedUsers))
+                let selectedData = @json($selectedUsers);
+                selectedData.forEach(function(item) {
+                    let option = new Option(item.text, item.id, true, true);
+                    $('#users').append(option).trigger('change');
+                });
+            @endif
 
-            // oldindan tanlangan userlar
-       @if (!empty($selectedUsers))
-    let selectedData = @json($selectedUsers);
-    selectedData.forEach(function(item) {
-        // backend 'id' va 'text' qaytargan bo'lsa, faqat telefon raqami chiqadi
-        let option = new Option(item.text, item.id, true, true);
-        $('#users').append(option).trigger('change');
-    });
-@endif
-
-            // dublikatni oldini olish
+            // Dublikat tanlashni oldini olish
             $('#users').on('select2:select', function(e) {
                 let selectedIds = $(this).val() || [];
                 if (selectedIds.filter((id, i, self) => self.indexOf(id) !== i).length > 0) {
@@ -87,7 +85,7 @@
                 }
             });
 
-            // === Dynamic Link Handling ===
+            // === Link turi boshqaruvi (promotion, game, url, message) ===
             const linkTypeSelect = document.getElementById('link_type');
             const urlSelectWrapper = document.getElementById('url_select_wrapper');
             const urlInputWrapper = document.getElementById('url_input_wrapper');
@@ -97,6 +95,7 @@
             const promotionUrls = @json($promotionUrls);
             const gameUrls = @json($gameUrls);
 
+            // Dinamik select option qo‘shuvchi funksiya
             function setSelectOptions(select, options, placeholder = "Tanlang...") {
                 select.innerHTML = "";
                 const defaultOption = document.createElement('option');
@@ -118,6 +117,7 @@
                 });
             }
 
+            // Link input toggle qilish
             function toggleLinkInput() {
                 const type = linkTypeSelect.value;
                 if (type === 'url') {
@@ -144,11 +144,10 @@
                     urlInput.removeAttribute('required');
                 }
             }
-
             linkTypeSelect.addEventListener('change', toggleLinkInput);
             toggleLinkInput();
 
-            // === Target Type Toggle ===
+            // === Qabul qiluvchi turi (platform/users/excel) toggle ===
             const targetTypeSelect = document.getElementById('target_type');
             const platformWrapper = document.getElementById('platform_wrapper');
             const usersWrapper = document.getElementById('users_wrapper');
@@ -156,8 +155,16 @@
 
             function toggleTargetInput() {
                 const type = targetTypeSelect.value;
+
+                // hamma bo‘limlarni yashiramiz
                 [platformWrapper, usersWrapper, excelWrapper].forEach(el => el.classList.add('d-none'));
 
+                // barcha inputlardan required ni olib tashlaymiz
+                document.getElementById('types').removeAttribute('required');
+                document.getElementById('users').removeAttribute('required');
+                document.getElementById('excel_file').removeAttribute('required');
+
+                // tanlangan bo‘limni ko‘rsatamiz va required qo‘yamiz
                 if (type === 'platform') {
                     platformWrapper.classList.remove('d-none');
                     document.getElementById('types').setAttribute('required', 'required');
@@ -169,7 +176,6 @@
                     document.getElementById('excel_file').setAttribute('required', 'required');
                 }
             }
-
             targetTypeSelect.addEventListener('change', toggleTargetInput);
             toggleTargetInput();
         });
@@ -177,110 +183,131 @@
 @endpush
 
 @section('content')
-<div class="tab-content flex-1 order-2 order-lg-1">
-    <div class="tab-pane fade show active">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Notification platformlarga yoki userlarga yuborish</h5>
-                <small>Quyidagi formani to‘ldiring va kerakli foydalanuvchilarga xabar yuboring.</small>
-            </div>
-            <div class="card-body">
-                <form action="{{ route('admin.notifications.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
+    <div class="tab-content flex-1 order-2 order-lg-1">
+        <div class="tab-pane fade show active">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Notification platformlarga yoki userlarga yuborish</h5>
+                    <small>Quyidagi formani to‘ldiring va kerakli foydalanuvchilarga xabar yuboring.</small>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('admin.notifications.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
 
-                    {{-- Title multi-lang --}}
-                    <div class="row">
-                        @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Sarlavha ({{ $label }})</label>
-                                <input type="text" name="title[{{ $lang }}]" class="form-control"
-                                       value="{{ old("title.$lang") }}" required>
+                        {{-- === Sarlavha (multi-lang) === --}}
+                        <div class="row">
+                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label">Sarlavha ({{ $label }})</label>
+                                    <input type="text" name="title[{{ $lang }}]" class="form-control"
+                                        value="{{ old("title.$lang") }}" required>
+                                    <small class="text-muted">Xabarning qisqa nomi ({{ $label }} tilida).</small>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        {{-- === Matn (multi-lang) === --}}
+                        <div class="row">
+                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label">Matn ({{ $label }})</label>
+                                    <textarea name="text[{{ $lang }}]" class="form-control" rows="3" required>{{ old("text.$lang") }}</textarea>
+                                    <small class="text-muted">Asosiy xabar matni ({{ $label }} tilida).</small>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        {{-- === Media (rasm) === --}}
+                        <div class="mb-3">
+                            <label class="form-label">Notification uchun rasm</label>
+                            <input type="file" name="media" class="filepond" required />
+                            <small class="text-muted">Bu yerda xabarga qo‘shiladigan rasmni tanlang (maks. 20MB).</small>
+                        </div>
+
+                        {{-- === Yuborish vaqti & Qabul qiluvchilar turi === --}}
+                        <div class="row ">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Yuborish vaqti (ixtiyoriy)</label>
+                                <input type="datetime-local" name="scheduled_at" class="form-control"
+                                    value="{{ old('scheduled_at') }}">
+                                <small class="text-muted">Xabarni oldindan belgilangan vaqtda yuborish uchun
+                                    tanlang.</small>
                             </div>
-                        @endforeach
-                    </div>
-
-                    {{-- Text multi-lang --}}
-                    <div class="row">
-                        @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Matn ({{ $label }})</label>
-                                <textarea name="text[{{ $lang }}]" class="form-control" rows="3" required>{{ old("text.$lang") }}</textarea>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Qabul qiluvchilar turi</label>
+                                <select name="target_type" id="target_type" class="form-select" required>
+                                    <option value="">Tanlang...</option>
+                                    <option value="platform">Platformalar</option>
+                                    <option value="users">Tanlangan foydalanuvchilar</option>
+                                    <option value="excel">Excel orqali</option>
+                                </select>
+                                <small class="text-muted">Xabar kimlarga yuborilishini belgilang.</small>
                             </div>
-                        @endforeach
-                    </div>
 
-                    {{-- Media --}}
-                    <div class="mb-3">
-                        <label class="form-label">Notification uchun rasm</label>
-                        <input type="file" name="media" class="filepond" required />
-                    </div>
+                            {{-- === Platforma tanlash === --}}
+                            <div class="col-6 d-none mb-3" id="platform_wrapper">
+                                <label class="form-label">Platformalar</label>
+                                <select name="type[]" id="types" class="form-select" multiple>
+                                    @foreach (['ios', 'android', 'web', 'telegram'] as $option)
+                                        <option value="{{ $option }}">{{ ucfirst($option) }}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted">Xabar qaysi platformalarga yuborilishini belgilang.</small>
+                            </div>
 
-                    {{-- Target Type --}}
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <label class="form-label">Qabul qiluvchilar turi</label>
-                            <select name="target_type" id="target_type" class="form-select" required>
-                                <option value="">Tanlang...</option>
-                                <option value="platform">Platformalar</option>
-                                <option value="users">Tanlangan foydalanuvchilar</option>
-                                <option value="excel">Excel orqali</option>
-                            </select>
+                            {{-- === User tanlash === --}}
+                            <div class="col-6 d-none mb-3" id="users_wrapper">
+                                <label class="form-label">Foydalanuvchilar</label>
+                                <select name="users[]" id="users" class="form-select" multiple></select>
+                                <small class="text-muted">Aniq foydalanuvchilarni qidiring va tanlang.</small>
+                            </div>
+
+                            {{-- === Excel yuklash === --}}
+                            {{-- === Excel yuklash === --}}
+                            <div class="col-6 d-none mb-3" id="excel_wrapper">
+                                <label class="form-label">Excel fayl</label>
+                                <input type="file" name="excel_file" id="excel_file" class="form-control"
+                                    accept=".xls,.xlsx,.csv" />
+                                <small class="text-muted">Faqat Excel (.xls, .xlsx) yoki CSV fayl yuklashingiz
+                                    mumkin.</small>
+                            </div>
+
+                            {{-- === Link turi === --}}
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Link turi</label>
+                                <select name="link_type" id="link_type" class="form-select" required>
+                                    <option value="">Tanlang...</option>
+                                    @foreach (['game', 'promotion', 'url', 'message'] as $lt)
+                                        <option value="{{ $lt }}">{{ ucfirst($lt) }}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted">Xabarga qo‘shiladigan link turini tanlang.</small>
+                            </div>
+
+                            {{-- === Link select (promotion/game) === --}}
+                            <div class="col-6 d-none mb-3" id="url_select_wrapper">
+                                <label class="form-label">Link</label>
+                                <select id="url_select" class="form-select"></select>
+                                <small class="text-muted">Tegishli promoaksiya yoki o‘yin linkini tanlang.</small>
+                            </div>
+
+                            {{-- === Custom URL kiritish === --}}
+                            <div class="col-6 mb-3 d-none" id="url_input_wrapper">
+                                <label class="form-label">URL</label>
+                                <input type="text" id="url_input" class="form-control" value="{{ old('link') }}">
+                                <small class="text-muted">Agar tashqi link kerak bo‘lsa, bu yerga yozing.</small>
+                            </div>
                         </div>
 
-                        {{-- Platform wrapper --}}
-                        <div class="col-6 d-none" id="platform_wrapper">
-                            <label class="form-label">Platformalar</label>
-                            <select name="type[]" id="types" class="form-select" multiple>
-                                @foreach (['ios', 'android', 'web', 'telegram'] as $option)
-                                    <option value="{{ $option }}">{{ ucfirst($option) }}</option>
-                                @endforeach
-                            </select>
+                        {{-- === Submit tugmasi === --}}
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ph-paper-plane-tilt me-1"></i> Yuborish
+                            </button>
                         </div>
-
-                        {{-- Users wrapper --}}
-                        <div class="col-6 d-none" id="users_wrapper">
-                            <label class="form-label">Foydalanuvchilar</label>
-                            <select name="users[]" id="users" class="form-select" multiple></select>
-                        </div>
-
-                        {{-- Excel wrapper --}}
-                        <div class="col-6 d-none" id="excel_wrapper">
-                            <label class="form-label">Excel fayl</label>
-                            <input type="file" name="excel_file" id="excel_file" class="form-control" />
-                        </div>
-                    </div>
-
-                    {{-- Link Type --}}
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <label class="form-label">Link turi</label>
-                            <select name="link_type" id="link_type" class="form-select" required>
-                                <option value="">Tanlang...</option>
-                                @foreach (['game', 'promotion', 'url', 'message'] as $lt)
-                                    <option value="{{ $lt }}">{{ ucfirst($lt) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-6 d-none" id="url_select_wrapper">
-                            <label class="form-label">Link</label>
-                            <select id="url_select" class="form-select"></select>
-                        </div>
-
-                        <div class="col-6 d-none" id="url_input_wrapper">
-                            <label class="form-label">URL</label>
-                            <input type="text" id="url_input" class="form-control" value="{{ old('link') }}">
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="ph-paper-plane-tilt me-1"></i> Yuborish
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 @endsection
