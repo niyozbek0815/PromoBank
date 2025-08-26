@@ -11,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('notification_platforms', function (Blueprint $table) {
+        Schema::create('notification_views', function (Blueprint $table) {
             $table->id();
             $table->foreignId('notification_id')->constrained('notifications')->cascadeOnDelete();
-            $table->enum('platform', ['ios', 'android', 'web', 'telegram','sms']);
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('device_id')->nullable();
+            $table->timestamp('viewed_at')->nullable();
             $table->timestamps();
+            $table->index(['notification_id', 'user_id']);
         });
     }
 
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notification_platforms');
+        Schema::dropIfExists('notification_views');
     }
 };

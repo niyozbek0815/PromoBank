@@ -26,13 +26,6 @@ trait HasMedia
             ->orderByDesc('created_at')
             ->first();
 
-Log::info('Getting media', [
-    'media' => $media,
-]);
-
-
-
-
         if ($media) {
             return [
                 'url'       => $media->full_url,

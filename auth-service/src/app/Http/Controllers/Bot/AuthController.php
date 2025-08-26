@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Bot;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SyncUserToNotificationJob;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -86,6 +87,27 @@ class AuthController extends Controller
                 $user = User::create($data);
 
             }
+            Log::info('User creation data:', [
+                'user_id' => $user->id,
+                'sync' => false,
+                'ip' => $request->header('User-Ip'),
+                'chat_id' => $request['chat_id'],
+                'platform' => 'telegram',
+                'model' => "telegram",
+                'app_version' => "telegram" ?? null,
+                'user_agent' => $request->header('User-Agent')
+            ]);
+            SyncUserToNotificationJob::dispatch(
+                $user->id,
+                false,
+                $request->header('User-Ip'),
+                $request['chat_id'],
+                'telegram',
+                $request['model'],
+                $request['app_version'] ?? null,
+                $request->header('User-Agent'),
+                null
+            )->onQueue('notification_queue');
 
             DB::commit();
             Log::info("User:", ['user' => $user]);

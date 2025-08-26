@@ -156,25 +156,24 @@
             function toggleTargetInput() {
                 const type = targetTypeSelect.value;
 
-                // hamma bo‘limlarni yashiramiz
-                [platformWrapper, usersWrapper, excelWrapper].forEach(el => el.classList.add('d-none'));
+                // Faqat users va excel bo‘limlarini boshqaramiz
+                usersWrapper.classList.add('d-none');
+                excelWrapper.classList.add('d-none');
 
-                // barcha inputlardan required ni olib tashlaymiz
-                document.getElementById('types').removeAttribute('required');
                 document.getElementById('users').removeAttribute('required');
                 document.getElementById('excel_file').removeAttribute('required');
 
-                // tanlangan bo‘limni ko‘rsatamiz va required qo‘yamiz
-                if (type === 'platform') {
-                    platformWrapper.classList.remove('d-none');
-                    document.getElementById('types').setAttribute('required', 'required');
-                } else if (type === 'users') {
+                if (type === 'users') {
                     usersWrapper.classList.remove('d-none');
                     document.getElementById('users').setAttribute('required', 'required');
                 } else if (type === 'excel') {
                     excelWrapper.classList.remove('d-none');
                     document.getElementById('excel_file').setAttribute('required', 'required');
                 }
+
+                // ⚡️ Platforma (types) doim ko‘rinadi va required bo‘ladi
+                platformWrapper.classList.remove('d-none');
+                document.getElementById('types').setAttribute('required', 'required');
             }
             targetTypeSelect.addEventListener('change', toggleTargetInput);
             toggleTargetInput();
@@ -234,12 +233,12 @@
                                     tanlang.</small>
                             </div>
                             <div class="col-6 mb-3">
-                                <label class="form-label">Qabul qiluvchilar turi</label>
+                                <label class="form-label">Qabul qiluvchilarni tanlang</label>
                                 <select name="target_type" id="target_type" class="form-select" required>
                                     <option value="">Tanlang...</option>
-                                    <option value="platform">Platformalar</option>
+                                    <option value="platform">Butun bir platforma foydalanuvchilarga</option>
                                     <option value="users">Tanlangan foydalanuvchilar</option>
-                                    <option value="excel">Excel orqali</option>
+                                    <option value="excel">Exceldan foydalanuvchilarni import qilib</option>
                                 </select>
                                 <small class="text-muted">Xabar kimlarga yuborilishini belgilang.</small>
                             </div>

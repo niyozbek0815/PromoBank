@@ -12,14 +12,28 @@ class Notification extends Model
 {
     use HasFactory, Notifiable, HasTranslations, HasMedia, SoftDeletes;
 
-    protected $fillable = [
-        'title', 'text', 'target_type', 'link_type', 'link', 'status', 'scheduled_at',
-    ];
-    protected $casts = [
-        'title'        => 'array',
-        'text'         => 'array',
-        'scheduled_at' => 'datetime',
-    ];
+  protected $fillable = [
+    'title',
+    'text',
+    'target_type',
+    'link_type',
+    'link',
+    'status',
+    'scheduled_at',
+    'total_recipients',
+    'sent_count',
+    'failed_count',
+    'pending_count',
+    'meta',
+];
+
+  protected $casts = [
+    'title'        => 'array',
+    'text'         => 'array',
+    'meta'         => 'array',
+    'scheduled_at' => 'datetime',
+];
+
     protected $appends = ['image'];
     public $translatable = ['text', 'title'];
 

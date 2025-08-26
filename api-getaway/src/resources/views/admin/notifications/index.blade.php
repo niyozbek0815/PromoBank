@@ -25,8 +25,8 @@
                     {data: 'image', name: 'image', orderable: false, searchable: false},
                       { data: 'link_type', name: 'link_type' },
                     { data: 'link', name: 'link' },
-                    { data: 'target_type', name: 'target_type' },
                     { data: 'recipients', name: 'recipients', orderable: false, searchable: false },
+                    { data: 'platforms', name: 'platforms' },
                     { data: 'status', name: 'status', orderable: false, searchable: false },
                     { data: 'scheduled_at', name: 'scheduled_at' },
                     { data: 'actions', name: 'actions', orderable: false, searchable: false }
@@ -93,8 +93,9 @@
                         <th>Rasm</th>
                         <th>Link Type</th>
                         <th>Link</th>
-                        <th>Target</th>
+                        {{-- <th>Kimlarga yuborilayabdi</th> --}}
                         <th>Recipients</th>
+                        <th>Platforms</th>
                         <th>Status</th>
                         <th>Rejalashtirilgan</th>
                         <th>Harakatlar</th>

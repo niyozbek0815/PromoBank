@@ -176,19 +176,22 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::get('/{banner}/edit', 'edit')->name('edit');
             Route::put('/{banner}', 'update')->name('update');
         });
-Route::prefix('notifications')->name('admin.notifications.')
-    ->controller(NotificationsController::class)
-    ->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::get('/data', 'data')->name('data');
-        Route::get('/create', 'create')->name('create');
-        Route::post('/store', 'store')->name('store');
-        Route::get('/{banner}/edit', 'edit')->name('edit');
-        Route::put('/{banner}', 'update')->name('update');
-        Route::post('/{banner}/delete', 'destroy')->name('delete');
-        Route::post('/{notification}/resent', 'resent')->name('resent');
-        Route::get('/{type}/urls', 'getUrls')->name('getUrls');
-        Route::get('/users', 'getUsers')->name('getUsers');
-    });
+    Route::prefix('notifications')->name('admin.notifications.')
+        ->controller(NotificationsController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{banner}/edit', 'edit')->name('edit');
+            Route::put('/{banner}', 'update')->name('update');
+            Route::post('/{banner}/delete', 'destroy')->name('delete');
+            Route::get('/{notification}/resend', 'resent')->name('resend');
+            Route::get('/{type}/urls', 'getUrls')->name('getUrls');
+            Route::get('/users', 'getUsers')->name('getUsers');
+        });
 
 });
+Route::get('/fcm-test', function () {
+    return view('fcm-test');
+})->name('fcm-test');

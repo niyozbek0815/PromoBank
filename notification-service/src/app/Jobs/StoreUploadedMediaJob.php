@@ -28,14 +28,9 @@ class StoreUploadedMediaJob implements ShouldQueue
         $extension    = pathinfo($this->filePath, PATHINFO_EXTENSION);
         $fileName     = Str::uuid() . '.' . $extension;
 
-        Log::info('UserUpdateMediaJob started', [
-            'user_id'   => $this->correlationId,
-            'file_path' => $this->filePath,
-        ]);
 
         try {
             if (! file_exists($absolutePath)) {
-                Log::error('File not found for media upload', ['path' => $absolutePath]);
                 return;
             }
 
@@ -46,10 +41,7 @@ class StoreUploadedMediaJob implements ShouldQueue
             $mediaUrls   = $oldMedias->pluck('url')->toArray();
             $oldMediaIds = $oldMedias->pluck('id')->toArray();
 
-            Log::info('Old media', [
-                'urls' => $mediaUrls,
-                'ids'  => $oldMediaIds,
-            ]);
+
 
             $multipart = [
                 [
@@ -82,7 +74,6 @@ class StoreUploadedMediaJob implements ShouldQueue
 
             $mediaResponse = $response->json();
 
-            Log::info('Media-service javobi', ['response' => $mediaResponse]);
 
             if (! empty($oldMediaIds)) {
                 Media::whereIn('id', $oldMediaIds)->delete();
@@ -109,7 +100,6 @@ class StoreUploadedMediaJob implements ShouldQueue
         } finally {
             if (Storage::disk('public')->exists($this->filePath)) {
                 Storage::disk('public')->delete($this->filePath);
-                Log::info('Tmp fayl o‘chirildi: ' . $this->filePath);
             }
         }
     }

@@ -94,6 +94,7 @@ class NotificationsController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->all());
         $response = $this->forwardRequestMedias(
             'POST',
             $this->url,
@@ -155,9 +156,8 @@ class NotificationsController extends Controller
     {
         $endpoint = "front/notifications/{$id}/resent";
         $response = $this->forwardRequest("POST", $this->url, $endpoint, $request);
-
         if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
-            return response()->json(['success' => true, 'message' => 'Notification qayta yuborildi!']);
+            return response()->json($response->json());
         }
 
         return response()->json(['success' => false, 'message' => 'Qayta yuborishda xatolik!'], $response->status());
@@ -168,62 +168,62 @@ class NotificationsController extends Controller
 
      */
 
-  public function edit(Request $request, int $id)
-{
-    // --- Microservice URL larni yig‘ish ---
-    $serviceUrls = [
-        'promotion' => config('services.urls.promo_service'),
-        'game'      => config('services.urls.game_service'),
-        'notify'    => $this->url, // notification service bazaviy URL
-    ];
+    public function edit(Request $request, int $id)
+    {
+        // --- Microservice URL larni yig‘ish ---
+        $serviceUrls = [
+            'promotion' => config('services.urls.promo_service'),
+            'game'      => config('services.urls.game_service'),
+            'notify'    => $this->url, // notification service bazaviy URL
+        ];
 
-    $endpoints = [
-        'promotion' => 'front/promotion/gettypes',
-        'game'      => 'front/games/gettypes',
-        'notify'    => "front/notifications/{$id}/edit",
-    ];
+        $endpoints = [
+            'promotion' => 'front/promotion/gettypes',
+            'game'      => 'front/games/gettypes',
+            'notify'    => "front/notifications/{$id}/edit",
+        ];
 
-    $promotionUrls = [];
-    $gameUrls      = [];
-    $notification  = [];
+        $promotionUrls = [];
+        $gameUrls      = [];
+        $notification  = [];
 
-    try {
-        // --- Promotion linklari ---
-        $resp1 = $this->forwardRequest("GET", $serviceUrls['promotion'], $endpoints['promotion'], $request);
-        if ($resp1 instanceof \Illuminate\Http\Client\Response && $resp1->successful()) {
-            $promotionUrls = $resp1->json() ?? [];
-        }
+        try {
+            // --- Promotion linklari ---
+            $resp1 = $this->forwardRequest("GET", $serviceUrls['promotion'], $endpoints['promotion'], $request);
+            if ($resp1 instanceof \Illuminate\Http\Client\Response  && $resp1->successful()) {
+                $promotionUrls = $resp1->json() ?? [];
+            }
 
-        // --- Notification ma’lumotlari ---
-        $resp2 = $this->forwardRequest("GET", $serviceUrls['notify'], $endpoints['notify'], $request);
+            // --- Notification ma’lumotlari ---
+            $resp2 = $this->forwardRequest("GET", $serviceUrls['notify'], $endpoints['notify'], $request);
 
-        if ($resp2 instanceof \Illuminate\Http\Client\Response && $resp2->successful()) {
-            $notification = $resp2->json('notification') ?? [];
-            $selectedUsers = $resp2->json('selected_users') ?? [];
-        } else {
+            if ($resp2 instanceof \Illuminate\Http\Client\Response  && $resp2->successful()) {
+                $notification  = $resp2->json('notification') ?? [];
+                $selectedUsers = $resp2->json('selected_users') ?? [];
+            } else {
+                return redirect()->route('admin.notifications.index')
+                    ->with('error', 'Notification topilmadi yoki xizmat ishlamadi.');
+            }
+
+            // --- Game linklari ---
+            $resp3 = $this->forwardRequest("GET", $serviceUrls['game'], $endpoints['game'], $request);
+            if ($resp3 instanceof \Illuminate\Http\Client\Response  && $resp3->successful()) {
+                $gameUrls = $resp3->json() ?? [];
+            }
+
+        } catch (\Throwable $e) {
+            report($e);
             return redirect()->route('admin.notifications.index')
-                ->with('error', 'Notification topilmadi yoki xizmat ishlamadi.');
+                ->with('error', 'Xizmatlarga ulanishda xatolik: ' . $e->getMessage());
         }
-
-        // --- Game linklari ---
-        $resp3 = $this->forwardRequest("GET", $serviceUrls['game'], $endpoints['game'], $request);
-        if ($resp3 instanceof \Illuminate\Http\Client\Response && $resp3->successful()) {
-            $gameUrls = $resp3->json() ?? [];
-        }
-
-    } catch (\Throwable $e) {
-        report($e);
-        return redirect()->route('admin.notifications.index')
-            ->with('error', 'Xizmatlarga ulanishda xatolik: ' . $e->getMessage());
+        return view('admin.notifications.edit', [
+            'promotionUrls' => $promotionUrls,
+            'gameUrls'      => $gameUrls,
+            'notification'  => $notification,
+            'selectedUsers' => $selectedUsers,
+            'isEdit'        => true,
+        ]);
     }
-    return view('admin.notifications.edit', [
-        'promotionUrls' => $promotionUrls,
-        'gameUrls'      => $gameUrls,
-        'notification'  => $notification,
-        'selectedUsers' => $selectedUsers,
-        'isEdit'        => true,
-    ]);
-}
 
     /**
      * Update notification

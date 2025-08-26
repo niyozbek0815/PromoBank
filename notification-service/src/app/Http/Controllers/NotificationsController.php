@@ -1,11 +1,14 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Jobs\DispatchNotificationFcmJob;
 use App\Jobs\StoreUploadedMediaJob;
 use App\Models\Notification;
+use App\Models\NotificationUser;
 use App\Models\UserDevice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Yajra\DataTables\DataTables;
@@ -46,6 +49,9 @@ class NotificationsController extends Controller
 
         DB::beginTransaction();
         try {
+            // Log validated data for debugging
+            Log::info('Validated data for notification store:', $validated);
+
             $notification = Notification::create([
                 'title'        => $validated['title'],
                 'text'         => $validated['text'],
@@ -57,6 +63,10 @@ class NotificationsController extends Controller
             ]);
             $this->handleMedia($request, $notification);
             $this->handleTargets($validated, $request, $notification);
+            if (empty($validated['scheduled_at'])) {
+                Queue::connection('rabbitmq')->push(new DispatchNotificationFcmJob($notification->id));
+            }
+
             DB::commit();
             return response()->json([
                 'message'      => 'Notification muvaffaqiyatli yaratildi',
@@ -64,6 +74,7 @@ class NotificationsController extends Controller
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
+            Log::error('Error storing notification:', ['exception' => $e, 'validated' => $validated]);
             report($e);
             return response()->json(['error' => 'Xatolik', 'details' => $e->getMessage()], 500);
         }
@@ -117,14 +128,14 @@ class NotificationsController extends Controller
             ->addColumn('text', fn($item) => Str::limit($item->getTranslation('text', 'uz') ?? '-', 35))
 
         // === Target Type ===
-            ->addColumn('target_type', fn($item) => ucfirst($item->target_type))
+        // ->addColumn('target_type', fn($item) => ucfirst($item->target_type))
             ->addColumn('recipients', function ($item) {
                 if ($item->target_type === 'platform') {
-                    return 'Platformalar: ' . ($item->platforms->pluck('platform')->implode(', ') ?: '-');
+                    return 'Platformalarga';
                 }
 
                 if ($item->target_type === 'users') {
-                    return 'Users: ' . ($item->users->count() ?: '-');
+                    return $item->users->count() . ' - foydalanuvchiga';
                 }
 
                 if ($item->target_type === 'excel' && $item->excel) {
@@ -133,6 +144,7 @@ class NotificationsController extends Controller
 
                 return '-';
             })
+            ->addColumn('platforms', fn($item) => $item->platforms->pluck('platform')->implode(', ') ?: '-')
 
         // === Link Type & Link ===
             ->addColumn('link_type', fn($item) => ucfirst($item->link_type))
@@ -297,16 +309,26 @@ class NotificationsController extends Controller
 
     private function handleTargets(array $validated, Request $request, Notification $notification)
     {
-        if ($validated['target_type'] === 'platform') {
-            foreach ($validated['type'] as $platform) {
+        // Platform targets
+        if (! empty($validated['type'])) {
+            foreach (array_unique($validated['type']) as $platform) {
                 $notification->platforms()->create(['platform' => $platform]);
             }
         }
-        if ($validated['target_type'] === 'users') {
-            foreach (array_unique($validated['users']) as $phone) {
-                $notification->users()->create(['phone' => $phone, 'status' => 'pending']);
-            }
+
+        // User targets
+        if ($validated['target_type'] === 'users' && ! empty($validated['users'])) {
+            $phones = array_unique($validated['users']);
+            $data   = array_map(fn($phone) => [
+                'notification_id' => $notification->id, // 🔑 qo‘lda qo‘shamiz
+                'phone'           => $phone,
+                'status'          => 'pending',
+            ], $phones);
+
+            NotificationUser::insert($data);
         }
+
+        // Excel targets
         if ($validated['target_type'] === 'excel' && $request->hasFile('excel_file')) {
             $file     = $request->file('excel_file');
             $tempPath = $file->storeAs('tmp', uniqid() . '.' . $file->getClientOriginalExtension(), 'public');
@@ -314,4 +336,62 @@ class NotificationsController extends Controller
             Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'notification-excel', $excel->id));
         }
     }
+
+    // public function send(int $id)
+    // {
+    //     $notification = Notification::with(['users', 'platforms'])->findOrFail($id);
+    //     try {
+    //         $factory   = (new Factory)->withServiceAccount(config('firebase.credentials.file'));
+    //         $messaging = $factory->createMessaging();
+
+    //         // === Example: platform -> web, ios, android ===
+    //         if ($notification->target_type === 'platform') {
+    //             foreach ($notification->platforms as $platform) {
+    //                 // Shu yerda sening UserDevice jadvalingdan tokenlarini olamiz
+    //                 $tokens = UserDevice::where('platform', $platform->platform)
+    //                     ->pluck('fcm_token')
+    //                     ->filter()
+    //                     ->toArray();
+
+    //                 if (! empty($tokens)) {
+    //                     $message = CloudMessage::new ()
+    //                         ->withNotification(FcmNotification::create(
+    //                             $notification->title['uz'],
+    //                             $notification->text['uz']
+    //                         ))
+    //                         ->withData([
+    //                             'link_type' => $notification->link_type,
+    //                             'link'      => $notification->link,
+    //                         ]);
+
+    //                     $messaging->sendMulticast($message, $tokens);
+    //                 }
+    //             }
+    //         }
+
+    //         // === Example: target_type = users ===
+    //         if ($notification->target_type === 'users') {
+    //             foreach ($notification->users as $user) {
+    //                 $tokens = UserDevice::where('phone', $user->phone)->pluck('fcm_token')->toArray();
+    //                 foreach ($tokens as $token) {
+    //                     $message = CloudMessage::withTarget('token', $token)
+    //                         ->withNotification(FcmNotification::create(
+    //                             $notification->title['uz'],
+    //                             $notification->text['uz']
+    //                         ))
+    //                         ->withData(['link_type' => $notification->link_type, 'link' => $notification->link]);
+    //                     $messaging->send($message);
+    //                 }
+    //             }
+    //         }
+
+    //         $notification->update(['status' => 'sent']);
+
+    //         return response()->json(['message' => 'Notification yuborildi']);
+    //     } catch (\Throwable $e) {
+    //         report($e);
+    //         $notification->update(['status' => 'failed']);
+    //         return response()->json(['error' => $e->getMessage()], 500);
+    //     }
+    // }
 }

@@ -45,5 +45,11 @@ return [
     ],
     'sms_provider' => [
         'token' => env('SMS_PROVIDER_TOKEN')
-    ]
+    ],
+    'firebase' => [
+        'credentials' => [
+            'file' => env('FIREBASE_CREDENTIALS', storage_path('firebase/credentials.json')),
+        ],
+    ],
+
 ];
