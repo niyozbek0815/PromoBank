@@ -19,6 +19,7 @@ abstract class Controller
                 'Accept'     => 'application/json',
                 'User-Ip'    => $request->ip(),
                 'User-Agent' => $request->userAgent(),
+                'X-Internal-Secret' => env('INTERNAL_SECRET'),
             ];
 
             $url  = rtrim($baseUrl, '/') . '/' . ltrim($path, '/');

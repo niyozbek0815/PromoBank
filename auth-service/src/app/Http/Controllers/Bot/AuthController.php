@@ -21,20 +21,29 @@ class AuthController extends Controller
             'chat_id' => ['required', 'string'],
             'lang'    => ['nullable', 'in:uz,ru,kr'],
         ]);
-        $message = "User Not found!!!";
-        $exist   = false;
-        $user    = User::with(['region:id,name', 'district:id,name'])->where('phone', $data['phone'])->first();
+        $message  = "User Not found!!!";
+        $userData = null;
+        $exist    = false;
+        $user     = User::with(['region:id,name', 'district:id,name'])->where('phone', $data['phone'])->first();
         if ($user) {
             $message = "User already exists'!!!";
             $user->update([
                 "lang" => $data['lang'],
+                "chat_id" => $data['chat_id'],
             ]);
             $exist = true;
-        }
-        Log::info("User:", ['user' => $user]);
-
-        $userData = null;
-        if ($user) {
+            Log::info("User:", ['user' => $user]);
+            SyncUserToNotificationJob::dispatch(
+                $user->id,
+                false,
+                $request->header('User-Ip'),
+                $request['chat_id'],
+                'telegram',
+                "telegram",
+                $request['app_version'] ?? null,
+                $request->header('User-Agent'),
+                $request['phone']
+            )->onQueue('notification_queue');
             $userData = [
                 'id'        => $user->id,
                 'region'    => $user->region?->name,
@@ -46,6 +55,7 @@ class AuthController extends Controller
                 'gender'    => $user->gender,
                 'birthdate' => $user->birthdate,
             ];
+
         }
 
         return response()->json([
@@ -88,14 +98,14 @@ class AuthController extends Controller
 
             }
             Log::info('User creation data:', [
-                'user_id' => $user->id,
-                'sync' => false,
-                'ip' => $request->header('User-Ip'),
-                'chat_id' => $request['chat_id'],
-                'platform' => 'telegram',
-                'model' => "telegram",
+                'user_id'     => $user->id,
+                'sync'        => false,
+                'ip'          => $request->header('User-Ip'),
+                'chat_id'     => $request['chat_id'],
+                'platform'    => 'telegram',
+                'model'       => "telegram",
                 'app_version' => "telegram" ?? null,
-                'user_agent' => $request->header('User-Agent')
+                'user_agent'  => $request->header('User-Agent'),
             ]);
             SyncUserToNotificationJob::dispatch(
                 $user->id,
@@ -103,10 +113,10 @@ class AuthController extends Controller
                 $request->header('User-Ip'),
                 $request['chat_id'],
                 'telegram',
-                $request['model'],
-                $request['app_version'] ?? null,
+                "telegram",
+                "telegram" ?? null,
                 $request->header('User-Agent'),
-                null
+                $request['phone']
             )->onQueue('notification_queue');
 
             DB::commit();

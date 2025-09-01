@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('nkm_number'); // NKM raqami
             $table->string('sn'); // Seriya raqami
             $table->timestamp('check_date'); // Check vaqti
-            $table->string('payment_type'); // karta | naqd | online
             $table->decimal('qqs_summa', 12, 2); // QQS summasi
             $table->decimal('summa', 12, 2); // Umumiy summa
             $table->decimal('lat', 10, 7); // GPS latitude

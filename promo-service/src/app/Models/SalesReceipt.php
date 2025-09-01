@@ -13,7 +13,6 @@ class SalesReceipt extends Model
         'nkm_number',
         'sn',
         'check_date',
-        'payment_type',
         'qqs_summa',
         'summa',
         'lat',

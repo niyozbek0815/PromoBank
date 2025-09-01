@@ -18,23 +18,23 @@ class EnsureTelegramSessionExists
         $isOpenRoute = $messageText === '/start';
 
         $status = app(RegisterService::class)->getSessionStatus($chatId);
-        Log::info("Middlewarega kirish: status-> " . $status . ". Message: " . $messageText);
+        // Log::info("Middlewarega kirish: status-> " . $status . ". Message: " . $messageText);
         if ($status == 'in_register' && ! $isOpenRoute) {
-            Log::info("in_register");
+            // Log::info("in_register");
             return app(RegisterRouteHandler::class)->handle($update);
         }
         if ($status == 'in_update' && ! $isOpenRoute) {
-            Log::info("in_update");
+            // Log::info("in_update");
             app(UpdateRouteHandler::class)->handle($update);
         }
 
         if ($isOpenRoute) {
-            Log::info("Middlewarega openRoute");
+            // Log::info("Middlewarega openRoute");
             return app(StartRouteHandler::class)->handle($update);
         }
 
         if ($status == 'authenticated') {
-            Log::info("Middleware authenticated");
+            // Log::info("Middleware authenticated");
             app(AuthenticatedRouteHandler::class)->handle($update);
         }
         if ($status == 'none') {

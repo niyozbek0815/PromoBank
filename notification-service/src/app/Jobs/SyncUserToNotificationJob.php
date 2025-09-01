@@ -86,6 +86,7 @@ protected $phone;
             'device_name'  => $this->deviceName,
             'app_version'  => $this->appVersion,
             'user_agent'   => $this->userAgent,
+            'phone'       => $this->phone,
         ]);
     }
 }

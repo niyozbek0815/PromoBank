@@ -19,7 +19,11 @@ class ReceiptController extends Controller
         $user = $request['auth_user'];
         $req = $request->validated();
         $data = $this->receiptService->process($req, $user);
-        return $this->successResponse($data, "success");
+        if($data['status']=="failed"){
+            return $this->errorResponse($data, "failed");
+        }else{
+            return $this->successResponse($data, "success");
+        }
     }
     public function points(Request $request)
     {

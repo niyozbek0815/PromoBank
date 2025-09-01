@@ -67,7 +67,6 @@ class CreateReceiptAndProductJob implements ShouldQueue
                     'nkm_number'   => $this->data['nkm_number'],
                     'sn'           => $this->data['sn'],
                     'check_date'   => $this->data['check_date'],
-                    'payment_type' => $this->data['payment_type'],
                     'qqs_summa'    => $this->data['qqs_summa'],
                     'summa'        => $this->data['summa'],
                     'lat'          => $this->data['lat'] ?? null,

@@ -27,7 +27,6 @@ class SendReceiptRequest extends FormRequest
             'nkm_number'  => 'required|string|max:255',
             'sn'          => 'required|string|max:255',
             'check_date'  => 'required|date',
-            'payment_type' => 'required|in:naqt,karta',
             'qqs_summa'   => 'required|numeric|min:0',
             'summa'       => 'required|numeric|min:0',
             'lat'         => 'nullable|numeric|between:-90,90',
@@ -37,7 +36,7 @@ class SendReceiptRequest extends FormRequest
             // Embedded sales_products
             'products'                 => 'required|array|min:1',
             'products.*.name'         => 'required|string|max:255',
-            'products.*.count'        => 'required|integer|min:1',
+            'products.*.count'        => 'required|numeric|min:0.000000001',
             'products.*.summa'        => 'required|numeric|min:0',
         ];
     }

@@ -35,7 +35,7 @@ class ReceiptService
         $entries = collect();
         $message = [];
         $action = null;
-        $status = null;
+        $status = 'success';
         $encouragementPoints = null;
         $selectedPrizes = [];
         $menualPrizeCount = 0;
@@ -50,7 +50,7 @@ class ReceiptService
             })
             ->first();
         if ($shop) {
-Log::info('Found shop: ', ['shop' => $shop]);
+Log::info('Found shop: ',  ['shop' => $shop]);
 
             $promotion = $shop->promotion;
             $prizes = Prize::where('promotion_id', $shop->promotion_id)
@@ -92,9 +92,12 @@ Log::info('Found shop: ', ['shop' => $shop]);
                 }
                 $selected = false;
             }
+            $this->returnMessage($promotion, $menualPrizeCount, $selectedPrizes, $lang, $action, $status, $message, $encouragementPoints);
+
+        }else{
+$this->giveEncouragementPoints($action, $message);
         }
 
-Log::info("selectedPrizes: ", $selectedPrizes);
         Queue::connection(name: 'rabbitmq')->push(new CreateReceiptAndProductJob(
             $req,
             $user,
@@ -103,10 +106,9 @@ Log::info("selectedPrizes: ", $selectedPrizes);
             $selectedPrizes ?? null,
             $subPrizeId ?? null,
             $menualPrizeCount,
-            $promotion->id ?? null,
+           $promotion['id'] ?? null,
         ));
 
-        $this->returnMessage($promotion, $menualPrizeCount, $selectedPrizes, $lang, $action, $status, $message, $encouragementPoints);
 
 
         return [
@@ -124,9 +126,7 @@ Log::info("selectedPrizes: ", $selectedPrizes);
         $status = "success";
 
         if ($menualPrizeCount == 0 && count($selectedPrizes) == 0) {
-            $encouragementPoints = config('services.constants.encouragement_points');
-            $message[] = "Siz {$encouragementPoints} promobal oldingiz. yana Skanerlang va promobalarni yig'ishda davom eting!";
-            $action = "points_vote";
+            $this->giveEncouragementPoints($action, $message);
         } else {
             $action = "won";
             if ($selectedPrizes) {
@@ -136,21 +136,21 @@ Log::info("selectedPrizes: ", $selectedPrizes);
                 }
             }
             if ($menualPrizeCount > 0) {
-                $message[] =  $this->getPromotionMessage(
-                    $promotion->id,
-                    $lang,
-                    'manual_win',
-                    ['{count}' => $menualPrizeCount]
-                );;
+                // $message[] =  $this->getPromotionMessage(
+                //     $promotion->id,
+                //     $lang,
+                //     'manual_win',
+                //     ['{count}' => $menualPrizeCount]
+                // );
+                $message[]="Siz {$menualPrizeCount} ta manual sovrin yutdingiz.";
             }
         }
     }
-    private function giveEncouragementPoints($userId, $shopName)
+    private function giveEncouragementPoints(&$action, &$message)
     {
-        $balls = 2;
-        $status = 'won';
-        $action = 'bonus_win';
-        $message = "Tabriklaymiz! Siz {$balls} promobal berildi. yana Skanerlang va promobalarni yig'ishda davom eting!";
+$encouragementPoints = config('services.constants.encouragement_points');
+$message[]           = "Siz {$encouragementPoints} promobal oldingiz. yana Skanerlang va promobalarni yig'ishda davom eting!";
+$action              = "points_vote";
     }
     private function getEntries($checkProducts, $shop, $promoProductMap)
     {

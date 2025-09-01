@@ -34,11 +34,11 @@ class RegisterService
             $this->prefix . $chatId,
             json_encode($merged)
         );
-        Log::info("mergeToCache" . $this->prefix . $chatId,
-            ['data' => Cache::store('redis')->get(
-                $this->prefix . $chatId,
-            )]
-        );
+        // Log::info("mergeToCache" . $this->prefix . $chatId,
+        //     ['data' => Cache::store('redis')->get(
+        //         $this->prefix . $chatId,
+        //     )]
+        // );
 
     }
     public function get(string $chatId)
@@ -100,14 +100,14 @@ class RegisterService
         $response        = $this->forwarder->forward('POST', $baseUrl, '/user_create', $data);
 
         if (! $response instanceof \Illuminate\Http\Client\Response  || ! $response->successful()) {
-            logger()->error('Userni olishda xatolik', [
-                'status' => $response->status(),
-                'body'   => $response->body(),
-            ]);
+            // logger()->error('Userni olishda xatolik', [
+            //     'status' => $response->status(),
+            //     'body'   => $response->body(),
+            // ]);
             return;
         }
 
-        Log::info("Auth servisidan javob", context: ['response' => $response->json()]);
+        // Log::info("Auth servisidan javob", context: ['response' => $response->json()]);
 
         $user = $response->json('user');
 

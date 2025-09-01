@@ -84,10 +84,10 @@ class UserUpdateService
         $response        = $this->forwarder->forward('POST', $baseUrl, '/user_update', $data);
 
         if (! $response instanceof \Illuminate\Http\Client\Response  || ! $response->successful()) {
-            logger()->error('Userni olishda xatolik', [
-                'status' => $response->status(),
-                'body'   => $response->body(),
-            ]);
+        //    Log::warning('Userni olishda xatolik', [
+        //         'status' => $response->status(),
+        //         'body'   => $response->body(),
+        //     ]);
             return;
         }
 

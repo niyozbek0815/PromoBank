@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Bot\TelegramController;
 use App\Http\Controllers\Mobil\AddresController;
 use App\Http\Controllers\Mobil\AuthController;
 use App\Http\Controllers\Mobil\BannerController;
@@ -9,6 +10,9 @@ use App\Http\Controllers\Mobil\PromoController;
 use App\Http\Controllers\Mobil\ReceiptController;
 use App\Http\Controllers\Sms\PromoSmsGatewayController;
 use Illuminate\Support\Facades\Route;
+
+Route::post('/telegram/webhook', [TelegramController::class, 'webhook']);
+
 
 Route::controller(AuthController::class)->prefix('auth')->group(function () {
     Route::post('/guest-login', 'guest');

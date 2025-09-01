@@ -15,10 +15,16 @@ class ReceiptController extends Controller
 
     public function index(Request $request)
     {
-        return $this->forwardRequest("POST", $this->url, '/receipt', $request);
+       $response=  $this->forwardRequest("POST", $this->url, '/receipt', $request);
+              if ($response instanceof \Illuminate\Http\Client\Response) {
+                   return response()->json($response->json());
+              }
     }
     public function points(Request $request)
     {
-        return $this->forwardRequest("POST", $this->url, '/receipt/user_points', $request);
+        $response = $this->forwardRequest("POST", $this->url, '/receipt/user_points', $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json());
+        }
     }
 }
