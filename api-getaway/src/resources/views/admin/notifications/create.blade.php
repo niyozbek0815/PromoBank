@@ -120,28 +120,33 @@
             // Link input toggle qilish
             function toggleLinkInput() {
                 const type = linkTypeSelect.value;
+
+                // avval ikkala elementdan ham name olib tashlaymiz
+                urlInput.removeAttribute('name');
+                urlSelect.removeAttribute('name');
+                urlInput.removeAttribute('required');
+                urlSelect.removeAttribute('required');
+
                 if (type === 'url') {
                     urlSelectWrapper.classList.add('d-none');
                     urlInputWrapper.classList.remove('d-none');
-                    urlInput.setAttribute('required', 'required');
                     urlInput.setAttribute('name', 'link');
+                    urlInput.setAttribute('required', 'required');
                 } else if (type === 'promotion') {
                     urlInputWrapper.classList.add('d-none');
                     urlSelectWrapper.classList.remove('d-none');
-                    urlSelect.setAttribute('required', 'required');
                     urlSelect.setAttribute('name', 'link');
+                    urlSelect.setAttribute('required', 'required');
                     setSelectOptions(urlSelect, promotionUrls, "Promoaksiya tanlang...");
                 } else if (type === 'game') {
                     urlInputWrapper.classList.add('d-none');
                     urlSelectWrapper.classList.remove('d-none');
-                    urlSelect.setAttribute('required', 'required');
                     urlSelect.setAttribute('name', 'link');
+                    urlSelect.setAttribute('required', 'required');
                     setSelectOptions(urlSelect, gameUrls, "O‘yin tanlang...");
                 } else {
                     urlSelectWrapper.classList.add('d-none');
                     urlInputWrapper.classList.add('d-none');
-                    urlSelect.removeAttribute('required');
-                    urlInput.removeAttribute('required');
                 }
             }
             linkTypeSelect.addEventListener('change', toggleLinkInput);

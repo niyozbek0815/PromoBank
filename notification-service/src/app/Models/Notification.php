@@ -34,7 +34,9 @@ class Notification extends Model
     'scheduled_at' => 'datetime',
 ];
 
-    protected $appends = ['image'];
+    protected $appends = ['image'
+    // ,'view_status'
+];
     public $translatable = ['text', 'title'];
 
 public function getImageAttribute()
@@ -42,6 +44,11 @@ public function getImageAttribute()
     $media = $this->getMedia('notification-image');
     return $media['url'] ?? null;
 }
+    public function getViewStatusAttribute()
+    {
+        // relation orqali qo‘shilgan "users" dan statusni olib beradi
+        return $this->users->first()->status ?? null;
+    }
 
     public function notificationwiew()
     {

@@ -67,7 +67,7 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        $response = $this->forwardRequest("GET", $this->url, '/me', $request);
+        $response = $this->forwardRequest("POST", $this->url, '/me', $request);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());
         }

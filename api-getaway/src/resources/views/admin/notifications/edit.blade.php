@@ -9,79 +9,79 @@
     <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
     <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
     <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
-<style>
-.preview-container {
-    width: 100%;
-    max-height: 300px;
-    background: #2d2d2d;
-    border: 15px solid #fff;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    min-height: 200px;
-    position: relative;
-}
+    <style>
+        .preview-container {
+            width: 100%;
+            max-height: 300px;
+            background: #2d2d2d;
+            border: 15px solid #fff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            min-height: 200px;
+            position: relative;
+        }
 
-.preview-img {
-    max-height: 100%;
-    height: 270px;
-    width: auto;
-    display: block;
-    border-radius: 10px;
-    margin: auto;
-    object-fit: contain;
-    position: relative;
-    z-index: 2;
-}
+        .preview-img {
+            max-height: 100%;
+            height: 270px;
+            width: auto;
+            display: block;
+            border-radius: 10px;
+            margin: auto;
+            object-fit: contain;
+            position: relative;
+            z-index: 2;
+        }
 
-/* Asiryarklashib boradigan qoraroq shadow yuqori qismida */
-.preview-container::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: 80px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0) 0%, rgba(0,0,0,0.6) 100%);
-    z-index: 3;
-    pointer-events: none;
-}
-</style>
+        /* Asiryarklashib boradigan qoraroq shadow yuqori qismida */
+        .preview-container::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 80px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.6) 100%);
+            z-index: 3;
+            pointer-events: none;
+        }
+    </style>
     {{-- === Select2 kutubxonalari === --}}
     <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
     <link href="{{ asset('adminpanel/assets/css/select2.min.css') }}" rel="stylesheet" />
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-    // === FilePond ===
-FilePond.registerPlugin(
-    FilePondPluginFileValidateType,
-    FilePondPluginFileValidateSize,
-    FilePondPluginImagePreview
-);
-const inputElement = document.getElementById('mediaInput');
-const pond = FilePond.create(inputElement, {
-    storeAsFile: true,
-    allowMultiple: false,
-    maxFileSize: '20MB',
-    acceptedFileTypes: ['image/*', 'image/gif'],
-    labelIdle: '📂 <span class="filepond--label-action">Faylni tanlang</span> yoki tashlang',
-    credits: false
-});
+            // === FilePond ===
+            FilePond.registerPlugin(
+                FilePondPluginFileValidateType,
+                FilePondPluginFileValidateSize,
+                FilePondPluginImagePreview
+            );
+            const inputElement = document.getElementById('mediaInput');
+            const pond = FilePond.create(inputElement, {
+                storeAsFile: true,
+                allowMultiple: false,
+                maxFileSize: '20MB',
+                acceptedFileTypes: ['image/*', 'image/gif'],
+                labelIdle: '📂 <span class="filepond--label-action">Faylni tanlang</span> yoki tashlang',
+                credits: false
+            });
 
-// --- eski preview boshqaruvi ---
-const oldPreview = document.getElementById('oldPreview');
+            // --- eski preview boshqaruvi ---
+            const oldPreview = document.getElementById('oldPreview');
 
-pond.on('addfile', () => {
-    if (oldPreview) oldPreview.style.display = 'none';
-});
+            pond.on('addfile', () => {
+                if (oldPreview) oldPreview.style.display = 'none';
+            });
 
-pond.on('removefile', () => {
-    if (oldPreview) oldPreview.style.display = 'block';
-});
+            pond.on('removefile', () => {
+                if (oldPreview) oldPreview.style.display = 'block';
+            });
 
             // === Platforma select2 ===
             $('#types').select2({
@@ -169,27 +169,36 @@ pond.on('removefile', () => {
                     urlSelectWrapper.classList.add('d-none');
                     urlInputWrapper.classList.remove('d-none');
 
+                    urlInput.disabled = false;
+                    urlSelect.disabled = true;
+
                     urlInput.value = (backendType === 'url') ? (backendLink || "") : "";
                 } else if (type === 'promotion') {
                     urlInputWrapper.classList.add('d-none');
                     urlSelectWrapper.classList.remove('d-none');
 
-                    // Agar backenddan type = promotion bo‘lsa => eski linkni tanlaymiz
-                    // Aks holda => majburan default qoldiramiz
+                    urlInput.disabled = true;
+                    urlSelect.disabled = false;
+
                     const forceDefault = backendType !== 'promotion';
                     setSelectOptions(urlSelect, promotionUrls, backendLink, forceDefault);
                 } else if (type === 'game') {
                     urlInputWrapper.classList.add('d-none');
                     urlSelectWrapper.classList.remove('d-none');
 
+                    urlInput.disabled = true;
+                    urlSelect.disabled = false;
+
                     const forceDefault = backendType !== 'game';
                     setSelectOptions(urlSelect, gameUrls, backendLink, forceDefault);
                 } else {
                     urlSelectWrapper.classList.add('d-none');
                     urlInputWrapper.classList.add('d-none');
+
+                    urlInput.disabled = true;
+                    urlSelect.disabled = true;
                 }
             }
-
 
 
 
@@ -249,37 +258,38 @@ pond.on('removefile', () => {
                         </div>
 
                         {{-- === Media === --}}
-                    {{-- === Media === --}}
-<div class="mb-3">
-    <label>Notification rasmi</label>
-    <input type="file" name="media" class="filepond" id="mediaInput"/>
+                        {{-- === Media === --}}
+                        <div class="mb-3">
+                            <label>Notification rasmi</label>
+                            <input type="file" name="media" class="filepond" id="mediaInput" />
 
-@if ($notification['image'])
-    <div id="oldPreview" class="preview-container mt-3">
-        <img src="{{ $notification['image'] }}" alt="Notification Image" class="preview-img">
-    </div>
-@endif
-</div>
+                            @if ($notification['image'])
+                                <div id="oldPreview" class="preview-container mt-3">
+                                    <img src="{{ $notification['image'] }}" alt="Notification Image" class="preview-img">
+                                </div>
+                            @endif
+                        </div>
 
                         <div class="row">
                             {{-- Scheduled at (agar o‘tmagan bo‘lsa) --}}
-                          @php
-    use Carbon\Carbon;
+                            @php
+                                use Carbon\Carbon;
 
-    $scheduledAt = !empty($notification['scheduled_at'])
-        ? Carbon::parse($notification['scheduled_at'])
-        : null;
+                                $scheduledAt = !empty($notification['scheduled_at'])
+                                    ? Carbon::parse($notification['scheduled_at'])
+                                    : null;
 
-    $showScheduledInput = $scheduledAt && $scheduledAt->greaterThan(Carbon::now()->addMinutes(10));
-@endphp
+                                $showScheduledInput =
+                                    $scheduledAt && $scheduledAt->greaterThan(Carbon::now()->addMinutes(10));
+                            @endphp
 
-@if ($showScheduledInput)
-    <div class="col-6 mb-3">
-        <label>Yuborish vaqti</label>
-        <input type="datetime-local" name="scheduled_at" class="form-control"
-            value="{{ old('scheduled_at', $scheduledAt?->format('Y-m-d\TH:i')) }}">
-    </div>
-@endif
+                            @if ($showScheduledInput)
+                                <div class="col-6 mb-3">
+                                    <label>Yuborish vaqti</label>
+                                    <input type="datetime-local" name="scheduled_at" class="form-control"
+                                        value="{{ old('scheduled_at', $scheduledAt?->format('Y-m-d\TH:i')) }}">
+                                </div>
+                            @endif
 
                             {{-- Target type --}}
                             <div class="col-6 mb-3">
@@ -336,7 +346,7 @@ pond.on('removefile', () => {
                             <div class="col-6 mb-3 d-none" id="url_select_wrapper">
                                 <label>Link</label>
                                 <select id="url_select" name="link" class="form-select">
-                                    <option value="" disabled selected>Tanlang...</option>
+                                    <option value="" selected>Tanlang...</option>
                                 </select>
                             </div>
 

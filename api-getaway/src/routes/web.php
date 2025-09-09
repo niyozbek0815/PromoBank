@@ -15,13 +15,13 @@ use App\Http\Controllers\Admin\Promo\PromotionController;
 use App\Http\Controllers\Admin\SelesReceiptController;
 use App\Http\Controllers\Admin\SocialMediaController;
 use App\Http\Controllers\Admin\User\UserController;
+use App\Http\Controllers\Frontend\HomeController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/media/uploads/{context}/{fileName}', function ($context, $fileName) {
     $mediaServiceUrl = config('services.urls.media_service') . "/uploads/{$context}/{$fileName}";

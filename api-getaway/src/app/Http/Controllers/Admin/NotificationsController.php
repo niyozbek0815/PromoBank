@@ -230,6 +230,7 @@ class NotificationsController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // dd($request->all());
         $response = $this->forwardRequestMedias(
             'PUT',
             $this->url,

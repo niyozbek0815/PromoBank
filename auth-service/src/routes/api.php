@@ -13,7 +13,7 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login');
     Route::post('/register', 'register');
     Route::post('/verifications/{id}', 'check');
-    Route::get('/me', 'user');
+    Route::post('/me', 'user');
     Route::put('/me', 'userupdate');
     Route::post('/me/verify-update', 'checkUpdate');
 

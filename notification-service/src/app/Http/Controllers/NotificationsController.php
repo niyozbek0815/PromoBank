@@ -15,10 +15,7 @@ use Yajra\DataTables\DataTables;
 
 class NotificationsController extends Controller
 {
-    public function create()
-    {
-        return response()->json(['message' => 'Notification created successfully']);
-    }
+  
     public function getUsers(Request $request)
     {
         $query = UserDevice::query()

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Mobil\NotificationController;
 use App\Http\Controllers\NotificationsController;
 use App\Jobs\DispatchNotificationFcmJob;
 use App\Models\User;
@@ -12,6 +13,19 @@ use Illuminate\Support\Facades\Route;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+Route::prefix('notifications')->controller(NotificationController::class)->group(function () {
+    // GET /notifications → barcha bildirishnomalar ro‘yxati
+    Route::post('/', 'index')->name('notifications.index');
+
+    // GET /notifications/unread-count → o‘qilmaganlar soni
+    Route::post('/unread-count', 'unreadCount')->name('notifications.unreadCount');
+
+    // PATCH /notifications/{id}/read → bitta bildirishnomani o‘qilgan qilish
+    Route::post('/{id}/read', 'markAsRead')->name('notifications.read');
+
+    // DELETE /notifications → barcha bildirishnomalarni tozalash
+    Route::post('/all-read', 'markAllAsRead')->name('notifications.allRead');
+});
 Route::prefix('front')->group(function () {
     Route::prefix('notifications')->name('admin.notifications.')
         ->controller(NotificationsController::class)
@@ -24,20 +38,20 @@ Route::prefix('front')->group(function () {
             Route::put('/{banner}', 'update')->name('update');
             Route::post('/{banner}/delete', 'destroy')->name('delete');
             Route::post('/{notification}/resent', function ($notification) {
-               $token='cnUmexLNBHZKC3w-l11ijw:APA91bGOmj3nRRRgcD20eRYGvW2ZMPMbXMjPrMmdyBZ2qLVuxwI1Cqi1aPSQ3z67L4xRzK-AaErmNYGE1ZS8-SS0nqKYtjJZBeSr7mbRE5e3A8NEwU28ghU';
-               $user=UserDevice::where('fcm_token', $token)->delete();
-                $device = UserDevice::where('id', '>', 101)
-                    ->where('device_type', 'ios')
-                    ->first();
-                if ($device) {
-                    $device->update([
-                        'fcm_token' => $token,
-                        'phone' => '+998900191099'
-                    ]);
-                }
+                // $token = 'cnUmexLNBHZKC3w-l11ijw:APA91bGOmj3nRRRgcD20eRYGvW2ZMPMbXMjPrMmdyBZ2qLVuxwI1Cqi1aPSQ3z67L4xRzK-AaErmNYGE1ZS8-SS0nqKYtjJZBeSr7mbRE5e3A8NEwU28ghU';
+                // $user = UserDevice::where('fcm_token', $token)->delete();
+                // $device = UserDevice::where('id', '>', 101)
+                //     ->where('device_type', 'ios')
+                //     ->first();
+                // if ($device) {
+                //     $device->update([
+                //         'fcm_token' => $token,
+                //         'phone' => '+998900191099'
+                //     ]);
+                // }
 
                 $total = UserDevice::count();
-                Log::info("UserDevice count:", ['count' => $total, 'device' => $device]);
+                // Log::info("UserDevice count:", ['count' => $total, 'device' => $device]);
 
                 Queue::connection('rabbitmq')->push(new DispatchNotificationFcmJob($notification));
                 return response()->json(['success' => true, 'message' => 'Notification yuborildi!', 'notification_id' => $total]);
@@ -70,7 +84,5 @@ Route::prefix('front')->group(function () {
 
                 return response()->json(['success' => true, 'message' => 'Notification yuborildi!']);
             });
-
         });
-
 });

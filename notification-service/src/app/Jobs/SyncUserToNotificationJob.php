@@ -61,9 +61,11 @@ protected $phone;
 
         DB::transaction(function () {
           $device=  UserDevice::updateOrCreate(
-                ['fcm_token' => $this->fcmToken], // unique constraint
                 [
-                    'user_id'       => $this->userId,
+                    'fcm_token' => $this->fcmToken,
+                    'user_id'   => $this->userId, // mavjudlikka ham tekshiradi
+                ],
+                [
                     'is_guest'      => $this->isGuest,
                     'ip_address'    => $this->userIp,
                     'device_type'   => $this->platform,

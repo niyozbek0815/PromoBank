@@ -6,6 +6,7 @@ use App\Http\Controllers\Mobil\AuthController;
 use App\Http\Controllers\Mobil\BannerController;
 use App\Http\Controllers\Mobil\GameController;
 use App\Http\Controllers\Mobil\GetawayGameController;
+use App\Http\Controllers\Mobil\NotificationController;
 use App\Http\Controllers\Mobil\PromoController;
 use App\Http\Controllers\Mobil\ReceiptController;
 use App\Http\Controllers\Sms\PromoSmsGatewayController;
@@ -47,6 +48,19 @@ Route::controller(ReceiptController::class)->prefix('receipt')->middleware(['gue
 Route::prefix('games')->middleware(['guestCheck'])->group(function () {
     Route::get('/', [GameController::class, 'listAllGames']);
     Route::any('/{game}/{action}', [GetawayGameController::class, 'handle'])->middleware(['guestCheck:false']);
+});
+Route::prefix('notifications')->middleware(['guestCheck'])->controller(NotificationController::class)->group(function () {
+    // GET /notifications → barcha bildirishnomalar ro‘yxati
+    Route::get('/', 'index')->name('notifications.index');
+
+    // GET /notifications/unread-count → o‘qilmaganlar soni
+    Route::get('/unread-count', 'unreadCount')->name('notifications.unreadCount');
+
+    // PATCH /notifications/{id}/read → bitta bildirishnomani o‘qilgan qilish
+    Route::get('/{id}/read', 'markAsRead')->name('notifications.read');
+
+    // DELETE /notifications → barcha bildirishnomalarni tozalash
+    Route::get('/all-read', 'markAllAsRead')->name('notifications.allRead');
 });
 // Sms orqali promocode jo'natish uchun api
 Route::post('/sms/promo/receive-sms', [PromoSmsGatewayController::class, 'receive'])->middleware(['smsProvider']);

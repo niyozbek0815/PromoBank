@@ -20,6 +20,7 @@ class NotificationUser extends Model
     ];
 
     protected $casts = [
+        'status' => 'string',
         'meta' => 'array',
         'last_attempt_at' => 'datetime',
     ];
