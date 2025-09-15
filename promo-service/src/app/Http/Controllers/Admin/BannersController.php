@@ -24,12 +24,9 @@ class BannersController extends Controller
             'title.uz'    => 'required|string|max:255',
             'title.ru'    => 'nullable|string|max:255',
             'title.kr'    => 'nullable|string|max:255',
-
             'banner_type' => 'required|string|in:game,promotion,url',
             'url'         => 'required|string',
-
             'status'      => 'required|boolean',
-
             // media endi majburiy emas
             'media'       => 'nullable|array',
             'media.*'     => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,mp4,webm|max:10240',

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Jobs\StoreBase64MediaJob;
@@ -79,17 +80,17 @@ class AuthService
         if ($user->userOtps && $user->userOtps->otp == $req['password']) {
             $user->status = true;
             $user->save();
-                   SyncUserToNotificationJob::dispatch(
-            $user->id,
-            $user->is_guest,
-            $request->header('User-Ip'),
-            $req['fcm_token'],
-            $req['platform'],
-            $req['model'],
-            $req['app_version'] ?? null,
-            $request->header('User-Agent'),
-            $user->phone
-        )->onQueue('notification_queue');
+            SyncUserToNotificationJob::dispatch(
+                $user->id,
+                $user->is_guest,
+                $request->header('User-Ip'),
+                $req['fcm_token'],
+                $req['platform'],
+                $req['model'],
+                $req['app_version'] ?? null,
+                $request->header('User-Agent'),
+                $user->phone
+            )->onQueue('notification_queue');
             if ($userOld) {
                 // boshqa microservicelarga user malumotlarini
                 //  yangi userga olib o'tishga xabar yuboriladi

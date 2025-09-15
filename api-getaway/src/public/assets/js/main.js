@@ -1,5 +1,9 @@
 
+
 document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById('languageSwitcher').addEventListener('change', function () {
+        window.location.href = '/lang/' + this.value;
+    });
     // 1️⃣ Layout qayta hisoblash
     function recalcLayout() {
         const download = document.getElementById("download");

@@ -1,10 +1,16 @@
 <?php
 
+use App\Http\Controllers\Admin\AboutsController;
 use App\Http\Controllers\Admin\BannersController;
+use App\Http\Controllers\Admin\BenefitController;
 use App\Http\Controllers\Admin\Company\CompanyController;
+use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DownloadController;
+use App\Http\Controllers\Admin\ForSponsorsController;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\NotificationsController;
+use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\PrizeCategoryController;
 use App\Http\Controllers\Admin\PrizeController;
 use App\Http\Controllers\Admin\ProfileController;
@@ -13,7 +19,10 @@ use App\Http\Controllers\Admin\PromotionProductController;
 use App\Http\Controllers\Admin\PromotionShopController;
 use App\Http\Controllers\Admin\Promo\PromotionController;
 use App\Http\Controllers\Admin\SelesReceiptController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SocialMediaController;
+use App\Http\Controllers\Admin\SocialsController;
+use App\Http\Controllers\Admin\SponsorController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Frontend\HomeController;
 use Illuminate\Support\Facades\Http;
@@ -22,7 +31,14 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
-
+Route::get('/lang/{locale}', function ($locale) {
+    $available = ['uz', 'ru', 'kr']; // mavjud tillar
+    if (in_array($locale, $available)) {
+        session(['locale' => $locale]);
+        app()->setLocale($locale);
+    }
+    return back(); // o‘sha sahifaga qaytadi
+})->name('changeLang');
 Route::get('/media/uploads/{context}/{fileName}', function ($context, $fileName) {
     $mediaServiceUrl = config('services.urls.media_service') . "/uploads/{$context}/{$fileName}";
 
@@ -191,6 +207,112 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::get('/users', 'getUsers')->name('getUsers');
         });
 
+
+
+    // web sayt routes
+
+    Route::prefix('sponsors')
+        ->name('admin.sponsors.')
+        ->controller(SponsorController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{sponsor}/edit', 'edit')->name('edit');
+            Route::put('/{sponsor}', 'update')->name('update');
+            Route::post('/{sponsor}/delete', 'destroy')->name('delete');
+            Route::post('/{sponsor}/status', 'changeStatus')->name('status');
+        });
+    Route::prefix('benefits')
+        ->name('admin.benefits.')
+        ->controller(BenefitController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{benefit}/edit', 'edit')->name('edit');
+            Route::put('/{benefit}', 'update')->name('update');
+            Route::post('/{benefit}/delete', 'destroy')->name('delete');
+            Route::post('/{benefit}/status', 'changeStatus')->name('status');
+        });
+    Route::prefix('portfolio')
+        ->name('admin.portfolio.')
+        ->controller(PortfolioController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{id}/edit', 'edit')->name('edit');
+            Route::put('/{id}', 'update')->name('update');
+            Route::post('/{id}/delete', 'destroy')->name('delete');
+            Route::post('/{id}/status', 'changeStatus')->name('status');
+        });
+    Route::prefix('forsponsor')
+        ->name('admin.forsponsor.')
+        ->controller(ForSponsorsController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{id}/edit', 'edit')->name('edit');
+            Route::put('/{id}', 'update')->name('update');
+            Route::post('/{id}/delete', 'destroy')->name('delete');
+            Route::post('/{id}/status', 'changeStatus')->name('status');
+        });
+    Route::prefix('socials')
+        ->name('admin.socials.')
+        ->controller(SocialsController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{id}/edit', 'edit')->name('edit');
+            Route::put('/{id}', 'update')->name('update');
+            Route::post('/{id}/delete', 'destroy')->name('delete');
+            Route::post('/{id}/status', 'changeStatus')->name('status');
+        });
+    Route::prefix('contacts')
+        ->name('admin.contacts.')
+        ->controller(ContactController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{id}/edit', 'edit')->name('edit');
+            Route::put('/{id}', 'update')->name('update');
+            Route::post('/{id}/delete', 'destroy')->name('delete');
+            Route::post('/{id}/status', 'changeStatus')->name('status');
+        });
+    Route::prefix('settings')
+        ->name('admin.settings.')
+        ->controller(SettingsController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/edit', 'edit')->name('edit');
+        Route::put('/update', 'update')->name('update');
+    });
+    Route::prefix('downloads')
+        ->name('admin.downloads.')
+        ->controller(DownloadController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/edit', 'edit')->name('edit');
+            Route::put('/update', 'update')->name('update');
+        });
+    Route::prefix('abouts')
+        ->name('admin.abouts.')
+        ->controller(AboutsController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/edit', 'edit')->name('edit');
+            Route::put('/update', 'update')->name('update');
+        });
 });
 Route::get('/fcm-test', function () {
     return view('fcm-test');

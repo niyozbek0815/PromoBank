@@ -2,21 +2,21 @@
     <div class="container">
         <div class="overlay-navbar">
             <div class="nav_logo me-5">
-                <img src="{{ asset('assets/image/hero/logo.svg') }}" alt="PromoBank logo">
+                <img src="{{ asset($settings['navbar_logo']) }}" alt="PromoBank logo">
             </div>
             <div class="close-menu" id="closeMenu">
                 <i class="fa-sharp fa-regular fa-xmark"></i>
             </div>
         </div>
         <div class="menu">
-            <a href="#" class="nav-link active">Bosh sahifa</a>
-            <a href="#download" class="nav-link">Yuklab olish</a>
-            <a href="#promo" class="nav-link">Aksiyalar</a>
-            <a href="#benefit" class="nav-link">Foydalanuvchilar uchun</a>
-            <a href="#portfolio" class="nav-link">Loyihalar</a>
-            <a href="#for-sponsors" class="nav-link">Homiylarimiz uchun</a>
-            <a href="#sponsors" class="nav-link">Homiylar</a>
-            <a href="#about" class="nav-link">Biz haqimizda</a>
+         <a href="#" class="nav-link active">{{ __('messages.home') }}</a>
+            <a href="#download" class="nav-link">{{ __('messages.download') }}</a>
+            <a href="#promo" class="nav-link">{{ __('messages.promos') }}</a>
+            <a href="#benefit" class="nav-link">{{ __('messages.benefit') }}</a>
+            <a href="#portfolio" class="nav-link">{{ __('messages.portfolio') }}</a>
+            <a href="#for-sponsors" class="nav-link">{{ __('messages.for_sponsors') }}</a>
+            <a href="#sponsors" class="nav-link">{{ __('messages.sponsors') }}</a>
+            <a href="#about" class="nav-link">{{ __('messages.about') }}</a>
 
             <div class="social-links">
                 @foreach ($socialLinks as $social)
@@ -54,17 +54,15 @@
 <div class="navbar">
     <div class="container">
         <div class="nav_logo me-5">
-            <img src="{{ asset('assets/image/hero/logo.svg') }}" alt="PromoBank logo">
+            <img src="{{ asset($settings['navbar_logo']) }}" alt="PromoBank logo">
         </div>
         <div class="nav-links flex-row">
-            <a href="#" class="nav-link active">Bosh sahifa</a>
-            <a href="#download" class="nav-link">Yuklab olish</a>
-            <a href="#promo" class="nav-link">Aksiyalar</a>
-            <!-- <a href="#benefit" class="nav-link">Foydalanuvchilar uchun</a> -->
-            <!-- <a href="#portfolio" class="nav-link">Loyihalar</a> -->
-            <!-- <a href="#for-sponsors" class="nav-link">Homiylarimiz uchun</a> -->
-            <!-- <a href="#sponsors" class="nav-link">Homiylar</a> -->
-            <a href="#about" class="nav-link">Biz haqimizda</a>
+                   <div class="nav-links flex-row">
+            <a href="#" class="nav-link active">{{ __('messages.home') }}</a>
+            <a href="#download" class="nav-link">{{ __('messages.download') }}</a>
+            <a href="#promo" class="nav-link">{{ __('messages.promos') }}</a>
+            <a href="#about" class="nav-link">{{ __('messages.about') }}</a>
+        </div>
         </div>
         <div class="nav-right">
             <div class="social-links">

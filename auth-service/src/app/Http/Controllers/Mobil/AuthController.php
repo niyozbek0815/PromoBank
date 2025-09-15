@@ -129,7 +129,7 @@ class AuthController extends Controller
     public function check(LoginCheckRequest $request, $id)
     {
         $req = $request->validated();
-
+        Log::info($req['fcm_token']);
         return DB::transaction(function () use ($req, $request, $id) {
             $user    = User::findOrFail($id)->load('userOtps');
             $userOld = User::where('phone', $req['uuid'])->latest()->first();

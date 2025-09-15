@@ -16,7 +16,7 @@ return new class extends Migration
         $table->unsignedBigInteger('user_id')->nullable(); // user service ID
         $table->string('ip_address', 45)->nullable();
         $table->boolean('is_guest')->default(false);      // guest flag
-        $table->string('fcm_token', 255)->unique();
+            $table->string('fcm_token', 255);
         $table->enum('device_type', ['android', 'ios', 'web','telegram','sms']);
         $table->string('device_name', 100)->nullable(); // Redmi, iPhone va h.k.
         $table->string('app_version', 50)->nullable();

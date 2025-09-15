@@ -10,12 +10,10 @@
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/owl.carousel.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/owl.theme.default.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
-
-    {{-- FontAwesome CDN (agar all.css ichida yo'q bo'lsa) --}}
+    {{-- <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}"> --}}
+<link rel="stylesheet" href="{{ asset('assets/css/main.css') }}?v={{ filemtime(public_path('assets/css/main.css')) }}">
     <script src="https://kit.fontawesome.com/your-kit.js" crossorigin="anonymous" defer></script>
 
-    {{-- @viteOnce ?? (agar Vite ishlatsang — quyida ko'rsatiladi) --}}
 </head>
 <body>
     @include('frontend.layouts.navbar')
@@ -30,6 +28,5 @@
     <script src="{{ asset('assets/js/jquery.js') }}"></script>
     <script src="{{ asset('assets/js/bootstrap.bundle.js') }}"></script>
     <script src="{{ asset('assets/js/owl.carousel.js') }}"></script>
-    <script src="{{ asset('assets/js/main.js') }}"></script>
-</body>
+<script src="{{ asset('assets/js/main.js') }}?v={{ time() }}"></script></body>
 </html>

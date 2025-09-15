@@ -3,9 +3,10 @@
         <!-- ✅ Logo va Social -->
         <div class="logo">
             <div class="img-wrap">
-                <img src="{{ asset('assets/image/hero/logo.svg') }}" class="footer-logo" alt="PromoBank logo">
+                <img src="{{ asset($settings['footer_logo']) }}" class="footer-logo" alt="PromoBank logo">
             </div>
-            <p class="item-description">{{ $heroTitle }}</p>
+            <p class="item-description">{{ $settings['footer_description'] }}</p>
+
 
             <div class="social-links">
                 @foreach ($socialLinks as $social)
@@ -46,39 +47,43 @@
 
         <!-- ✅ Sahifalar -->
         <div class="pages">
-            <h4 class="footer-title">Sahifalar</h4>
+            <h4 class="footer-title">{{ __('messages.pages') }}</h4>
             <ul>
-                <li><a href="#home">Bosh sahifa</a></li>
-                <li><a href="#download">Yuklab olish</a></li>
-                <li><a href="#promo">Aksiyalar</a></li>
-                <!-- <li><a href="#benefit">Foydalanuvchilar uchun</a></li> -->
-                <li><a href="#portfolio">Loyihalar</a></li>
-                <!-- <li><a href="#for-sponsors">Homiylarimiz uchun</a></li> -->
-                <!-- <li><a href="#sponsors">Homiylar</a></li> -->
-                <li><a href="#about">Biz haqimizda</a></li>
-                <!-- <li><a href="#contact">Aloqa</a></li> -->
+                <li><a href="#home">{{ __('messages.home') }}</a></li>
+                <li><a href="#download">{{ __('messages.download') }}</a></li>
+                <li><a href="#promo">{{ __('messages.promos') }}</a></li>
+                <li><a href="#portfolio">{{ __('messages.portfolio') }}</a></li>
+                <li><a href="#about">{{ __('messages.about') }}</a></li>
             </ul>
         </div>
 
         <!-- ✅ Aloqa -->
-        <div class="connect" id="contact">
+            <div class="connect" id="contact">
             <h4 class="footer-title">Aloqa ma’lumotlari</h4>
-            <ul>
-                @foreach ($contacts as $contact)
-                    <li>
-                        @php
-                            $icon = 'fa-solid fa-link'; // default icon
-                            if (Str::startsWith($contact['url'], 'https://maps.google')) {
-                                $icon = 'fa-solid fa-location-dot';
-                            } elseif (Str::startsWith($contact['url'], 'tel:')) {
-                                $icon = 'fa-solid fa-phone';
-                            } elseif (Str::startsWith($contact['url'], 'mailto:')) {
-                                $icon = 'fa-solid fa-envelope';
-                            }
-                        @endphp
+            <ul class="contact-list list-unstyled m-0 p-0 d-flex flex-column gap-2">
+                @php
+                    $typeIcons = [
+                        'address' => 'fa-solid fa-location-dot',
+                        'phone' => 'fa-solid fa-phone',
+                        'email' => 'fa-solid fa-envelope',
+                        'whatsapp' => 'fa-brands fa-whatsapp',
+                        'telegram' => 'fa-brands fa-telegram',
+                        'linkedin' => 'fa-brands fa-linkedin',
+                        'facebook' => 'fa-brands fa-facebook',
+                        'instagram' => 'fa-brands fa-instagram',
+                    ];
+                @endphp
 
-                        <i class="{{ $icon }}"></i>
-                        <a href="{{ $contact['url'] }}" target="_blank">{{ $contact['label'] }}</a>
+                @foreach ($contacts as $contact)
+                    @php
+                        $type = $contact['type'] ?? 'default';
+                        $icon = $typeIcons[$type] ?? 'fa-solid fa-link';
+                    @endphp
+                    <li class="d-flex align-items-center gap-2">
+                        <i class="{{ $icon }}" style="font-size: 18px;"></i>
+                        <a href="{{ $contact['url'] }}" target="_blank" class="contact-link">
+                            {{ $contact['label'] }}
+                        </a>
                     </li>
                 @endforeach
             </ul>
@@ -88,17 +93,17 @@
     <!-- ✅ Footer bottom -->
     <div class="footer-bottom">
         <div class="container">
-            <p>© {{ now()->year }} PromoBank. Barcha huquqlar himoyalangan.</p>
+            <p>© {{ now()->year }} {{ $settings['footer_bottom'] }}</p>
             <div class="footer-links">
                 <div class="footer-links-inner">
-                    <a href="/privacy-policy">Privacy Policy</a>
-                    <a href="/terms">Ommaviy Oferta</a>
-                    <a href="/support">Support</a>
+                    <a href="/privacy-policy">{{ __('messages.privacy') }}</a>
+                    <a href="/terms">{{ __('messages.terms') }}</a>
+                    <a href="/support">{{ __('messages.support') }}</a>
                 </div>
                 <select id="languageSwitcher">
-                    <option value="uz">🇺🇿 O‘zbekcha</option>
-                    <option value="ru">🇷🇺 Русский</option>
-                    <option value="en">🇬🇧 English</option>
+                    <option value="uz" {{ app()->getLocale() === 'uz' ? 'selected' : '' }}>🇺🇿 O‘zbekcha</option>
+                    <option value="ru" {{ app()->getLocale() === 'ru' ? 'selected' : '' }}>🇷🇺 Русский</option>
+                    <option value="kr" {{ app()->getLocale() === 'kr' ? 'selected' : '' }}>🇺🇿 Ўзбекча</option>
                 </select>
             </div>
         </div>

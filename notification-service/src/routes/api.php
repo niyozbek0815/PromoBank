@@ -50,7 +50,7 @@ Route::prefix('front')->group(function () {
                 //     ]);
                 // }
 
-                $total = UserDevice::count();
+                $total = UserDevice::get();
                 // Log::info("UserDevice count:", ['count' => $total, 'device' => $device]);
 
                 Queue::connection('rabbitmq')->push(new DispatchNotificationFcmJob($notification));

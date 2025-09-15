@@ -12,8 +12,7 @@
             }
         });
         $(document).ready(function() {
-            const url =
-            "{{ route('admin.promotion_products.data', [], false) }}"; // serverdan malumot olish
+            const url ="{{ route('admin.promotion_products.data', [], false) }}"; // serverdan malumot olish
 
             if ($.fn.DataTable.isDataTable('#promotion-products-table')) {
                 $('#promotion-products-table').DataTable().destroy();

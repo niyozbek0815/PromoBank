@@ -257,8 +257,6 @@
                             @endforeach
                         </div>
 
-                        {{-- === Media === --}}
-                        {{-- === Media === --}}
                         <div class="mb-3">
                             <label>Notification rasmi</label>
                             <input type="file" name="media" class="filepond" id="mediaInput" />

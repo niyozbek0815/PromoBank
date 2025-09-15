@@ -42,6 +42,7 @@ return [
         'game_service' => env('GAME_SERVICE_URL'),
         'telegram_service' => env('TELEGRAM_SERVICE_URL'),
         'notification_service' => env('NOTIFICATION_SERVICE_URL'),
+        'web_service' => env('WEB_SERVICE_URL')
     ],
 
 ];

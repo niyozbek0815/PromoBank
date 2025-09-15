@@ -15,7 +15,7 @@ use Yajra\DataTables\DataTables;
 
 class NotificationsController extends Controller
 {
-  
+
     public function getUsers(Request $request)
     {
         $query = UserDevice::query()

@@ -18,7 +18,6 @@ class PrizeController extends Controller
     }
     public function data(Request $request)
     {
-        Log::info("12Fetching prize data");
         $response = $this->forwardRequest("GET", $this->url, "front/prize/data", $request);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());

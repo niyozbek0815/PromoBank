@@ -21,7 +21,7 @@
 
         <div class="content" data-content>
             <div class="hero-inner container">
-                <h1 class="title">{{ $heroTitle }}</h1>
+                <h1 class="title">{{ $settings['hero_title'] }}</h1>
             </div>
         </div>
 
@@ -77,24 +77,24 @@
                                     <a href="{{ $link['url'] }}" target="_blank" class="store-btn playstore">
                                         <i class="fa-brands fa-google-play"></i>
                                         <div class="text">
-                                            <small>Get it on</small>
-                                            <strong>Google Play</strong>
+                                            <small>{{ __('messages.download_googleplay_small') }}</small>
+                                            <strong>{{ __('messages.download_googleplay') }}</strong>
                                         </div>
                                     </a>
                                 @elseif($link['type'] === 'appstore' && !empty($link['url']))
                                     <a href="{{ $link['url'] }}" target="_blank" class="store-btn appstore">
                                         <i class="fa-brands fa-app-store-ios"></i>
                                         <div class="text">
-                                            <small>Download from</small>
-                                            <strong>App Store</strong>
+                                            <small>{{ __('messages.download_appstore_small') }}</small>
+                                            <strong>{{ __('messages.download_appstore') }}</strong>
                                         </div>
                                     </a>
                                 @elseif($link['type'] === 'telegram' && !empty($link['url']))
                                     <a href="{{ $link['url'] }}" target="_blank" class="store-btn telegram">
                                         <i class="fa-solid fa-paper-plane"></i>
                                         <div class="text">
-                                            <small>Join us on</small>
-                                            <strong>Telegram</strong>
+                                            <small>{{ __('messages.download_telegram_small') }}</small>
+                                            <strong>{{ __('messages.download_telegram') }}</strong>
                                         </div>
                                     </a>
                                 @endif
@@ -110,8 +110,8 @@
 
             {{-- 🎉 Promos Section --}}
             <div class="container-sm" id="promo">
-                <p class="sub-title">Qatnashing va yutib oling!</p>
-                <h2 class="section-title">Faol promoaksiyalar</h2>
+                <p class="sub-title">{{ __('messages.promo_subtitle') }}</p>
+                <h2 class="section-title">{{ __('messages.promo_title') }}</h2>
                 <div class="promo-card">
                     @foreach ($promos as $promo)
                         <div class="promo-item">
@@ -137,8 +137,8 @@
 
         <div class="content" data-content>
             <div class="container-sm">
-                <p class="sub-title">Nega aynan PromoBank?</p>
-                <h2 class="section-title">Mijozlarimiz uchun imkoniyatlar</h2>
+                <p class="sub-title">{{ __('messages.benefit_subtitle') }}</p>
+                <h2 class="section-title">{{ __('messages.benefit_title') }}</h2>
 
                 <div class="benefit-card">
                     @foreach ($benefits as $benefit)
@@ -158,8 +158,8 @@
     </section>
     <section class="portfolio" id="portfolio">
         <div class="container-sm">
-            <p class="sub-title">Bizning Loyihalarimiz?</p>
-            <h2 class="section-title">Bizning Muafaqiyatli Loyihalarimiz</h2>
+            <p class="sub-title">{{ __('messages.portfolio_subtitle') }}</p>
+            <h2 class="section-title">{{ __('messages.portfolio_title') }}</h2>
 
             <div class="portfolio-card">
                 @foreach ($portfolios as $portfolio)
@@ -185,8 +185,8 @@
 
         <div class="content" data-content>
             <div class="container-sm">
-                <p class="sub-title">Homiylarimiz uchun</p>
-                <h2 class="section-title">Biz homiylarimizga quyidagilarni taklif qilamiz</h2>
+                <p class="sub-title">{{ __('messages.for_sponsors_subtitle') }}</p>
+                <h2 class="section-title">{{ __('messages.for_sponsors_title') }}</h2>
 
                 <div class="for-sponsors-card">
                     @foreach ($forSponsors as $item)
@@ -224,8 +224,8 @@
             {{-- Sponsors Section --}}
             <div class="sponsors-card" id="sponsors">
                 <div class="container-sm">
-                    <p class="sub-title">Bizning homiylarimiz?</p>
-                    <h2 class="section-title">Biz hizmat ko'rsatgan brendlar</h2>
+                    <p class="sub-title">{{ __('messages.sponsors_subtitle') }}</p>
+                    <h2 class="section-title">{{ __('messages.sponsors_title') }}</h2>
                 </div>
 
                 <div class="sponsors-list owl-carousel">
