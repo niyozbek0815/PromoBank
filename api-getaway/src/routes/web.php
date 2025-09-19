@@ -25,12 +25,16 @@ use App\Http\Controllers\Admin\SocialsController;
 use App\Http\Controllers\Admin\SponsorController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Frontend\HomeController;
+use App\Http\Controllers\Frontend\PromotionController as FrontendPromotionController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('frontend.home');
+Route::prefix('promotion')->name('promotion.')->group(function () {
+    Route::get('/{promotion}', [FrontendPromotionController::class, 'show'])->name('show');
+});
 Route::get('/lang/{locale}', function ($locale) {
     $available = ['uz', 'ru', 'kr']; // mavjud tillar
     if (in_array($locale, $available)) {

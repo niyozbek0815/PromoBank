@@ -497,16 +497,15 @@ class PromotionController extends Controller
         $validated = $request->validate([
             'promotion_id'     => 'required|integer|exists:promotions,id',
             'platform_id'      => 'required|integer|exists:platforms,id',
-            'is_enabled'       => 'nullable|boolean',
+            'is_enabled'       => 'nullable|string', // 🔥 endi string
             'additional_rules' => 'nullable|string',
             'phone'            => 'nullable|string',
         ]);
 
         // Normalize
-        $isEnabled = filter_var($validated['is_enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $isEnabled = ($validated['is_enabled'] ?? '') === 'on';
         $rules     = $validated['additional_rules'] ?? '{}';
 
-        // Optional: validate JSON format
         if (! is_array(json_decode($rules, true))) {
             return response()->json(['message' => 'Invalid additional_rules JSON format.'], 422);
         }
@@ -520,6 +519,7 @@ class PromotionController extends Controller
             [
                 'is_enabled'       => $isEnabled,
                 'additional_rules' => $rules,
+                'phone'=>$validated['phone']
             ]
         );
 

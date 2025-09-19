@@ -17,6 +17,7 @@ Route::prefix('frontend')->name('frontend.')
     ->controller(HomeController::class)
     ->group(function () {
         Route::post('/', 'index')->name('home');
+        Route::post('/pages', 'pages')->name('pages');
     });
 
 Route::prefix('/admin')->name('admin.')->group(

@@ -114,12 +114,12 @@
                 <h2 class="section-title">{{ __('messages.promo_title') }}</h2>
                 <div class="promo-card">
                     @foreach ($promos as $promo)
-                        <div class="promo-item">
+                        <a href="{{ route('promotion.show', $promo['id']) }}" class="promo-item">
                             <div class="img-wrap">
-                                <img src="{{ asset($promo['img']) }}" alt="{{ $promo['title'] }}">
+                                <img src="{{ asset($promo['banner']) }}" alt="{{ $promo['name'] }}">
                             </div>
-                            <a href="#" class="item-title">{{ $promo['title'] }}</a>
-                        </div>
+                            <p class="item-title">{{ $promo['name'] }}</p>
+                        </a>
                     @endforeach
                 </div>
             </div>
@@ -156,6 +156,7 @@
             </div>
         </div>
     </section>
+
     <section class="portfolio" id="portfolio">
         <div class="container-sm">
             <p class="sub-title">{{ __('messages.portfolio_subtitle') }}</p>

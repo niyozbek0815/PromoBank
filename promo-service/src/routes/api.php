@@ -10,10 +10,21 @@ use App\Http\Controllers\Admin\PromotionProductController;
 use App\Http\Controllers\Admin\PromotionShopController;
 use App\Http\Controllers\Admin\SelesReceiptController;
 use App\Http\Controllers\Admin\SocialMediaController;
+use App\Http\Controllers\Frontend\HomeController;
+use App\Http\Controllers\Frontend\PromotionController as FrontendPromotionController;
 use App\Http\Controllers\Mobil\BannerController;
 use App\Http\Controllers\Mobil\PromoController;
 use App\Http\Controllers\Mobil\ReceiptController;
 use Illuminate\Support\Facades\Route;
+
+Route::prefix('frontend')->name('frontend.')->group(function () {
+    Route::post('/', [HomeController::class, 'index'])->name('home');
+
+    Route::controller(FrontendPromotionController::class)
+        ->group(function () {
+            Route::post('/promotion/{id}', 'show');
+        });
+});
 
 Route::controller(PromoController::class)->prefix('promotions')->group(function () {
     // Route::get('/', 'index');
@@ -155,5 +166,4 @@ Route::prefix('front')->group(function () {
             Route::get('/{banner}/edit', 'edit')->name('edit');
             Route::put('/{banner}', 'update')->name('update');
         });
-
 });

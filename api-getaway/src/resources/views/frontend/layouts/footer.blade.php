@@ -1,4 +1,9 @@
 <section class="footer">
+    @php
+    // Agar hozirgi route frontend.home bo‘lsa, linklar faqat #id bo‘ladi
+    $isHome = Route::currentRouteName() === 'frontend.home';
+    $homeUrl = $isHome ? '' : route('frontend.home');
+@endphp
     <div class="container">
         <!-- ✅ Logo va Social -->
         <div class="logo">
@@ -49,11 +54,11 @@
         <div class="pages">
             <h4 class="footer-title">{{ __('messages.pages') }}</h4>
             <ul>
-                <li><a href="#home">{{ __('messages.home') }}</a></li>
-                <li><a href="#download">{{ __('messages.download') }}</a></li>
-                <li><a href="#promo">{{ __('messages.promos') }}</a></li>
-                <li><a href="#portfolio">{{ __('messages.portfolio') }}</a></li>
-                <li><a href="#about">{{ __('messages.about') }}</a></li>
+                <li><a href="{{ $homeUrl}}#home">{{ __('messages.home') }}</a></li>
+                <li><a href="{{ $homeUrl}}#download">{{ __('messages.download') }}</a></li>
+                <li><a href="{{ $homeUrl}}#promo">{{ __('messages.promos') }}</a></li>
+                <li><a href="{{ $homeUrl}}#portfolio">{{ __('messages.portfolio') }}</a></li>
+                <li><a href="{{ $homeUrl}}#about">{{ __('messages.about') }}</a></li>
             </ul>
         </div>
 

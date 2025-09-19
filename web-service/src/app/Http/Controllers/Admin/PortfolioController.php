@@ -118,7 +118,7 @@ class PortfolioController extends Controller
 
     /**
      * Edit
-     */
+     *
     public function edit($id)
     {
         $portfolio = Portfolio::findOrFail($id);

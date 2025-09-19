@@ -1,4 +1,52 @@
 
+	(function () {
+		const loader = document.getElementById('siteLoader');
+		const loaderText = document.getElementById('loaderText');
+
+		// Min va max vaqtlar (millisekundlarda)
+		const minDisplay = 1500; // 2s dan oldin yopilmaydi
+		const maxWait = 6000; // 6s dan keyin yopiladi
+
+		let shownAt = Date.now();
+		let isHidden = false;
+
+		function hideLoader(force = false) {
+			if (!loader || isHidden) return;
+			const elapsed = Date.now() - shownAt;
+
+			// agar force=true yoki max kutish vaqti o'tgan bo'lsa
+			if (force || elapsed >= minDisplay) {
+				// loaderni yopish
+				loader.setAttribute('aria-hidden', 'true');
+				loader.removeAttribute('data-visible');
+
+				// Fade animatsiyadan keyin DOMdan olib tashlash
+				setTimeout(() => {
+					try { loader.remove(); } catch (e) { }
+				}, 400);
+
+				isHidden = true;
+			} else {
+				// min vaqt to'lmaguncha kutib turish
+				setTimeout(() => hideLoader(true), minDisplay - elapsed);
+			}
+		}
+
+		// Page load event
+		if (document.readyState === 'complete') {
+			hideLoader();
+		} else {
+			window.addEventListener('load', () => hideLoader(), { once: true, passive: true });
+		}
+
+		// Max kutish fallback
+		setTimeout(() => {
+			if (!isHidden) {
+				loaderText && (loaderText.textContent = 'Yuklanish davom etmoqda…');
+				hideLoader(true);
+			}
+		}, maxWait);
+    })();
 
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('languageSwitcher').addEventListener('change', function () {
@@ -62,12 +110,14 @@ document.addEventListener("DOMContentLoaded", () => {
             slideTransition: "linear",
             smartSpeed: 15000,
             responsive: {
-                0: { items: 2 },
-                576: { items: 2 },
-                768: { items: 3 },
-                1200: { items: Math.floor(window.innerWidth / 320) } // 300+20 margin
+                0: { items: 1 }, // juda kichik ekranlar
+                576: { items: 2 }, // telefon / kichik planshet
+                768: { items: 3 }, // planshet
+                1200: { items: Math.max(1, Math.floor(window.innerWidth / 320)) } // katta ekranlarda dinamik
             }
         });
+
+        // carousel to'g'ri boshlanishi uchun
         setTimeout(() => $owl.trigger("next.owl.carousel"), 50);
     }
     initCarousel();
@@ -96,10 +146,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 6️⃣ Menu overlay
     const menuOverlay = document.getElementById("menuOverlay");
-    document.querySelector(".btn_bars")?.addEventListener("click", () => menuOverlay.classList.add("active"));
-    document.getElementById("closeMenu")?.addEventListener("click", () => menuOverlay.classList.remove("active"));
-    menuOverlay?.addEventListener("click", e => { if (e.target === menuOverlay) menuOverlay.classList.remove("active"); });
 
+    // 🔓 Menu ochish
+    document.querySelector(".btn_bars")?.addEventListener("click", () =>
+        menuOverlay.classList.add("active")
+    );
+
+    // ❌ Close tugmasi
+    document.getElementById("closeMenu")?.addEventListener("click", () =>
+        menuOverlay.classList.remove("active")
+    );
+
+    // 🖱 Overlayning bo‘sh joyini bosganda yopish
+    menuOverlay?.addEventListener("click", e => {
+        if (e.target === menuOverlay) menuOverlay.classList.remove("active");
+    });
+
+    // 🔗 Menu ichidagi link bosilganda yopish
+    document.querySelectorAll("#menuOverlay .menu .nav-link, #menuOverlay .menu .btn_social")
+        .forEach(link => {
+            link.addEventListener("click", () => menuOverlay.classList.remove("active"));
+        });
     // 7️⃣ Scene parallax
     document.querySelectorAll(".scene").forEach(scene => {
         const container = scene.closest("section")?.querySelector(".content") || scene;
@@ -132,3 +199,206 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🚀 Init
     recalcLayout();
 });
+
+// Promopage js codelari
+
+
+$(document).ready(function () {
+    $(".media-gallery").owlCarousel({
+        items: 3,
+        margin: 40,
+        loop: true,
+        nav: true,
+        dots: false,
+        center: true,
+        autoplay: true,
+        autoplayTimeout: 6000,   // 4s harakat oralig‘i
+        autoplayHoverPause: true, // hoverda to‘xtaydi
+        smartSpeed: 2000,
+        responsive: {
+            0: { items: 2 },
+            600: { items: 2 },
+            1000: { items: 3 }
+        }
+    });
+    const modal = $("#mediaModal");
+    const modalBody = $(".modal-body");
+    const items = $(".gallery-item");
+    let currentIndex = 0;
+
+    function openModal(index) {
+        currentIndex = index;
+        const item = items.eq(index);
+        const type = item.data("type");
+        const src = item.data("src");
+
+        modalBody.empty();
+
+        if (type === "image") {
+            modalBody.html(`<img src="${src}" alt="media" />`);
+        }
+        else if (type === "video") {
+            modalBody.html(`
+                <video controls autoplay>
+                    <source src="${src}" type="video/mp4">
+                    Sizning brauzeringiz video formatini qo‘llab-quvvatlamaydi.
+                </video>
+            `);
+        }
+        else if (type === "youtube") {
+            // YouTube linkdan ID olish (ikkita variantni ham qo‘llab-quvvatlaydi)
+            let videoId = null;
+            if (src.includes("youtube.com/watch?v=")) {
+                videoId = src.split("v=")[1]?.split("&")[0];
+            } else if (src.includes("youtu.be/")) {
+                videoId = src.split("youtu.be/")[1]?.split("?")[0];
+            }
+            if (videoId) {
+                modalBody.html(`
+                    <iframe width="100%" height="480"
+                            src="https://www.youtube.com/embed/${videoId}?autoplay=1"
+                            frameborder="0"
+                            allow="autoplay; encrypted-media"
+                            allowfullscreen>
+                    </iframe>
+                `);
+            } else {
+                modalBody.html(`<p style="color:#fff">❌ Noto‘g‘ri YouTube URL</p>`);
+            }
+        }
+
+        modal.fadeIn(200);
+    }
+
+    // Modal ochish
+    items.on("click", function () {
+        openModal(items.index(this));
+    });
+
+    // Yopish tugmasi
+    $(".close").on("click", function () {
+        modal.fadeOut(200, () => modalBody.empty());
+    });
+
+    // Prev/Next
+    $(".prev").on("click", function (e) {
+        e.stopPropagation();
+        openModal((currentIndex - 1 + items.length) % items.length);
+    });
+    $(".next").on("click", function (e) {
+        e.stopPropagation();
+        openModal((currentIndex + 1) % items.length);
+    });
+
+    // Modal tashqarisiga bosganda yopish
+    modal.on("click", function (e) {
+        if ($(e.target).is(".media-modal")) {
+            modal.fadeOut(200, () => modalBody.empty());
+        }
+    });
+
+    // ESC tugmasi bilan yopish
+    $(document).on("keydown", function (e) {
+        if (e.key === "Escape" && modal.is(":visible")) {
+            modal.fadeOut(200, () => modalBody.empty());
+        }
+    });
+});
+function openAppModal(e) {
+    e.preventDefault();
+    document.getElementById('appModal').style.display = 'flex';
+}
+
+function closeAppModal() {
+    document.getElementById('appModal').style.display = 'none';
+}
+function openSmsModal(e) {
+    e.preventDefault();
+    document.getElementById('smsModal').style.display = 'flex';
+}
+
+function closeSmsModal() {
+    document.getElementById('smsModal').style.display = 'none';
+}
+function openCodeModal(event) {
+    event.preventDefault();
+    document.getElementById('codeModal').style.display = 'flex';
+}
+
+function closeCodeModal() {
+    document.getElementById('codeModal').style.display = 'none';
+}
+
+function submitCode(event) {
+    event.preventDefault();
+    const code = document.getElementById('manualCode').value.trim();
+    if (!code) return;
+
+    // 🔥 Bu yerda AJAX yoki fetch orqali kodni backendga yuborasan
+    console.log("Kiritilgan kod:", code);
+
+    // Modalni yopish
+    closeCodeModal();
+
+    // Inputni tozalash
+    document.getElementById('manualCode').value = '';
+}
+
+
+let html5QrCode;
+
+function openScannerModal(event) {
+    event.preventDefault();
+    document.getElementById("scannerModal").style.display = "flex";
+
+    html5QrCode = new Html5Qrcode("qr-reader");
+    html5QrCode.start(
+        { facingMode: "environment" },
+        {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+        },
+        (decodedText) => {
+            alert("✅ QR kod topildi: " + decodedText);
+            closeScannerModal();
+        },
+        (err) => {
+            console.warn("Skaner xatosi:", err);
+        }
+    );
+}
+
+function closeScannerModal() {
+    document.getElementById("scannerModal").style.display = "none";
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => html5QrCode.clear());
+    }
+}
+
+function openReceiptModal(event) {
+    event.preventDefault();
+    document.getElementById("receiptModal").style.display = "flex";
+
+    html5QrCode = new Html5Qrcode("qr-reader");
+    html5QrCode.start(
+        { facingMode: "environment" },
+        {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+        },
+        (decodedText) => {
+            alert("✅ QR kod topildi: " + decodedText);
+            closeReceiptModal();
+        },
+        (err) => {
+            console.warn("Skaner xatosi:", err);
+        }
+    );
+}
+
+function closeReceiptModal() {
+    document.getElementById("receiptModal").style.display = "none";
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => html5QrCode.clear());
+    }
+}

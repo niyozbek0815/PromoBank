@@ -150,6 +150,7 @@ class PromotionController extends Controller
     }
     public function updatePlatform(Request $request, $promotionId, $platformId)
     {
+        // dd($request->all());
         $response = $this->forwardRequestMedias(
             'POST',     // multipart uchun faqat POST ishlaydi
             $this->url, // promo-service yoki media-service URL
