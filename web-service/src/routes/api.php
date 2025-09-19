@@ -10,7 +10,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SocialsController;
 use App\Http\Controllers\Admin\SponsorController;
 use App\Http\Controllers\Frontend\HomeController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Telegram\TelegramController as TelegramTelegramController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('frontend')->name('frontend.')
@@ -126,3 +126,8 @@ Route::prefix('/admin')->name('admin.')->group(
             });
     }
 );
+Route::prefix('/telegram')->name('telegram.')
+    ->controller(TelegramTelegramController::class)
+    ->group(function () {
+        Route::post('/social_links', 'index')->name('socials');
+    });

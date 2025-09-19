@@ -26,6 +26,8 @@ use App\Http\Controllers\Admin\SponsorController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\PromotionController as FrontendPromotionController;
+use App\Http\Controllers\WebApp\GamesController;
+use App\Http\Controllers\WebApp\PromotionsController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +37,26 @@ Route::get('/', [HomeController::class, 'index'])->name('frontend.home');
 Route::prefix('promotion')->name('promotion.')->group(function () {
     Route::get('/{promotion}', [FrontendPromotionController::class, 'show'])->name('show');
 });
+Route::prefix('webapp')->name('webapp.')->group(function () {
+
+    // Promotions page
+    Route::prefix('promotions')
+        ->name('promotions.')
+        ->controller(PromotionsController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+        });
+
+    // Games page
+    Route::prefix('games')
+        ->name('games.')
+        ->controller(GamesController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+        });
+});
+
+
 Route::get('/lang/{locale}', function ($locale) {
     $available = ['uz', 'ru', 'kr']; // mavjud tillar
     if (in_array($locale, $available)) {

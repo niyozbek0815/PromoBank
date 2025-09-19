@@ -10,17 +10,17 @@ class TelegramBotController extends Controller
 {
     public function handle(Request $request)
     {
-        Log::info("Controller middleware ishladi",['request' =>$request->header('X-Internal-Secret'),'env' => env('INTERNAL_SECRET')]);
+        // Log::info("Controller middleware ishladi",['request' =>$request->header('X-Internal-Secret'),'env' => env('INTERNAL_SECRET')]);
 
         // if ($request->header('X-Internal-Secret') !== env('INTERNAL_SECRET')) {
         //     return response()->json(['error' => 'Unauthorized'], 403);
         // }
 
         $update = request('__internal_update') ?? Telegram::getWebhookUpdate();
-        Log::info("Controller ishladi");
+        // Log::info("Controller ishladi");
         $middlewareResult = app(EnsureTelegramSessionExists::class)->handle($update);
         if ($middlewareResult) {
-            Log::info("Controller middleware ishladi");
+            // Log::info("Controller middleware ishladi");
             return $middlewareResult;
         }
 

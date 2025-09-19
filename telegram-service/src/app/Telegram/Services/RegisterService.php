@@ -91,7 +91,8 @@ class RegisterService
             empty($data['birthdate']) => app(BirthdateStepHandler::class)->ask($chatId),
             default => $this->registerUserAndFinalize($chatId, $data),
         };
-    }protected function registerUserAndFinalize($chatId, $data)
+    }
+    protected function registerUserAndFinalize($chatId, $data)
     {
         Log::info("User create request yuborilmoqda", ['chat_id' => $chatId, 'data' => $data]);
 

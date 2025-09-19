@@ -26,11 +26,11 @@ class MainBack
                     [
                         [
                             'text'    => $this->translator->get($chatId, 'menu_promotions'),
-                            'web_app' => ['url' => 'https://qadarun.com/'],
+                            'web_app' => ['url' => 'https://qadarun.com/webapp/promotions'],
                         ],
                         [
                             'text'    => $this->translator->get($chatId, 'menu_games'),
-                            'web_app' => ['url' => 'https://qadarun.com'],
+                            'web_app' => ['url' => 'https://qadarun.com/webapp/games'],
                         ],
                     ],
                     [
