@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Bot\AuthController as BotAuthController;
+use App\Http\Controllers\Bot\WebAppAuthController;
 use App\Http\Controllers\FrontAuthController;
 use App\Http\Controllers\Mobil\AddresController;
 use App\Http\Controllers\Mobil\AuthController;
@@ -26,6 +27,11 @@ Route::controller(BotAuthController::class)->group(function () {
     Route::post('/user_check', 'check');
     Route::post('/user_create', 'create');
     Route::post('/user_update', 'update');
+});
+Route::controller(WebAppAuthController::class)->prefix('webapp')->name('webapp.')->group(function () {
+    Route::post('auth/', 'login');
+    Route::post('auth/refresh', 'refresh');
+    Route::post('auth/logout', 'logout');
 });
 
 Route::controller(AddresController::class)->group(function () {

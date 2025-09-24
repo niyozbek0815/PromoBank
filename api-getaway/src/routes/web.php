@@ -45,9 +45,10 @@ Route::prefix('webapp')->name('webapp.')->group(function () {
         ->controller(PromotionsController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/{id}', 'show')->name('show');
+            Route::post('/{id}/promocode', 'viaPromocode');
+            Route::post('/{id}/receipt', 'viaReceipt');
         });
-
-    // Games page
     Route::prefix('games')
         ->name('games.')
         ->controller(GamesController::class)

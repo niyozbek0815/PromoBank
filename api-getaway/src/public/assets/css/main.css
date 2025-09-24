@@ -1145,6 +1145,7 @@ color: var(--accent-color);
 
 .sponsors-list {
     width: 100%;
+        /* yoki agar faqat gorizontal scroll bo‘lsa pan-x */
 }
 
 .sponsors-list {
@@ -1445,7 +1446,7 @@ color: var(--accent-color);
     right: 30px;
     width: 45px;
     height: 45px;
-    background: #F82F77;
+    background: var(--accent-color);
     color: #fff;
     font-size: 17px;
     display: flex;
@@ -2141,7 +2142,13 @@ color: var(--accent-color);
 }
 
 /* Video stream */
-#scannerVideo {
+#scannerVideoWrapper {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 12px;
+    border: 2px solid #333;
+}
+#receiptVideoWrapper {
     width: 100%;
     border-radius: 10px;
     margin-top: 12px;
@@ -2581,6 +2588,30 @@ div.spinner i:nth-child(8) {
     }
 }
 
+.promotion {
+    width: 100%;
+    min-height: 100vh;
+    padding: 100px 0;
+    background-image: url("../image/download/bg.jpg");
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+    overflow: visible;
+}
+
+.promotion .promo-card {
+    margin: 0px;
+    gap: 40px;
+}
+
+.footer.footer-webapp {
+    padding: 0;
+}
+
+.footer.footer-webapp .footer-bottom {
+    border-top: none;
+}
+
 @media (min-width: 1200px) {
 
     h1,
@@ -2602,6 +2633,12 @@ div.spinner i:nth-child(8) {
     .h4 {
         font-size: var(--text-xl);
     }
+
+    .promotion {
+        padding: 100px 0;
+    }
+
+
 }
 
 @media (max-width: 1200px) {
@@ -2640,7 +2677,7 @@ div.spinner i:nth-child(8) {
 
     .sub-title {
         font-size: var(--text-sm);
-        line-height: 10px;
+        line-height: 1.4;
         letter-spacing: 1.2px;
         margin-bottom: 18px;
     }
@@ -2738,9 +2775,10 @@ div.spinner i:nth-child(8) {
     .sponsors-about .about-card {
         margin-top: 0px;
     }
-        .banner .description {
-            margin: 30px 0 0;
-        }
+
+    .banner .description {
+        margin: 30px 0 0;
+    }
 }
 
 /* MEDIUM (≤992px) */
@@ -3054,9 +3092,15 @@ div.spinner i:nth-child(8) {
     .benefit .container-sm {
         padding: 80px 0px;
     }
-.banner {
-    padding-bottom: 80px;
-}
+
+    .banner {
+        padding-bottom: 80px;
+    }
+
+    .promotion {
+        padding: 80px 0;
+    }
+
     .portfolio .container-sm {
         padding: 80px 0px;
     }
@@ -3313,6 +3357,35 @@ div.spinner i:nth-child(8) {
         grid-template-columns: repeat(1, 1fr);
     }
 
+    .promotion .container-sm {
+        padding: 0px 30px;
+    }
+
+    .promotion .promo-card {
+        margin: 0px;
+        gap: 30px;
+    }
+
+    .footer.footer-webapp {
+        padding: 0;
+    }
+
+    .footer.footer-webapp .footer-bottom {
+        border-top: none;
+        margin-top: 10px;
+    }
+
+    .footer.footer-webapp .footer-bottom .container {
+        gap: 15px;
+    }
+        .scannerModal .download-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            gap: 12px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
 }
 
 @media (max-width: 400px) {

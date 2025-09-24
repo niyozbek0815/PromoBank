@@ -1,11 +1,11 @@
 # Docker settings
 DOCKER_NETWORK=promobank
-SERVICES=  api-getaway    auth-service media-service promo-service telegram-service     
-# payment-service  profile-service   telegram-service    notification-service game-service web-service 
+SERVICES=  api-getaway    auth-service media-service promo-service telegram-service   web-service  
+# payment-service  profile-service  notification-service game-service
 INFRA_COMPOSE=docker-compose/infrastructure.yml 
 
 # Helper
-.PHONY: help
+.PHONY: helpmake 
 help:
 	@echo ""
 	@echo "🔧 NETWORK & PGADMIN:"

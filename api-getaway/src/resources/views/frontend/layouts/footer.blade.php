@@ -114,3 +114,17 @@
         </div>
     </div>
 </section>
+    <div id="siteLoader" role="status" aria-live="polite" aria-label="Sahifa yuklanmoqda" data-visible>
+        <div class="loader-inner" role="img" aria-hidden="true">
+            <div class="loader-spinner" aria-hidden="true"></div>
+            <div class="spinner">
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+            </div>
+        </div>
+    </div>

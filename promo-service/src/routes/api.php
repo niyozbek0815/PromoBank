@@ -15,6 +15,7 @@ use App\Http\Controllers\Frontend\PromotionController as FrontendPromotionContro
 use App\Http\Controllers\Mobil\BannerController;
 use App\Http\Controllers\Mobil\PromoController;
 use App\Http\Controllers\Mobil\ReceiptController;
+use App\Http\Controllers\WebApp\PromotionsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('frontend')->name('frontend.')->group(function () {
@@ -24,6 +25,11 @@ Route::prefix('frontend')->name('frontend.')->group(function () {
         ->group(function () {
             Route::post('/promotion/{id}', 'show');
         });
+
+    Route::controller(PromotionsController::class)->prefix('promotion')->name('promotions.')->group(function () {
+        Route::post('{promotion}/promocode', 'viaPromocode')->name('viaPromocode');
+        Route::post('{promotion}/receipt', 'viaReceipt')->name('viaReceipt');
+    });
 });
 
 Route::controller(PromoController::class)->prefix('promotions')->group(function () {

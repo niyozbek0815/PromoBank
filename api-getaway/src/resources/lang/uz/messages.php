@@ -49,4 +49,33 @@ return [
     // About section
     'about_subtitle' => 'Biz haqimizda',
     'about_title'    => 'PromoBank haqida',
+
+    'start' => 'Boshlanish:',
+    'end' => 'Tugash:',
+    'offer' => 'Oferta bilan tanishing',
+    'methods' => 'Qatnashish usullari',
+    'telegram' => 'Telegram bot orqali',
+    'sms' => 'SMS orqali qatnashish',
+    'mobile' => 'Mobil ilovadan',
+    'gallery' => 'Promoaksiya Media Galereyasi',
+    'extra' => "Qo'shimcha ma’lumotlar",
+    'sms_title' => 'SMS orqali qatnashish',
+    'sms_text' => 'Promokodeni <strong>:phone</strong> qisqa raqamiga yuboring.',
+    'close' => 'Yopish',
+    'download_title' => 'Mobil ilovani yuklab oling',
+    'download_desc' => 'PromoBank mobil ilovasi va Telegram bot orqali barcha aksiyalarda qatnashing.',
+
+
+    'scanner_title' => 'QR kodni skanerlash',
+    'scanner_hint' => 'QR kodni kameraga tuting',
+    'scanner_cancel' => 'Bekor qilish',
+    'scanner_submit' => 'Yuborish',
+
+    // Receipt Modal
+    'receipt_title' => 'Harid chekini skanerlash',
+    'receipt_hint' => "QR kodni kameraga tuting. Va Sovg'alar va promoballarga ega bo'ling.",
+
+    // Code Modal
+    'code_title' => 'Promokodeni kiriting',
+    'code_placeholder' => 'Kodni kiriting...',
 ];

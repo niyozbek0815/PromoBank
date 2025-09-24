@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Bot\TelegramController;
+use App\Http\Controllers\Bot\WebAppAuthController;
 use App\Http\Controllers\Mobil\AddresController;
 use App\Http\Controllers\Mobil\AuthController;
 use App\Http\Controllers\Mobil\BannerController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Mobil\NotificationController;
 use App\Http\Controllers\Mobil\PromoController;
 use App\Http\Controllers\Mobil\ReceiptController;
 use App\Http\Controllers\Sms\PromoSmsGatewayController;
+use App\Http\Controllers\WebApp\PromotionsController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/telegram/webhook', [TelegramController::class, 'webhook']);
@@ -27,6 +29,20 @@ Route::controller(AuthController::class)->prefix('auth')->group(function () {
     // Route::post('/logout', 'logout')->middleware('guestCheck'); // POST /auth/logout
 });
 
+Route::prefix('webapp')->name('webapp.')->group(function () {
+    // 🔑 Auth routes
+    Route::controller(WebAppAuthController::class)->prefix('auth')->group(function () {
+        Route::post('/', 'login')->name('auth.login');
+        Route::post('/refresh', 'refresh')->name('auth.refresh');
+        Route::post('/logout', 'logout')->name('auth.logout');
+    });
+
+    // 🎟 Promo routes
+    Route::controller(PromotionsController::class)->prefix('promotions')->name('promotions.')->group(function () {
+        Route::post('{promotion}/promocode', 'verifyPromo')->name('verifyPromo')->middleware(['webapp.auth']);
+        Route::post('{promotion}/receipt', 'verifyReceipt')->name('verifyReceipt')->middleware(['webapp.auth']);
+    });
+});
 Route::controller(AddresController::class)->middleware(['guestCheck'])->group(function () {
     Route::get('/regions', 'region');
     Route::get('/regions/{region_id}/districts', 'district');

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\VerifyWebAppToken;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'guestCheck'  => \App\Http\Middleware\CheckGuestToken::class,
             'smsProvider' => \App\Http\Middleware\SmsProviderMiddleware::class,
             'checkadmin'  => \App\Http\Middleware\CheckJwtMiddleware::class,
+            'webapp.auth' => VerifyWebAppToken::class,
         ]);
         $middleware->web(append: [SetLocale::class]);
     })

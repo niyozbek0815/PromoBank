@@ -14,7 +14,6 @@
     {{-- <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}"> --}}
     <link rel="stylesheet"
         href="{{ asset('assets/css/main.css') }}?v={{ filemtime(public_path('assets/css/main.css')) }}">
-    <script src="https://kit.fontawesome.com/your-kit.js" crossorigin="anonymous" defer></script>
 
 </head>
 
@@ -26,26 +25,15 @@
     </main>
 
     @include('frontend.layouts.footer')
-    <div id="siteLoader" role="status" aria-live="polite" aria-label="Sahifa yuklanmoqda" data-visible>
-        <div class="loader-inner" role="img" aria-hidden="true">
-            <div class="loader-spinner" aria-hidden="true"></div>
-            <div class="spinner">
-                <i></i>
-                <i></i>
-                <i></i>
-                <i></i>
-                <i></i>
-                <i></i>
-                <i></i>
-            </div>
-        </div>
-    </div>
+	<div class="scrollTop"><i class="fa-solid fa-up"></i></div>
+
     {{-- Scripts --}}
     <script src="{{ asset('assets/js/jquery.js') }}"></script>
     <script src="{{ asset('assets/js/bootstrap.bundle.js') }}"></script>
-    <script src="{{ asset('assets/js/owl.carousel.js') }}"></script>
+    <script src="{{ asset('assets/js/owl.carousel.js') }}"></script>\
+        <script src="https://unpkg.com/html5-qrcode" defer></script>
+
     <script src="{{ asset('assets/js/main.js') }}?v={{ time() }}"></script>
-    <script src="https://unpkg.com/html5-qrcode" defer></script>
 
 </body>
 

@@ -3,7 +3,8 @@
 @section('title', 'PromoBank')
 
 @section('content')
-    <section class="hero" id="hero" data-relative>
+
+<section class="hero" id="hero" data-relative>
         <div class="scene">
             <div class="img-wrap innerAnimated">
                 <img src="{{ asset('assets/image/scene/1.png') }}" alt="" />
@@ -114,7 +115,7 @@
                 <h2 class="section-title">{{ __('messages.promo_title') }}</h2>
                 <div class="promo-card">
                     @foreach ($promos as $promo)
-                        <a href="{{ route('promotion.show', $promo['id']) }}" class="promo-item">
+                        <a href="{{ route('promotion.show', parameters: $promo['id']) }}" class="promo-item">
                             <div class="img-wrap">
                                 <img src="{{ asset($promo['banner']) }}" alt="{{ $promo['name'] }}">
                             </div>

@@ -49,5 +49,8 @@ return [
         'notification_service' => env('NOTIFICATION_SERVICE_URL'),
         'global_url'           => env('GLOBAL_URL'),
     ],
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+    ],
 
 ];

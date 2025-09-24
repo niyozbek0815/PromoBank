@@ -14,7 +14,7 @@ class PromoWebResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $lang = $this->additional['lang'] ?? 'uz';
+        $lang = $this->additional['lang'] ?? $request->get('lang', 'uz');
         $defaultimage = collect([
             ['url' => 'https://qadarun.com/namuna/1.gif', 'mime_type' => 'image/gif'],
             ['url' => 'https://qadarun.com/namuna/2.gif', 'mime_type' => 'image/gif'],

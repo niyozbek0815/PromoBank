@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\PromotionResource;
 use App\Http\Resources\PromotionShowWebResource;
-use App\Http\Resources\PromoWebResource;
 use App\Services\ViaPromocodeService;
 use App\Repositories\PromotionRepository;
 use Illuminate\Http\Request;

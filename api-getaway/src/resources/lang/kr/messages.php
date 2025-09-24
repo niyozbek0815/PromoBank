@@ -49,4 +49,36 @@ return [
     // About section
     'about_subtitle' => 'Биз ҳақимизда',
     'about_title'    => 'PromoBank ҳақида',
+
+
+    'start' => 'Бошланиш:',
+    'end' => 'Тугаш:',
+    'offer' => 'Оферта билан танишинг',
+    'methods' => 'Қатнашиш усуллари',
+    'telegram' => 'Телеграм бот орқали',
+    'sms' => 'SMS орқали қатнашиш',
+    'mobile' => 'Мобил иловадан',
+    'gallery' => 'Промоаксия медиа галереяси',
+    'extra' => 'Қўшимча маълумотлар',
+    'sms_title' => 'SMS орқали қатнашиш',
+    'sms_text' => 'Промокодни <strong>:phone</strong> қисқа рақамига юборинг.',
+    'close' => 'Ёпиш',
+    'download_title' => 'Мобил иловани юклаб олинг',
+    'download_desc' => 'PromoBank мобил илова ва Телеграм бот орқали барча акцияларда қатнашинг.',
+
+    // Scanner Modal
+    'scanner_title' => 'QR кодни сканерлаш',
+    'scanner_hint' => 'QR кодни камерага тутинг',
+    'scanner_cancel' => 'Бекор қилиш',
+    'scanner_submit' => 'Юбориш',
+
+    // Receipt Modal
+    'receipt_title' => 'Ҳарид чекини сканерлаш',
+    'receipt_hint' => "QR кодни камерага тутинг. Ва совғалар ҳамда промобалларга эга бўлинг.",
+
+    // Code Modal
+    'code_title' => 'Промокодни киритинг',
+    'code_placeholder' => 'Кодни киритинг...',
+
+    // Download section
 ];
