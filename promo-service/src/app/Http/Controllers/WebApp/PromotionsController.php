@@ -5,35 +5,81 @@ namespace App\Http\Controllers\WebApp;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SendPromocodeRequest;
 use App\Repositories\PromotionRepository;
-use App\Services\ViaPromocodeService;
+use App\Services\ReceiptScraperService;
+use App\Services\ReceiptWebAppService;
+use App\Services\WebAppPromocodeService;
 use Illuminate\Support\Facades\Log;
 
 class PromotionsController extends Controller
 {
     public function __construct(
-        private ViaPromocodeService $viaPromocodeService,
+        private WebAppPromocodeService $webAppPromocodeService,
         private PromotionRepository $promotionRepository,
+        private ReceiptWebAppService $receiptWebAppService,
+        private ReceiptScraperService $scraper,
     ) {
-        $this->viaPromocodeService = $viaPromocodeService;
-        $this->promotionRepository = $promotionRepository;
+
     }
+
+
     public function viaPromocode(SendPromocodeRequest $request, $id)
     {
-        $user = $request->all();
-        Log::info(message: "User ID:",context: ['user'=>$user]);
-
-        $ids = $user['id'];
+        $user = $request['auth_user'];
+        Log::info(message: "User ID:", context: ['user' => $user]);
         $req = $request->validated();
-        $data = $this->viaPromocodeService->proccess($req, $user, $id);
+        $result = $this->webAppPromocodeService->proccess($req, $user, $id);
 
-        if (!empty($data['promotion'])) {
-            return $this->errorResponse('Promotion not found.', ['token' => ['Promotion not found.']], 404);
+        // ❌ Promocode topilmadi
+        if (!empty($result['promocode'])) {
+            return response()->json([
+                'success' => false,
+                'status' => 'failed',
+                'message' => ['Promocode not found.'],
+                'errors' => ['token' => ['Promocode not found.']],
+            ], 404);
         }
-        if (!empty($data['promocode'])) {
-            return $this->errorResponse('Promocode not found.', ['token' => ['Promocode not found.']], 404);
+        if (!empty($result['promotion'])) {
+            return response()->json([
+                'success' => false,
+                'status' => 'failed',
+                'message' => ['Promotion not found.'],
+                'errors' => ['token' => ['Promotion not found.']],
+            ], 404);
         }
-        return $data['action'] === "claim"
-            ? $this->errorResponse($data['message'] ?? "Kechirasiz promocodedan avval foydalanilgan", ['token' => [$data['message'] ?? "Kechirasiz promocodedan avval foydalanilgan"]], 422)
-            : $this->successResponse($data, $data['message'] ?? "Promocode movaffaqiyatli ro'yhatga olindi");
+        if ($result['action'] === "claim") {
+            return response()->json([
+                'success' => false,
+                'status' => 'failed',
+                'message' => $result['message'] ?? "Kechirasiz, promocodedan avval foydalanilgan",
+                'errors' => ['token' => [$result['message'] ?? "Kechirasiz, promocodedan avval foydalanilgan"]],
+            ], $result['code'] ?? 422);
+        }
+        return response()->json([
+            'success' => true,
+            'status' => 'success',
+            'data' => $result,
+            'message' => $result['message'] ?? "Promocode muvaffaqiyatli ro'yhatga olindi",
+        ], 200);
+    }
+    public function viaReceipt(SendPromocodeRequest $request, $id)
+    {
+        $user = $request['auth_user'];
+        $req = $request->validated();
+        $data = $this->scraper->scrapeReceipt($req);
+
+        $result = $this->receiptWebAppService->proccess($data, $user);
+        return $result['status'] === 'failed'
+            ? response()->json([
+                'success' => false,
+                'status' => 'failed',
+                'message' => $result['message'] ?? 'Xatolik, birozdan so‘ng qayta urinib ko‘ring',
+                'errors' => $result['errors'] ?? [],
+            ], $data['code'] ?? 422)
+            : response()->json([
+                'success' => true,
+                'status' => 'success',
+                'data' => $data,
+                'message' => $result['message'] ?? 'Xatolik, birozdan so‘ng qayta urinib ko‘ring',
+            ]);
     }
 }

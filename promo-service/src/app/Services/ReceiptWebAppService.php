@@ -14,9 +14,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
-use Termwind\Components\BreakLine;
 
-class ReceiptService
+class ReceiptWebAppService
 {
 
     public function __construct(
@@ -29,9 +28,11 @@ class ReceiptService
         $this->prizeMessageRepository = $prizeMessageRepository;
     }
 
-    public function proccess($req, $user)
+    public function proccess($data, $user)
     {
-        $lang = $req['lang'];
+
+        $lang = $data['lang'];
+        Log::info('Processing receipt for user: ', ['user_id' => $user['id'], 'data' => $data]);
         $entries = collect();
         $message = [];
         $action = null;
@@ -42,21 +43,24 @@ class ReceiptService
         $today = Carbon::today();
         $platformId = $this->getPlatforms();
         $shop = PromotionShop::with('products:id,name')
-            ->where('name', $req['name'])
+            ->where('name', $data['name'])
             ->with(['products', 'promotion'])
             ->whereHas('promotion', function ($query) use ($today) {
                 $query->where('start_date', '<=', $today)
                     ->where('end_date', '>=', $today);
             })
             ->first();
+
         if ($shop) {
-Log::info('Found shop: ',  ['shop' => $shop]);
+            Log::info('Found shop: ', ['shop' => $shop]);
 
             $promotion = $shop->promotion;
             $prizes = Prize::where('promotion_id', $shop->promotion_id)
-                ->withCount(['prizeUsers as today_prize_users_count' => function ($query) use ($today) {
-                    $query->whereDate('created_at', $today);
-                }])
+                ->withCount([
+                    'prizeUsers as today_prize_users_count' => function ($query) use ($today) {
+                        $query->whereDate('created_at', $today);
+                    }
+                ])
                 ->whereHas(
                     'category',
                     fn($q) =>
@@ -70,10 +74,10 @@ Log::info('Found shop: ',  ['shop' => $shop]);
                 ->with('category:id,name') // category.name kerak bo'ladi
                 ->orderBy('index', 'asc')
                 ->get()->filter(fn($prize) => $prize->today_prize_users_count < $prize->daily_limit);
-                Log::info('Filtered prizes: ', ['prizes' => $prizes]);
-            $checkProducts = collect($req['products']);
+            Log::info('Filtered prizes: ', ['prizes' => $prizes]);
+            $checkProducts = collect($data['products']);
             $groupedPrizes = $prizes->groupBy(fn($prize) => $prize->category->name);
-            $weighted_prizes =  $groupedPrizes['weighted_random'] ?? collect();
+            $weighted_prizes = $groupedPrizes['weighted_random'] ?? collect();
             $manual_prizes = $groupedPrizes['manual'] ?? collect();
             Log::info('Weighted prizes: ', ['weighted_prizes' => $weighted_prizes]);
             Log::info('Manual prizes: ', ['manual_prizes' => $manual_prizes]);
@@ -87,30 +91,28 @@ Log::info('Found shop: ',  ['shop' => $shop]);
                     Log::info('Trying to get weighted random prize for entry: ', $entry);
                     $this->getWeightedRandomPrize($weighted_prizes, $entry, $selectedPrizes, $selected);
                 }
-                if ($manual_prizes->isNotEmpty() &&  !$selected) {
+                if ($manual_prizes->isNotEmpty() && !$selected) {
                     $this->getManualPrize($menualPrizeCount);
                 }
                 $selected = false;
             }
             $this->returnMessage($promotion, $menualPrizeCount, $selectedPrizes, $lang, $action, $status, $message, $encouragementPoints);
 
-        }else{
-$this->giveEncouragementPoints($action, $message);
+        } else {
+
+            $this->giveEncouragementPoints($action, $message);
         }
 
         Queue::connection(name: 'rabbitmq')->push(new CreateReceiptAndProductJob(
-            $req,
+            $data,
             $user,
             null,
             $platformId,
             $selectedPrizes ?? null,
             $subPrizeId ?? null,
             $menualPrizeCount,
-           $promotion['id'] ?? null,
+            $promotion['id'] ?? null,
         ));
-
-
-
         return [
             'action' => $action,
             'status' => $status,
@@ -119,7 +121,7 @@ $this->giveEncouragementPoints($action, $message);
     }
     public function getPoints($user)
     {
-        return  UserPointBalance::where('user_id', $user['id'])->value('balance') ?? 0;
+        return UserPointBalance::where('user_id', $user['id'])->value('balance') ?? 0;
     }
     private function returnMessage($promotion, $menualPrizeCount, $selectedPrizes, $lang, &$action, &$status, &$message, &$encouragementPoints)
     {
@@ -142,15 +144,15 @@ $this->giveEncouragementPoints($action, $message);
                 //     'manual_win',
                 //     ['{count}' => $menualPrizeCount]
                 // );
-                $message[]="Siz {$menualPrizeCount} ta manual sovrin yutdingiz.";
+                $message[] = "Siz {$menualPrizeCount} ta manual sovrin yutdingiz.";
             }
         }
     }
     private function giveEncouragementPoints(&$action, &$message)
     {
-$encouragementPoints = config('services.constants.encouragement_points');
-$message[]           = "Siz {$encouragementPoints} promobal oldingiz. yana Skanerlang va promobalarni yig'ishda davom eting!";
-$action              = "points_vote";
+        $encouragementPoints = config('services.constants.encouragement_points');
+        $message[] = "Siz {$encouragementPoints} promobal oldingiz. yana Skanerlang va promobalarni yig'ishda davom eting!";
+        $action = "points_vote";
     }
     private function getEntries($checkProducts, $shop, $promoProductMap)
     {
@@ -163,10 +165,10 @@ $action              = "points_vote";
                     $count = ($checkProduct['count'] > 5) ? 5 : $checkProduct['count'];
                     for ($i = 0; $i < $count; $i++) {
                         $entries->push([
-                            'shop_id'      => $shop->id,
-                            'product_id'   => $promoProduct->id,
+                            'shop_id' => $shop->id,
+                            'product_id' => $promoProduct->id,
                             'product_name' => $promoProduct->name,
-                            'summa'        => $checkProduct['summa'],
+                            'summa' => $checkProduct['summa'],
                         ]);
                     }
                 }
@@ -174,7 +176,7 @@ $action              = "points_vote";
         }
         return $entries;
     }
-    private function getWeightedRandomPrize($prizes, $entry,  &$selectedPrizes, &$selected)
+    private function getWeightedRandomPrize($prizes, $entry, &$selectedPrizes, &$selected)
     {
         foreach ($prizes as $prize) {
             if (random_int(1, $prize->probability_weight) === 1) {
@@ -195,15 +197,15 @@ $action              = "points_vote";
     }
     private function getPlatforms()
     {
-        return  Cache::store('redis')->remember('platform:mobile:id', now()->addMinutes(60), function () {
-            return $this->platformRepository->getPlatformGetId('mobile');
+        return Cache::store('redis')->remember('platform:telegram:id', now()->addMinutes(60), function () {
+            return $this->platformRepository->getPlatformGetId('telegram');
         });
     }
     private function getPrizeMessage($prize, $lang)
     {
-        // $message = $this->prizeMessageRepository->getMessageForPrize($prize, 'mobile', 'success');
+        // $message = $this->prizeMessageRepository->getMessageForPrize($prize, 'telegram', 'success');
         // return $message ? $message->getTranslation('message', $lang) : "Tabriklaymiz siz {$prize->name} yutdingiz.";
-return  "Tabriklaymiz siz {$prize->name} yutdingiz.";
+        return "Tabriklaymiz siz {$prize->name} yutdingiz.";
     }
     private function failResponse($promotion, $lang, &$action, &$status, &$message)
     {
@@ -215,9 +217,8 @@ return  "Tabriklaymiz siz {$prize->name} yutdingiz.";
     private function getPromotionMessage($promotionId, $lang, $type, array $placeholders = []): string
     {
         $message = $this->promotionMessageRepository
-            ->getMessageForPromotion($promotionId, 'mobile', $type)
-            ?->getTranslation('message', $lang) ?? '';
-
+            ->getMessageForPromotion($promotionId, 'telegram', $type)
+                ?->getTranslation('message', $lang) ?? '';
         return strtr($message, $placeholders);
     }
 }

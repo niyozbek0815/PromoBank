@@ -89,13 +89,14 @@ class PromotionsController extends Controller
         $locale = app()->getLocale();
         $request->merge(['lang' => $locale]);
         $response = $this->forwardRequest("POST", $this->promo, "frontend/promotion/{$id}/promocode", $request);
-        Log::info('PromotionsController viaPromocode called', ['id' => $id,'request' => $request->all(), 'response' => $response->json()]);
-        return response()->json(['message' => 'Not implemented']);
+        return response()->json($response->json());
     }
 
     public function verifyReceipt(Request $request, $id)
     {
-        Log::info('PromotionsController verifyReceipt called', ['id' => $id, 'request' => $request->all()]);
-        return response()->json(['message' => 'Not implemented']);
+        $locale = app()->getLocale();
+        $request->merge(['lang' => $locale]);
+        $response = $this->forwardRequest("POST", $this->promo, "frontend/promotion/{$id}/receipt", $request);
+        return response()->json($response->json());
     }
 }

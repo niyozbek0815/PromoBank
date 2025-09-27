@@ -181,46 +181,6 @@ document.addEventListener("DOMContentLoaded", () => {
 // Promopage js codelari
 
 
-function openAppModal(e) {
-    e.preventDefault();
-    document.getElementById('appModal').style.display = 'flex';
-}
-
-function closeAppModal() {
-    document.getElementById('appModal').style.display = 'none';
-}
-function openSmsModal(e) {
-    e.preventDefault();
-    document.getElementById('smsModal').style.display = 'flex';
-}
-
-function closeSmsModal() {
-    document.getElementById('smsModal').style.display = 'none';
-}
-function openCodeModal(event) {
-    event.preventDefault();
-    document.getElementById('codeModal').style.display = 'flex';
-}
-
-function closeCodeModal() {
-    document.getElementById('codeModal').style.display = 'none';
-}
-
-function submitCode(event) {
-    event.preventDefault();
-    const code = document.getElementById('manualCode').value.trim();
-    if (!code) return;
-
-    // 🔥 Bu yerda AJAX yoki fetch orqali kodni backendga yuborasan
-    console.log("Kiritilgan kod:", code);
-
-    // Modalni yopish
-    closeCodeModal();
-
-    // Inputni tozalash
-    document.getElementById('manualCode').value = '';
-}
-
 // 4️⃣ Sponsors carousel (OwlCarousel)
 function initCarousel() {
     const $owl = $(".sponsors-list");

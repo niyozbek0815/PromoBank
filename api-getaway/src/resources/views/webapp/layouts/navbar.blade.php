@@ -57,6 +57,24 @@
                            </a>
                        @endforeach
                    </div>
+                   @if (Route::is('webapp.promotions.show'))
+                       {{-- Orqaga qaytish (faqat promotions.show sahifasida) --}}
+                       <a href="{{ route('webapp.promotions.index') }}" class="btn btn_social"
+                           title="{{ __('Orqaga qaytish') }}">
+                           <i class="fa-solid fa-left"></i>
+                       </a>
+                   @elseif(Route::is('webapp.promotions.index'))
+                       {{-- Games sahifasiga o‘tish (faqat promotions.index sahifasida) --}}
+                       <a href="{{ route('webapp.games.index') }}" class="btn btn_social"
+                           title="{{ __('Games bo‘limi') }}">
+                           <i class="fa-solid fa-gamepad-modern"></i> </a>
+                   @elseif(Route::is('webapp.games.index'))
+                       {{-- Promotions sahifasiga qaytish (faqat games.index sahifasida) --}}
+                       <a href="{{ route('webapp.promotions.index') }}" class="btn btn_social"
+                           title="{{ __('Promotions bo‘limi') }}">
+                           <i class="fa-solid fa-gift"></i>
+                       </a>
+                   @endif
                </div>
            </div>
        </div>

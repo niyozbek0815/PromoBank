@@ -377,6 +377,8 @@ section {
 
 .nav-right {
     position: relative;
+    display: flex;
+    flex-direction: row;
 }
 
 
@@ -1145,7 +1147,7 @@ color: var(--accent-color);
 
 .sponsors-list {
     width: 100%;
-        /* yoki agar faqat gorizontal scroll bo‘lsa pan-x */
+    /* yoki agar faqat gorizontal scroll bo‘lsa pan-x */
 }
 
 .sponsors-list {
@@ -2148,6 +2150,7 @@ color: var(--accent-color);
     margin-top: 12px;
     border: 2px solid #333;
 }
+
 #receiptVideoWrapper {
     width: 100%;
     border-radius: 10px;
@@ -2570,27 +2573,10 @@ div.spinner i:nth-child(8) {
     }
 }
 
-@media (min-width:1600px) {
-    .container {
-        max-width: 1500px;
-    }
-}
-
-@media (min-width:1800px) {
-    .container {
-        max-width: 1600px;
-    }
-}
-
-@media (min-width:2000px) {
-    .container {
-        max-width: 1650px;
-    }
-}
 
 .promotion {
     width: 100%;
-    min-height: 100vh;
+    min-height: 95vh;
     padding: 100px 0;
     background-image: url("../image/download/bg.jpg");
     background-size: cover;
@@ -2610,6 +2596,104 @@ div.spinner i:nth-child(8) {
 
 .footer.footer-webapp .footer-bottom {
     border-top: none;
+}
+
+.games {
+    width: 100%;
+    min-height: 95vh;
+    padding: 100px 0;
+    padding: 100px 0;
+    background-image: url("../image/download/bg.jpg");
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.games .download-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.games .btn-download {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+.games .btn-download.android {
+    background: #2a2a2a;
+    color: #3ddc84;
+    /* Android green */
+    border: 1px solid #3ddc84;
+}
+
+.games .btn-download.android:hover {
+    background: #3ddc84;
+    color: #1c1c1c;
+}
+
+.games .btn-download.ios {
+    background: #2a2a2a;
+    color: #fff;
+    border: 1px solid #fff;
+}
+
+.games .btn-download.ios:hover {
+    background: #fff;
+    color: #1c1c1c;
+}
+
+.games .games-card {
+    padding: 60px 50px;
+    margin-bottom: 0px;
+    background: linear-gradient(145deg, #1d1919, #191717);
+    border-radius: 16px;
+    box-shadow: 0 12px 24px rgba(30, 30, 30, 0.6);
+}
+
+.games .section-title {
+    margin-bottom: 30px;
+}
+
+.games .description {
+    text-align: center;
+    font-size: 18px;
+}
+
+.games .download-buttons {
+    justify-content: center;
+    margin-bottom: 0;
+}
+
+@media (min-width:1600px) {
+    .container {
+        max-width: 1500px;
+    }
+}
+
+@media (min-width:1800px) {
+    .container {
+        max-width: 1600px;
+    }
+}
+
+@media (min-width:2000px) {
+    .container {
+        max-width: 1650px;
+    }
 }
 
 @media (min-width: 1200px) {
@@ -2860,6 +2944,7 @@ div.spinner i:nth-child(8) {
 
     .nav-right .social-links {
         display: none;
+
     }
 
     .bars {
@@ -3164,6 +3249,19 @@ div.spinner i:nth-child(8) {
     .offer-link {
         margin-left: 0;
     }
+
+    .games .games-card {
+        padding: 40px 30px;
+        margin-bottom: 0px;
+    }
+
+    .games .section-title {
+        margin-bottom: 25px;
+    }
+
+    .games .description {
+        font-size: 15px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -3378,14 +3476,15 @@ div.spinner i:nth-child(8) {
     .footer.footer-webapp .footer-bottom .container {
         gap: 15px;
     }
-        .scannerModal .download-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            gap: 12px;
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
+
+    .scannerModal .download-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        gap: 12px;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
 }
 
 @media (max-width: 400px) {

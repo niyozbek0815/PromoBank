@@ -7,8 +7,30 @@ use Illuminate\Http\Request;
 
 class GamesController extends Controller
 {
-    public function index()
+    protected $url, $promo;
+    public function __construct()
     {
-        dd("games page");
+        $this->url = config('services.urls.web_service');
+        $this->promo = config('services.urls.promo_service');
+    }
+
+    public function index(Request $request)
+    {
+        $locale = app()->getLocale();
+        $request->merge(['lang' => $locale]);
+        $mainResponse = $this->forwardRequest("POST", $this->url, "frontend/pages", $request);
+        $promoResponse = $this->forwardRequest("POST", $this->promo, "frontend/", $request);
+        if (
+            $mainResponse instanceof \Illuminate\Http\Client\Response
+            && $promoResponse instanceof \Illuminate\Http\Client\Response
+        ) {
+            $mainData = $mainResponse->json() ?? [];
+            $promoData = $promoResponse->json() ?? [];
+            $mergedData = array_merge($mainData, [
+                'promos' => $promoData['data'] ?? $promoData
+            ]);
+            // dd($mergedData);
+            return view('webapp.games.index', $mergedData);        }
+        return response()->json(['message' => 'Service error'], 500);
     }
 }
