@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SocialsController;
 use App\Http\Controllers\Admin\SponsorController;
 use App\Http\Controllers\Frontend\HomeController;
+use App\Http\Controllers\Mobil\SupportController;
 use App\Http\Controllers\Telegram\TelegramController as TelegramTelegramController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,7 +20,9 @@ Route::prefix('frontend')->name('frontend.')
         Route::post('/', 'index')->name('home');
         Route::post('/pages', 'pages')->name('pages');
     });
-
+Route::controller(SupportController::class)->group(function () {
+    Route::get('/support', 'index');
+});
 Route::prefix('/admin')->name('admin.')->group(
     function () {
         Route::prefix('sponsors')

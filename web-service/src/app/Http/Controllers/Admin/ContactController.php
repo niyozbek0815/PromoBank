@@ -14,15 +14,6 @@ class ContactController extends Controller
     /**
      * DataTables uchun ma’lumotlar
      */
-
-
-    public function index(){
-        $query = Contact::query()
-            ->orderBy('position')
-            ->orderByDesc('id')->get();
-        return $this->successResponse($query,"success");
-
-    }
     public function data(Request $request)
     {
         $query = Contact::query()

@@ -10,6 +10,7 @@ use App\Http\Controllers\Mobil\GetawayGameController;
 use App\Http\Controllers\Mobil\NotificationController;
 use App\Http\Controllers\Mobil\PromoController;
 use App\Http\Controllers\Mobil\ReceiptController;
+use App\Http\Controllers\Mobil\SupportController;
 use App\Http\Controllers\Sms\PromoSmsGatewayController;
 use App\Http\Controllers\WebApp\PromotionsController;
 use Illuminate\Support\Facades\Route;
@@ -44,8 +45,8 @@ Route::controller(AddresController::class)->middleware(['guestCheck'])->group(fu
     Route::get('/regions', 'region');
     Route::get('/regions/{region_id}/districts', 'district');
 });
-Route::controller(AddresController::class)->middleware(['guestCheck'])->group(function () {
-    Route::get('/support', 'region');
+Route::controller(SupportController::class)->middleware(['guestCheck'])->group(function () {
+    Route::get('/support', 'index');
 });
 Route::controller(PromoController::class)->prefix('promotions')->group(function () {
     Route::get('/', 'index')->middleware(['guestCheck']);
