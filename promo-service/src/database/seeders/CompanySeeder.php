@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -16,17 +15,20 @@ class CompanySeeder extends Seeder
                 'name' => [
                     'uz' => 'Artel Group',
                     'ru' => 'Артель Групп',
-                    'kr' => '아르텔 그룹',
+                    'en' => 'Artel Group',
+                    'kr' => 'Артел Групп',
                 ],
                 'title' => [
                     'uz' => 'Maishiy texnika ishlab chiqaruvchisi',
                     'ru' => 'Производитель бытовой техники',
-                    'kr' => '가전 제품 제조업체',
+                    'en' => 'Home appliance manufacturer',
+                    'kr' => 'Маиший техника ишлаб чиқарувчиси',
                 ],
                 'description' => [
                     'uz' => 'Artel — O‘zbekistonning eng yirik texnika ishlab chiqaruvchilardan biri.',
                     'ru' => 'Artel — один из крупнейших производителей техники в Узбекистане.',
-                    'kr' => '아르텔은 우즈베키스탄에서 가장 큰 전자제품 제조업체 중 하나입니다.',
+                    'en' => 'Artel is one of the largest appliance manufacturers in Uzbekistan.',
+                    'kr' => 'Артел — Ўзбекистоннинг энг йирик техника ишлаб чиқарувчиларидан бири.',
                 ],
                 'email' => 'info@artelgroup.uz',
                 'settings' => json_encode(['language' => 'uz', 'timezone' => 'Asia/Tashkent']),
@@ -42,17 +44,20 @@ class CompanySeeder extends Seeder
                 'name' => [
                     'uz' => 'Beeline Uzbekistan',
                     'ru' => 'Билайн Узбекистан',
-                    'kr' => '비라인 우즈베키스탄',
+                    'en' => 'Beeline Uzbekistan',
+                    'kr' => 'Билайн Ўзбекистон',
                 ],
                 'title' => [
                     'uz' => 'Mobil aloqa operatori',
                     'ru' => 'Оператор мобильной связи',
-                    'kr' => '모바일 통신 사업자',
+                    'en' => 'Mobile network operator',
+                    'kr' => 'Мобил алоқа операторы',
                 ],
                 'description' => [
                     'uz' => 'Beeline — O‘zbekistondagi yetakchi mobil aloqa va internet provayderi.',
                     'ru' => 'Beeline — ведущий мобильный оператор и интернет-провайдер в Узбекистане.',
-                    'kr' => '비라인은 우즈베키스탄의 주요 모바일 및 인터넷 제공업체입니다.',
+                    'en' => 'Beeline is a leading mobile operator and internet provider in Uzbekistan.',
+                    'kr' => 'Билайн — Ўзбекистондаги етакчи мобил алоқа ва интернет провайдери.',
                 ],
                 'email' => 'support@beeline.uz',
                 'settings' => json_encode(['language' => 'ru', 'support_24_7' => true]),
@@ -68,17 +73,20 @@ class CompanySeeder extends Seeder
                 'name' => [
                     'uz' => 'Texnomart',
                     'ru' => 'Техномарт',
-                    'kr' => '텍노마트',
+                    'en' => 'Texnomart',
+                    'kr' => 'Техномарт',
                 ],
                 'title' => [
                     'uz' => 'Maishiy texnika do‘konlar tarmog‘i',
                     'ru' => 'Сеть магазинов бытовой техники',
-                    'kr' => '가전 제품 매장 네트워크',
+                    'en' => 'Chain of appliance stores',
+                    'kr' => 'Маиший техника дўконлар тармоғи',
                 ],
                 'description' => [
                     'uz' => 'Texnomart — butun respublika bo‘ylab texnika mahsulotlari savdosi.',
                     'ru' => 'Texnomart — сеть магазинов техники по всей республике.',
-                    'kr' => '텍노마트는 전국에 걸쳐 전자 제품을 판매합니다.',
+                    'en' => 'Texnomart is a nationwide retail chain selling electronics and appliances.',
+                    'kr' => 'Техномарт — бутун республика бўйлаб техника маҳсулотлари савдоси.',
                 ],
                 'email' => 'contact@texnomart.uz',
                 'settings' => json_encode(['delivery' => true, 'payment_types' => ['cash', 'card']]),
@@ -91,7 +99,7 @@ class CompanySeeder extends Seeder
             ]
         ];
 
-        // Translatable ustunlarni JSON ko‘rinishga keltirish
+        // Translatable ustunlarni JSON formatga o‘tkazamiz
         foreach ($companies as &$company) {
             $company['name'] = json_encode($company['name'], JSON_UNESCAPED_UNICODE);
             $company['title'] = json_encode($company['title'], JSON_UNESCAPED_UNICODE);

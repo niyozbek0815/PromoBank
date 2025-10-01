@@ -9,15 +9,14 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
+use Spatie\Permission\Models\Role;
 use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
-
     public function data(Request $request)
     {
         $query = User::with(['roles', 'region:id,name', 'district:id,name'])->select('users.*');
-
         return DataTables::of($query)
             ->addColumn('region', fn($user) => optional($user->region)->name ?? '-')
             ->addColumn('district', fn($user) => optional($user->district)->name ?? '-')
@@ -36,8 +35,8 @@ class UserController extends Controller
                 return view('admin.actions', compact('user'))->render();
             })
             ->editColumn('gender', fn($user) => match ($user->gender) {
-                'M'                              => 'Erkak',
-                'F'     => 'Ayol',
+                'M' => 'Erkak',
+                'F' => 'Ayol',
                 default => 'Nomaʼlum'
             })
             ->editColumn('birthdate', function ($user) {
@@ -51,76 +50,74 @@ class UserController extends Controller
     }
     public function edit($id)
     {
-        $user     = User::with('roles:id,name')->findOrFail($id);
-        $region   = Region::select(['id', 'name'])->get();
-        $district = District::where('region_id', $user['region_id'])->select('id', 'name')->get();
-        $allRoles = \Spatie\Permission\Models\Role::select(['id', 'name'])->get();
-        Log::info('user', ['user' => $user]);
+        $user = User::with(['roles:id,name', 'region:id,name', 'district:id,name'])
+            ->findOrFail($id);
+        $regions = Region::select('id', 'name')->get();
+        $districts = $user->region_id
+            ? District::where('region_id', $user->region_id)->select('id', 'name')->get()
+            : collect();
+        $allRoles = Role::select('id', 'name')->get();
         return response()->json([
-            'user'     => $user,
-            'region'   => $region,
-            'roles'    => $user->roles->pluck('name'),
+            'user' => $user,
+            'region' => $regions,
+            'district' => $districts,
+            'roles' => $user->roles->pluck('name'),
             'allRoles' => $allRoles,
-            'district' => $district,
         ]);
     }
+
+
     public function update(Request $request, $id)
     {
-        $user      = User::findOrFail($id);
+        $user = User::findOrFail($id);
+
         $validated = $request->validate([
-            'name'        => 'required|string|max:255',
-            'email'       => 'nullable|email|max:255|unique:users,email,' . $user->id,
-            'phone'       => 'required|string|max:50|regex:/^\+?\d{7,50}$/|unique:users,phone,' . $user->id,
-            'phone2'      => 'nullable|string|max:50|regex:/^\+?\d{7,50}$/',
-            'region_id'   => 'required|exists:regions,id',
-            'district_id' => 'required|exists:districts,id',
-            'birthdate'   => [
-                'required',
-                'date_format:Y-m-d',
-                'before_or_equal:today',
-            ],
-            'chat_id'     => 'required|string|max:50|unique:users,chat_id,' . $user->id,
-            'gender'      => 'required|in:M,F',
-            'image'       => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'required|string|max:50|regex:/^\+?\d{7,50}$/|unique:users,phone,' . $user->id,
+            'phone2' => 'nullable|string|max:50|regex:/^\+?\d{7,50}$/',
+            'region_id' => 'nullable|exists:regions,id',
+            'district_id' => 'nullable|exists:districts,id',
+            'birthdate' => 'nullable|date_format:Y-m-d|before_or_equal:today',
+            'chat_id' => 'nullable|string|max:50|unique:users,chat_id,' . $user->id,
+            'gender' => 'nullable|in:M,F,U',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        if ($request->hasFile('image')) {
-            $file     = $request->file('image');
-            $tempPath = $file->store('tmp', 'public');
-            Log::info("image mavjud" . $tempPath);
-            Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'user_avatar', $user->id));
-        }
-
         $user->update($validated);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('tmp', 'public');
+            Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($path, 'user_avatar', $user->id));
+        }
 
         return response()->json(['message' => 'Foydalanuvchi yangilandi.']);
     }
 
-    public function delete(Request $request, $id)
+
+    public function delete($id)
     {
         $user = User::findOrFail($id);
         $user->delete();
-        return redirect()->back()->with('success', 'Foydalanuvchi o‘chirildi.');
-    }
 
-    public function changeStatus(Request $request, $id)
+        return response()->json(['message' => 'Foydalanuvchi o‘chirildi.']);
+    }
+    public function changeStatus($id)
     {
-        $user         = User::findOrFail($id);
-        $user->status = ! $user->status;
+        $user = User::findOrFail($id);
+        $user->status = (int) !$user->status;
         $user->save();
-        Log::info('User status changed', [
-            'user_id'    => $user->id,
-            'new_status' => $user->status,
-        ]);
+
         return response()->json([
             'message' => 'Status yangilandi',
-            'status'  => $user->status,
+            'status' => $user->status,
         ]);
     }
     public function getClients()
     {
-        $clients = User::role('client')->with(['roles', 'region:id,name', 'district:id,name'])->get();
-        Log::info('Clients fetched', ['clients' => $clients]);
-        return response()->json(['clients' => $clients]);
+        $clients = User::role('client')
+            ->with(['roles:id,name', 'region:id,name', 'district:id,name'])
+            ->get();
+        return response()->json($clients);
     }
 }

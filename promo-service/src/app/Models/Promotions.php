@@ -46,7 +46,7 @@ class Promotions extends Model
     }
     public function getGalleryAttribute()
     {
-        return $this->getMediaCollection('promotion-gallary');
+        return $this->getMediaCollection('promotion-gallery');
     }
     public function company()
     {

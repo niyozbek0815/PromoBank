@@ -17,6 +17,7 @@ class SalesReceipt extends Model
         'summa',
         'lat',
         'long',
+        'payment_type',
     ];
     public function products()
     {

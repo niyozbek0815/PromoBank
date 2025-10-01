@@ -7,10 +7,11 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
-    protected $url;
+    protected $url, $notif;
     public function __construct()
     {
         $this->url = config(key: 'services.urls.auth_service');
+        $this->notif = config(key: 'services.urls.notification_service');
     }
     public function index()
     {
@@ -19,43 +20,23 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $response = $this->forwardRequest("PUT", $this->url, "front/users/{$id}/update", $request);
-        //
-        if ($response instanceof \Illuminate\Http\Client\Response  && $response->ok()) {
+        if ($response instanceof \Illuminate\Http\Client\Response && $response->ok()) {
             return redirect()->route('admin.users.index')->with('success', 'Foydalanuvchi yangilandi.');
         }
-
         if ($response->status() === 422) {
-            // Validation error response from auth-service
-            $errors    = $response->json('errors') ?? [];
-            $errorJson = json_encode($response->json(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-            Log::error('Auth service validation error', ['response' => $errorJson]);
+            $errors = $response->json('errors') ?? [];
             return redirect()->back()
                 ->withErrors($errors)
                 ->withInput();
         }
-
-        // Log other errors from auth service
-        $errorJson = json_encode($response->json(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        Log::error('Auth service update error', ['response' => $errorJson]);
-
         return redirect()->back()->with('error', 'Foydalanuvchini yangilashda xatolik.');
     }
-
     public function getDistricts(Request $request, $regionId)
     {
-
-        try {
-            $response = $this->forwardRequest("GET", $this->url, "/regions/{$regionId}/districts", $request);
+        $response = $this->forwardRequest("GET", $this->url, "/regions/{$regionId}/districts", $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());
-
-        } catch (\Throwable $e) {
-            Log::error("getDistricts exception", [
-                'region_id' => $regionId,
-                'error'     => $e->getMessage(),
-                'trace'     => $e->getTraceAsString(),
-            ]);
         }
-
         return response()->json(['message' => 'Auth service error'], 500);
     }
     public function data(Request $request)
@@ -69,13 +50,43 @@ class UserController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $response = $this->forwardRequest("POST", $this->url, "front/users/{$id}/edit", $request);
-        if ($response->ok()) {
-            $data = $response->json();
-            // dd($data);
-            return view('admin.users.edit', compact('data'));
+
+        try {
+            $mainResponse = $this->forwardRequest("POST", $this->url, "front/users/{$id}/edit", $request);
+            $devicesResponse = $this->forwardRequest("POST", $this->notif, "front/devices/{$id}", $request);
+            if (!$mainResponse instanceof \Illuminate\Http\Client\Response || !$devicesResponse instanceof \Illuminate\Http\Client\Response) {
+                return view('frontend.error', [
+                    'status' => 500,
+                    'message' => 'Xizmat bilan aloqa o‘rnatilmadi.'
+                ]);
+            }
+            if ($mainResponse->failed()) {
+                return view('frontend.error', [
+                    'status' => $mainResponse->status(),
+                    'message' => $mainResponse->json('message') ?? 'Asosiy sahifa maʼlumotlarini olishda xatolik.'
+                ]);
+            }
+            if ($devicesResponse->failed()) {
+                return view('frontend.error', [
+                    'status' => $devicesResponse->status(),
+                    'message' => $devicesResponse->json('message') ?? 'Aksiya maʼlumotlarini olishda xatolik.'
+                ]);
+            }
+            $mainData = $mainResponse->json() ?? [];
+            $devicesData = $devicesResponse->json() ?? [];
+            if ($devicesResponse->status() == 404) {
+                abort(404);
+            }
+            $mergedData = array_merge($mainData, [
+                'devices' => $devicesData['data'] ?? $devicesData
+            ]);
+            // dd($mergedData);
+            return view('admin.users.edit', $mergedData);
+        } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e) {
+            return abort(404, 'Bunday aksiya topilmadi.');
+        } catch (\Throwable $e) {
+            abort(500); // Laravel default 500 sahifasi
         }
-        return redirect()->back()->with('error', 'Foydalanuvchi topilmadi.');
     }
 
     public function delete(Request $request, $id)

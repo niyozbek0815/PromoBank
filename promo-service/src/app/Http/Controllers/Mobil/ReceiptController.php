@@ -18,7 +18,7 @@ class ReceiptController extends Controller
     {
         $user = $request['auth_user'];
         $req = $request->validated();
-        $data = $this->receiptService->process($req, $user);
+        $data = $this->receiptService->proccess($req, $user);
         if($data['status']=="failed"){
             return $this->errorResponse($data, "failed");
         }else{

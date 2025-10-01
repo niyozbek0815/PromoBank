@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('promotion_id')->constrained()->onDelete('cascade');
             $table->foreignId('shop_id')->constrained('promotion_shops')->onDelete('cascade');
             $table->string('name');
+            $table->boolean('status')->default(true);
             $table->timestamps();
         });
     }

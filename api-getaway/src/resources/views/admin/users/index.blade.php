@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Users')
+@section('title', 'Foydalanuvchilar')
 
 @push('scripts')
     <!-- Toastr CSS -->
@@ -166,12 +166,11 @@
     </script>
 @endpush
 @section('content')
-    <div class="page-header-content d-lg-flex">
-        <div class="d-flex">
-            <h4 class="page-title mb-0">Users</h4>
-        </div>
-    </div>
+
     <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0">Foydalanuvchilar</h4>
+    </div>
         <div class="card-body">
             <table id="users-table" class="table datatable-button-init-basic">
                 <thead>

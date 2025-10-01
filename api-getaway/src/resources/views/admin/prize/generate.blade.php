@@ -1,5 +1,5 @@
 @extends('admin.layouts.app')
-@section('title', 'Company add')
+@section('title', 'Promocode yaratish')
 @push('scripts')
     <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/form_layouts.js') }}"></script>
@@ -100,7 +100,7 @@
             <div class="card border shadow-sm rounded-3">
 
                 <div class="card-header  border-bottom">
-                    <h5 class="mb-0 fw-semibold">🎛️ Promocode boshqaruvi</h5>
+                    <h5 class="mb-0 fw-semibold">Promocode yaratish</h5>
                     <p class="text-muted mb-0 small">Yangi kodlar yaratish yoki mavjud kodlarni fayldan yuklash</p>
                 </div>
 

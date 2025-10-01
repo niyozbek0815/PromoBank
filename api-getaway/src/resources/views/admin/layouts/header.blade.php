@@ -17,5 +17,29 @@
 <script src="{{ asset('adminpanel/assets/js/jquery.min.js') }}"></script>
 <script src="{{ asset('adminpanel/assets/js/toastr.min.js') }}"></script>
 <script src="{{ asset('adminpanel/assets/js/sweetalert2.all.min.js') }}"></script>
-
+<style>
+    <style>
+    .preview-container {
+        width: 100%;
+        max-height: 300px;
+        background: #0000001d;
+        border: 10px solid #ddd;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        min-height: 200px;
+        position: relative;
+    }
+    .preview-container img {
+        max-height: 100%;
+        height: 270px;
+        width: auto;
+        display: block;
+        margin: auto;
+        object-fit: contain;
+    }
+</style>
+</style>
 <!-- /theme JS files -->

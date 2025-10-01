@@ -1,5 +1,5 @@
 @extends('admin.layouts.app')
-@section('title', "Promoaksiya qo'shish")
+@section('title', "Promoaksiya taxrirlash")
 @push('scripts')
     <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
     <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
@@ -302,7 +302,12 @@
                         name: 'long',
                         searchable: false
                     },
-                           { data: 'user_info', name: 'user_info', orderable: false, searchable: true }, // yangi ustun
+                    {
+                        data: 'user_info',
+                        name: 'user_info',
+                        orderable: false,
+                        searchable: true
+                    }, // yangi ustun
 
 
                     {
@@ -315,7 +320,7 @@
                         name: 'prize_count',
                         searchable: false
                     },
-                       {
+                    {
                         data: 'check_date',
                         name: 'check_date',
                         searchable: false
@@ -470,57 +475,65 @@
                         enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
-                        {{-- 🔤 Translatable Inputs --}}
+                        @php
+                            $languages = [
+                                'uz' => 'O‘zbekcha',
+                                'ru' => 'Русский',
+                                'kr' => 'Krillcha',
+                                'en' => 'English',
+                            ];
+                        @endphp
+
                         <div class="row">
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
-                                    <label class="form-label">Nomi ({{ $label }})</label>
+                            @foreach ($languages as $lang => $label)
+                                <div class="col-lg-3 mb-3">
+                                    <label class="form-label">Nomi ({{ $label }}) <span
+                                            class="text-danger">*</span></label>
                                     <input type="text" class="form-control" name="name[{{ $lang }}]"
-                                        value="{{ old('name.' . $lang, $promotion['name'][$lang] ?? '') }}" required>
-                                    <small class="text-muted">Aksiya nomini {{ $label }} tilida kiriting (masalan,
-                                        "Bahor aksiyasi").</small>
+                                        value="{{ old("name.$lang", $promotion['name'][$lang] ?? '') }}" required>
+                                    <small class="text-muted">Aksiya nomini {{ $label }} tilida kiriting.</small>
                                 </div>
                             @endforeach
 
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
-                                    <label class="form-label">Sarlavha ({{ $label }})</label>
+                            @foreach ($languages as $lang => $label)
+                                <div class="col-lg-3 mb-3">
+                                    <label class="form-label">Sarlavha ({{ $label }}) <span
+                                            class="text-danger">*</span></label>
                                     <input type="text" class="form-control" name="title[{{ $lang }}]"
-                                        value="{{ old('title.' . $lang, $promotion['title'][$lang] ?? '') }}" required>
-                                    <small class="text-muted">Sarlavha foydalanuvchilarga ko‘rinadigan qisqa tanishtiruv
-                                        bo‘lib xizmat qiladi.</small>
+                                        value="{{ old("title.$lang", $promotion['title'][$lang] ?? '') }}" required>
+                                    <small class="text-muted">Sarlavha foydalanuvchilarga ko‘rinadi.</small>
                                 </div>
                             @endforeach
 
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
-                                    <label class="form-label">Tavsif ({{ $label }})</label>
-                                    <textarea class="form-control ckeditor" name="description[{{ $lang }}]" rows="6" required>{{ old('description.' . $lang, $promotion['description'][$lang] ?? '') }}</textarea>
-                                    <small class="text-muted">Aksiya haqida batafsil ma’lumot yozing: qanday ishtirok
-                                        etiladi, yutuqlar va qoidalar.</small>
+                            @foreach ($languages as $lang => $label)
+                                <div class="col-lg-6 mb-3">
+                                    <label class="form-label">Tavsif ({{ $label }}) <span
+                                            class="text-danger">*</span></label>
+                                    <textarea class="form-control ckeditor" name="description[{{ $lang }}]" rows="6" required>{{ old("description.$lang", $promotion['description'][$lang] ?? '') }}</textarea>
+                                    <small class="text-muted">{{ $label }} tilida aksiya haqida batafsil
+                                        yozing.</small>
                                 </div>
                             @endforeach
                         </div>
 
                         {{-- 📦 Selection Inputs --}}
                         <div class="row">
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label">Kampaniya <span class="text-danger">*</span></label>
+                                    <select name="company_id" class="form-select" required>
+                                        <option value="" disabled selected>Tanlang...</option>
+                                        @foreach ($companies as $company)
+                                            <option value="{{ $company['id'] }}"
+                                                {{ old('company_id', $promotion['company_id']) == $company['id'] ? 'selected' : '' }}>
+                                                {{ $company['name'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted">Ushbu aksiya qaysi kompaniyaga tegishli ekanligini
+                                        belgilang.</small>
+                                </div>
                             <div class="col-lg-4 mb-3">
-                                <label class="form-label">Kampaniya</label>
-                                <select name="company_id" class="form-select" required>
-                                    <option value="">Tanlang...</option>
-                                    @foreach ($companies as $company)
-                                        <option value="{{ $company['id'] }}"
-                                            {{ old('company_id', $promotion['company_id']) == $company['id'] ? 'selected' : '' }}>
-                                            {{ $company['name'] }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <small class="text-muted">Ushbu aksiya qaysi kompaniyaga tegishli ekanligini
-                                    belgilang.</small>
-                            </div>
-
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Boshlanish sanasi</label>
+                                <label class="form-label">Boshlanish sanasi <span class="text-danger">*</span></label>
                                 <input type="datetime-local" name="start_date" class="form-control"
                                     value="{{ old('start_date', \Carbon\Carbon::parse($promotion['start_date'])->format('Y-m-d\TH:i')) }}"
                                     required>
@@ -528,7 +541,7 @@
                             </div>
 
                             <div class="col-lg-4 mb-3">
-                                <label class="form-label">Tugash sanasi</label>
+                                <label class="form-label">Tugash sanasi <span class="text-danger">*</span></label>
                                 <input type="datetime-local" name="end_date" class="form-control"
                                     value="{{ old('end_date', \Carbon\Carbon::parse($promotion['end_date'])->format('Y-m-d\TH:i')) }}"
                                     required>
@@ -732,19 +745,18 @@
 
                                         @if (strtolower($platform['name']) === 'sms')
                                             <div class="mb-3">
-                                                <label class="form-label">📱 SMS telefon raqami</label>
-                                                <input type="text" class="form-control" name="phone"
+                                                <label class="form-label">SMS telefon raqami</label>
+                                                <input type="text" class="form-control" name="phone" required
                                                     value="{{ old("platforms_phone.{$platform['id']}", $platform['phone']) }}"
                                                     placeholder="+99890xxxxxxx">
                                             </div>
                                         @endif
 
-                                        <div class="mb-3">
-                                            <label class="form-label">📝 Qo‘shimcha qoidalar (JSON yoki matn)</label>
+                                        {{-- <div class="mb-3">
+                                            <label class="form-label">Qo‘shimcha qoidalar (JSON yoki matn)</label>
                                             <textarea name="additional_rules" rows="3" class="form-control"
                                                 placeholder='{"limit": 3, "allowed_time": "09:00-18:00"}'>{{ old("platforms_rules.{$platform['id']}", $platform['additional_rules']) }}</textarea>
-                                        </div>
-
+                                        </div> --}}
                                         <div class="text-end">
                                             <button type="submit" class="btn btn-primary">
                                                 Saqlash
@@ -786,11 +798,11 @@
                                             </div>
                                         </div>
 
-                                        <div class="mb-3">
+                                        {{-- <div class="mb-3">
                                             <label class="form-label">📝 Qo‘shimcha qoidalar (JSON yoki matn)</label>
                                             <textarea name="additional_rules" rows="3" class="form-control"
                                                 placeholder='{"limit": 5, "allowed_time": "08:00-22:00"}'>{{ old("participants_rules.{$type['id']}", $type['additional_rules']) }}</textarea>
-                                        </div>
+                                        </div> --}}
 
                                         <div class="text-end">
                                             <button type="submit" class="btn btn-primary">

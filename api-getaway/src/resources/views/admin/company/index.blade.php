@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Companies')
+@section('title', 'Hamkorlar ro\'yxati')
 
 @push('scripts')
     <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
@@ -132,17 +132,16 @@
         });
     </script>
 @endpush
-@section('header-actions')
-    <a href="{{ route('admin.company.create') }}" class="btn btn-primary ms-3">
-        <i class="ph-plus-circle me-1"></i> Yangi Kompaniya
-    </a>
-@endsection
 @section('content')
-    <div class="page-header-content d-flex justify-content-between align-items-center">
-        <h4 class="page-title mb-0">Companies</h4>
-    </div>
+
     @php($locale = app()->getLocale())
     <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Hamkorlar ro'yxati</h4>
+                <a href="{{ route('admin.company.create') }}" class="btn btn-primary ms-3">
+        <i class="ph-plus-circle me-1"></i> Qo'shish
+    </a>
+        </div>
         <div class="card-body">
             <table id="companies-table" class="table datatable-button-init-basic">
                 <thead>

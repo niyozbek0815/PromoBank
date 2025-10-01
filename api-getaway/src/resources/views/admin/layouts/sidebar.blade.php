@@ -25,11 +25,11 @@
         <div class="sidebar-section">
             <ul class="nav nav-sidebar" data-nav-type="accordion">
 
-                <!-- Main -->
+                {{-- <!-- Main -->
                 <li class="nav-item-header pt-0">
                     <div class="text-uppercase fs-sm lh-sm opacity-50 sidebar-resize-hide">Main</div>
                     <i class="ph-dots-three sidebar-resize-show"></i>
-                </li>
+                </li> --}}
 
                 {{-- Dashboard --}}
                 <li class="nav-item">

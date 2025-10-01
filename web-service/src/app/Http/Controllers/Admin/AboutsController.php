@@ -85,14 +85,10 @@ class AboutsController extends Controller
         // 4️⃣ Fayl yuklash (queue orqali)
         if ($request->hasFile('about_image')) {
             $file = $request->file('about_image');
-
-            // Agar array bo‘lsa, birinchi faylni olish
             if (is_array($file)) {
                 $file = $file[0];
             }
-
             $tempPath = $file->store('tmp', 'public');
-
             Queue::connection('rabbitmq')->push(
                 new StoreUploadedMediaJob($tempPath, 'about', $about->id)
             );

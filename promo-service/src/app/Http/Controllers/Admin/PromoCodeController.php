@@ -17,7 +17,15 @@ use Yajra\DataTables\Facades\DataTables;
 
 class PromoCodeController extends Controller
 {
-public function data(Request $request)
+
+    public function create(Request $request, $id)
+    {
+        $settings = PromotionSetting::where('promotion_id', $id)->first();
+        return response()->json([
+            'settings' => $settings,
+        ]);
+    }
+public function data()
 {
     $query = PromoCode::query()
         ->leftJoin('platforms', 'promo_codes.platform_id', '=', 'platforms.id')
@@ -62,37 +70,26 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
         ->rawColumns(['is_used', 'actions'])
         ->make(true);
 }
-    public function create(Request $request, $id)
-    {
-        $settings = PromotionSetting::where('promotion_id', $id)->first();
-        // $settings->delete();
-        // $settings = null;
-        return response()->json([
-            'settings' => $settings,
-        ]);
-    }
-
-    public function updatePromocodeSettings(Request $request, $promotionId)
+    public function updatePromocodeSettings(Request $request, int $promotionId)
     {
         $validated = $request->validate([
-            'length'                       => 'required|integer|min:4|max:255',
-            'charset'                      => 'required|string',
-            'exclude_chars'                => 'nullable|string',
-            'prefix'                       => 'nullable|string|max:255',
-            'suffix'                       => 'nullable|string|max:255',
-            'unique_across_all_promotions' => 'nullable|boolean',
+            'length' => 'required|integer|min:4|max:255',
+            'charset' => 'required|string',
+            'exclude_chars' => 'nullable|string',
+            'prefix' => 'nullable|string|max:255',
+            'suffix' => 'nullable|string|max:255',
+            'unique_across_all_promotions' => 'sometimes|boolean',
         ]);
 
-        // Fallback agar checkbox jo‘natilmasa false qo‘shamiz
-        $validated['unique_across_all_promotions'] = $request->has('unique_across_all_promotions');
-        $validated['promotion_id']                 = $promotionId;
-        $setting                                   = PromotionSetting::updateOrCreate(
+        $setting = PromotionSetting::updateOrCreate(
             ['promotion_id' => $promotionId],
-            $validated
+            array_merge($validated, [
+                'promotion_id' => $promotionId,
+                'unique_across_all_promotions' => $request->boolean('unique_across_all_promotions'),
+            ])
         );
-        return response()->json([
-            'setting' => $setting,
-        ]);
+
+        return response()->json(['setting' => $setting]);
     }
     public function showPromocodeSettingsForm(Request $request, $promotionId)
     {
@@ -104,11 +101,9 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
     public function generatePromoCodes(Request $request, $promotionId)
     {
         $validated = $request->validate([
-            'count'              => 'required|integer|min:1|max:100000',
+            'count' => 'required|integer|min:1|max:10001',
             'created_by_user_id' => 'required',
         ]);
-        Log::info("🔁 Job started: Generating {$validated['count']} promo codes for promotion {$promotionId}");
-
         Queue::connection('rabbitmq')->push(new GeneratePromoCodesJob(
             $promotionId,
             $validated['count'],
@@ -122,19 +117,13 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
     public function importPromoCodes(Request $request, $promotionId)
     {
         $validated = $request->validate([
-            'file'               => 'required|file|mimes:xlsx,xls',
+            'file' => 'required|file|mimes:xlsx,xls|max:5120',
             'settings_rules'     => 'nullable|boolean',
             'created_by_user_id' => 'required|integer',
         ]);
         $validated['settings_rules'] = $request->boolean('settings_rules');
-        Log::info('validated data', ['validated data' => $validated]);
-        // Faylni vaqtinchalik saqlaymiz
         $path = $request->file('file')->store('promo-imports', 'public');
-
-        // $path     = $request->file('file')->store('promo-imports');
         $fullPath = storage_path('app/public/' . $path);
-
-        // Excel faylni array formatga o‘qib olamiz
         try {
             $sheets = Excel::toArray(null, $fullPath);
         } catch (\Throwable $e) {
@@ -155,7 +144,7 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
                 ],
             ], 422);
         }
-
+        $rows = $sheets[0];
         $header = $sheets[0][0] ?? [];
         if (! in_array('promocode', array_map('strtolower', $header))) {
             return response()->json([
@@ -165,22 +154,23 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
                 ],
             ], 422);
         }
-
-        Log::info(message: "📥 PromoCode import queued from Excel: {$path}");
-
-        // ✅ Job'ni queue'ga yuborish
+        $promoRows = array_slice($rows, 1);
+        if (count($promoRows) > 10000) {
+            return response()->json([
+                'message' => 'Validation Error',
+                'errors' => [
+                    'file' => ["Excel faylda promo kodlar soni 10,000 tadan oshmasligi kerak. Siz yuborgansiz: " . count($promoRows)],
+                ],
+            ], 422);
+        }
         Queue::connection('rabbitmq')->push(new ImportPromoCodesJob(
             $promotionId, $validated['created_by_user_id'], $path, $validated['settings_rules']
         ));
-
-        // ImportPromoCodesJob::dispatch($promotionId, $validated['created_by_user_id'], $path)
-        //     ->onQueue('default');
 
         return response()->json([
             'message' => "✅ Promo kod import jarayoni queue orqali boshlandi.",
         ]);
     }
-
     public function generatedata(Request $request, $promotionId)
     {
         $query = PromoGeneration::withCount([

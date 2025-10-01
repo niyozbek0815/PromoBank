@@ -28,7 +28,7 @@ class PromoCodeUserForReceiptJob implements ShouldQueue
         protected $subPrizeId = null,
         protected $promotionId,
         protected $count,
-        protected  array $selectedPrizes = [],
+        protected array $selectedPrizes = [],
     ) {
         $this->promoCodeId = $promoCodeId;
         $this->userId = $userId;
@@ -48,58 +48,72 @@ class PromoCodeUserForReceiptJob implements ShouldQueue
     public function handle(): void
     {
         try {
-         DB::transaction(function () {
-    $baseData = [
-        'promo_code_id'        => $this->promoCodeId,
-        'user_id'              => $this->userId,
-        'platform_id'          => $this->platformId,
-        'receipt_id'           => $this->receiptId,
-        'promotion_product_id' => $this->promotionProductId,
-        'sub_prize_id'         => $this->subPrizeId,
-        'promotion_id'         => $this->promotionId,
-    ];
+            DB::transaction(function () {
+                $baseData = [
+                    'promo_code_id' => $this->promoCodeId,
+                    'user_id' => $this->userId,
+                    'platform_id' => $this->platformId,
+                    'receipt_id' => $this->receiptId,
+                    'promotion_product_id' => $this->promotionProductId,
+                    'sub_prize_id' => $this->subPrizeId,
+                    'promotion_id' => $this->promotionId,
+                ];
+                Log::info("data", ['data' => $baseData]);
 
-    // Transaction boshida oxirgi ID ni saqlab olamiz
-    $lastIdBeforeInsert = PromoCodeUser::max('id') ?? 0;
+                // Transaction boshida oxirgi ID ni saqlab olamiz
+                $lastIdBeforeInsert = PromoCodeUser::max('id') ?? 0;
+                if ($this->count > 0) {
+                    PromoCodeUser::insert(array_fill(0, (int) $this->count, array_merge($baseData, [
+                        'prize_id' => null,
+                    ])));
+                }
+                if (!empty($this->selectedPrizes)) {
+                    $rows = [];
+                    $prizeIds = [];
 
-    // 1. Default promo code user rows
-    if ($this->count > 0) {
-        PromoCodeUser::insert(array_fill(0, (int) $this->count, array_merge($baseData, [
-            'prize_id' => null,
-        ])));
-    }
+                    foreach ($this->selectedPrizes as $item) {
+                        $prize = $item['prize'] ?? null;
+                        $entry=$item['entry'];
+                        if (!isset($prize['id'])) {
+                            continue;
+                        }
+                        $rows[] = array_merge($baseData, [
+                            'prize_id' => $prize['id'],
+                            'promotion_product_id' => $entry['product_id'] ?? null, // entry asosida update
+                        ]);
+                        $prizeIds[] = $prize['id'];
+                    }
+                    if (!empty($rows)) {
+                        Log::info("Rows (before insert)", ['rows' => $rows]);
 
-    // 2. Selected prizes
-    if (! empty($this->selectedPrizes)) {
-        $rows     = [];
-        $prizeIds = [];
+                        // Insert qilish
+                        PromoCodeUser::insert($rows);
 
-        foreach ($this->selectedPrizes as $item) {
-            $prize = $item['prize'] ?? null;
-            if (! isset($prize['id'])) {
-                continue;
-            }
+                        // Oxirgi insert qilingan ID ni olish
+                        $lastId = PromoCodeUser::latest('id')->value('id');
 
-            $rows[] = array_merge($baseData, [
-                'prize_id' => $prize['id'],
-            ]);
-            $prizeIds[] = $prize['id'];
-        }
+                        // Insert qilingan qatorlar soni
+                        $count = count($rows);
 
-        if (! empty($rows)) {
-            PromoCodeUser::insert($rows);
+                        // Insert qilingan ID lar diapazoni
+                        $insertedIds = range($lastId - $count + 1, $lastId);
 
-            // Update awarded_quantity
-            foreach (array_count_values($prizeIds) as $id => $count) {
-                Prize::where('id', $id)->increment('awarded_quantity', $count);
-            }
-        }
-    }
+                        // DB dan yangi qo‘shilganlarni olish
+                        $inserted = PromoCodeUser::whereIn('id', $insertedIds)
+                            ->with(['prize:id,name', 'promotionProduct:id,name'])
+                            ->get();
 
-    // Transaction oxirida bazadan yangi qo‘shilganlarni olib logga yozamiz
-    $inserted = PromoCodeUser::where('id', '>', $lastIdBeforeInsert)->get();
-    Log::info('Inserted PromoCodeUsers from DB', $inserted->toArray());
-});
+                        Log::info("Inserted PromoCodeUsers from DB", $inserted->toArray());
+
+                        // Prize count update
+                        foreach (array_count_values($prizeIds) as $id => $count) {
+                            Prize::where('id', $id)->increment('awarded_quantity', $count);
+                        }
+                    }
+                }
+                $inserted = PromoCodeUser::where('id', '>', $lastIdBeforeInsert)->get();
+                Log::info('Inserted PromoCodeUsers from DB', $inserted->toArray());
+            });
 
         } catch (\Throwable $e) {
             Log::error('PromoCodeUserForReceiptJob failed', [

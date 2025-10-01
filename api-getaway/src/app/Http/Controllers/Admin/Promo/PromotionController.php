@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Admin\Promo;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PromotionController extends Controller
 {
@@ -57,7 +58,7 @@ class PromotionController extends Controller
     public function delete(Request $request, $id)
     {
         $response = $this->forwardRequest("POST", $this->url, "front/promotion/{$id}/delete", $request);
-        if ($response->ok()) {
+        if ($response instanceof \Illuminate\Http\Client\Response) {
             return redirect()->back()->with('success', 'Promo aksiya o‘chirildi.');
         }
         return redirect()->back()->with('error', 'Promo aksiyani o‘chirishda xatolik.');
@@ -71,20 +72,15 @@ class PromotionController extends Controller
         return response()->json(['message' => 'Promo service error'], 500);
     }
 
+
     public function edit(Request $request, $id)
     {
         $response = $this->forwardRequest("GET", $this->url, "front/promotion/{$id}/edit", $request);
-        if ($response->ok()) {
-            $data = $response->json();
-                return view('admin.promotion.edit', [
-                'promotion'         => $data['promotion'],
-                'platforms'         => $data['platforms'],         // id => name format
-                'partisipants_type' => $data['partisipants_type'], // id => name format
-                'companies'         => $data['companies'],
-                'prizeCategories'=>$data['prizeCategories'],
-            ]);
+        if (!$response instanceof \Illuminate\Http\Client\Response) {
+            return back()->with('error', 'Promoaksiya topilmadi.');
         }
-        return redirect()->back()->with('error', 'Promoaksiya topilmadi.');
+        $data = $response->json();
+        return view('admin.promotion.edit', $data);
     }
     public function store(Request $request)
     {
@@ -95,15 +91,16 @@ class PromotionController extends Controller
             $request,
             ['media_preview', 'media_gallery', 'offer_file']// Fayl nomlari (formdagi `name=""`)
         );
-        if ($response->ok()) {
-            return redirect()->route('admin.promotion.index')
-                ->with('success', 'Promoaksiya muvaffaqiyatli saqlandi.');
-        }
         if ($response->status() === 422) {
             return redirect()->back()
                 ->withErrors($response->json('errors'))
                 ->withInput();
         }
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return redirect()->route('admin.promotion.index')
+                ->with('success', 'Promoaksiya muvaffaqiyatli saqlandi.');
+        }
+
         return redirect()->back()->with('error', 'Promoaksiya saqlanmadi.');
     }
     public function update(Request $request, $id)
@@ -115,15 +112,14 @@ class PromotionController extends Controller
             $request,
             ['media_preview', 'media_gallery', 'offer_file']
         );
-        if ($response->ok()) {
-            return redirect()->route('admin.promotion.index')
-                ->with('success', 'Promoaksiya muvaffaqiyatli yangilandi.');
-        }
-
         if ($response->status() === 422) {
             return redirect()->back()
                 ->withErrors($response->json('errors'))
                 ->withInput();
+        }
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return redirect()->route('admin.promotion.index')
+                ->with('success', 'Promoaksiya muvaffaqiyatli yangilandi.');
         }
 
         return redirect()->back()->with('error', 'Promoaksiya yangilanmadi.');
@@ -137,20 +133,20 @@ class PromotionController extends Controller
             $request,
             []// bu yerda file yo‘q, faqat is_enabled + additional_rules keladi
         );
-        if ($response->ok()) {
-
-            return redirect()->back()->with('success', 'Ishtirok turi muvaffaqiyatli yangilandi.');
-        }
+        dd($response->json());
         if ($response->status() === 422) {
             return redirect()->back()
                 ->withErrors($response->json('errors'))
                 ->withInput();
         }
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return redirect()->back()->with('success', 'Ishtirok turi muvaffaqiyatli yangilandi.');
+        }
+
         return redirect()->back()->with('error', 'Ishtirok turini yangilashda xatolik yuz berdi.');
     }
     public function updatePlatform(Request $request, $promotionId, $platformId)
     {
-        // dd($request->all());
         $response = $this->forwardRequestMedias(
             'POST',     // multipart uchun faqat POST ishlaydi
             $this->url, // promo-service yoki media-service URL
@@ -158,17 +154,14 @@ class PromotionController extends Controller
             $request,
             []// bu yerda file yo‘q, faqat is_enabled + additional_rules keladi
         );
-        if ($response->ok()) {
-            return redirect()->back()->with('success', 'Platform muvaffaqiyatli yangilandi.');
-        }
         if ($response->status() === 422) {
             return redirect()->back()
                 ->withErrors($response->json('errors'))
                 ->withInput();
         }
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return redirect()->back()->with('success', 'Platform muvaffaqiyatli yangilandi.');
+        }
         return redirect()->back()->with('error', 'Platformni yangilashda xatolik yuz berdi.');
     }
-
-
-
 }

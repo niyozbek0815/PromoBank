@@ -1,27 +1,54 @@
 <?php
-
-namespace Database\Seeders;
-
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class SocialMediaSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $records = [
-            ['company_id' => 1, 'type_id' => 1, 'url' => 'https://t.me/artel_official'],
-            ['company_id' => 1, 'type_id' => 2, 'url' => 'https://instagram.com/artel'],
-            ['company_id' => 2, 'type_id' => 1, 'url' => 'https://t.me/beelineuz'],
-            ['company_id' => 2, 'type_id' => 2, 'url' => 'https://instagram.com/beelineuz'],
-            ['company_id' => 3, 'type_id' => 1, 'url' => 'https://t.me/texnomart'],
-            ['company_id' => 3, 'type_id' => 2, 'url' => 'https://instagram.com/texnomart'],
+        // Mavjud typelar
+        $types = [
+            1 => 'Telegram',
+            2 => 'Instagram',
+            3 => 'Facebook',
+            4 => 'YouTube',
+            5 => 'LinkedIn',
+            6 => 'Website',
         ];
 
+        // Kompaniyalar (id => slug yoki nomi uchun prefix)
+        $companies = [
+            1 => 'artel',
+            2 => 'beelineuz',
+            3 => 'texnomart',
+        ];
+
+        $records = [];
+
+        foreach ($companies as $companyId => $slug) {
+            foreach ($types as $typeId => $typeName) {
+                $url = $this->generateUrl($slug, $typeName);
+                $records[] = [
+                    'company_id' => $companyId,
+                    'type_id' => $typeId,
+                    'url' => $url,
+                ];
+            }
+        }
+
         DB::table('social_media')->insert($records);
+    }
+
+    private function generateUrl(string $slug, string $type): string
+    {
+        return match ($type) {
+            'Telegram' => "https://t.me/{$slug}",
+            'Instagram' => "https://instagram.com/{$slug}",
+            'Facebook' => "https://facebook.com/{$slug}",
+            'YouTube' => "https://youtube.com/{$slug}",
+            'LinkedIn' => "https://linkedin.com/company/{$slug}",
+            'Website' => "https://{$slug}.uz",
+            default => '',
+        };
     }
 }

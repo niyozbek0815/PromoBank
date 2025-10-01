@@ -149,7 +149,7 @@
             <div class="card border shadow-sm rounded-3">
 
                 <div class="card-header  border-bottom">
-                    <h5 class="mb-0 fw-semibold">🎛️ Promocode boshqaruvi</h5>
+                    <h5 class="mb-0 fw-semibold">Promocode boshqaruvi</h5>
                     <p class="text-muted mb-0 small">Yangi kodlar yaratish yoki mavjud kodlarni fayldan yuklash</p>
                 </div>
 
@@ -171,10 +171,10 @@
                                     <h6 class="fw-bold mb-3">⚙️ Avtomatik generatsiya</h6>
 
                                     <div class="mb-3">
-                                        <label class="form-label">🎯 Nechta promocode yaratilsin?</label>
+                                        <label class="form-label">Promocodelar sonini kiriting</label>
                                         <input type="number" name="count" class="form-control" required min="1"
-                                            max="100000" placeholder="Masalan: 500">
-                                        <div class="form-text text-muted">Maksimal 100000 ta kod yaratishingiz mumkin.
+                                            max="10000" placeholder="Masalan: 500">
+                                        <div class="form-text text-muted">Maksimal 10000 ta kod yaratishingiz mumkin.
                                         </div>
                                     </div>
 
@@ -186,7 +186,7 @@
                                         </a>
                                         <button type="submit" name="action" value="generate"
                                             class="{{ $buttonClass }} btn-primary">
-                                            <i class="ph ph-lightning"></i> Kodlarni generatsiya qilish
+                                            <i class="ph ph-lightning"></i>Generatsiya qilish
                                         </button>
                                     </div>
                                 </form>
@@ -200,17 +200,17 @@
                                     enctype="multipart/form-data">
                                     @csrf
 
-                                    <h6 class="fw-bold mb-3">📥 Excel fayldan import qilish</h6>
+                                    <h6 class="fw-bold mb-3">Excel fayldan import qilish</h6>
                                     <input type="hidden" name="created_by_user_id"
                                         value="{{ Session::get('user')['id'] }}">
 
                                     <div class="mb-3">
-                                        <label class="form-label">📄 Excel fayl (.xlsx yoki .csv)</label>
+                                        <label class="form-label">Excel fayl (.xlsx yoki .csv)</label>
                                         <input type="file" name="file" class="form-control" accept=".xlsx,.csv"
                                             required>
                                         <div class="form-text text-muted">
                                             Fayl faqat 1 ustunli bo‘lishi kerak. Ustunda faqat
-                                            <strong>promocode</strong> lar bo‘lishi lozim.
+                                            <strong>promocode</strong> lar bo‘lishi lozim. promocodelar soni maximum 10000 ta bo'lishi kerak
                                         </div>
                                     </div>
                                     <div class="form-check my-3">

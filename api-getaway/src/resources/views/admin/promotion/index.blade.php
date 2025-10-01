@@ -210,7 +210,6 @@
     </script>
 @endpush
 @section('content')
-
     <div class="page-header-content d-lg-flex">
         <div class="d-flex">
         </div>

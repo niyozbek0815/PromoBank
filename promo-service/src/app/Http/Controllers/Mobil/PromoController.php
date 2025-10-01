@@ -65,8 +65,8 @@ class PromoController extends Controller
                 'promotionProduct:id,name',
                 'prize:id,name',
             ])
-            ->orderByDesc('created_at')
-            ->get(['id', 'promo_code_id', 'platform_id', 'promotion_product_id', 'prize_id', 'receipt_id']);
-        return $this->successResponse(['promotions' => PromoHistoryRecource::collection($promo_user)], "success");
+            ->orderByDesc('id')
+            ->get();
+        return $this->successResponse(PromoHistoryRecource::collection($promo_user), "success");
     }
 }

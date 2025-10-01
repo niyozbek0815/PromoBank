@@ -3,8 +3,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-
 class PromoCodeController extends Controller
 {
     protected $url;
@@ -26,7 +24,6 @@ class PromoCodeController extends Controller
     }
     public function create(Request $request, $id = null)
     {
-
         $response = $this->forwardRequest(
             "GET",
             $this->url,
@@ -38,7 +35,7 @@ class PromoCodeController extends Controller
             if ($settings === null) {
                 return view('admin.promocode.settings', [
                     'promotion_id' => $id,
-                    'success'      => "Iltimos, promocode sozlamalarini to'ldiring va promoaksiya qo'shing",
+                    'success' => "Iltimos, promocode sozlamalarini to'ldiring va promoaksiya qo'shing",
                 ]);
             }
             return view('admin.promocode.create', ['settings' => $settings, 'promotion_id' => $id, 'success' => 'Iltimos promocode generatsiya qilishdan oldin sozlamalarni tekshiring.']);
@@ -60,7 +57,6 @@ class PromoCodeController extends Controller
     }
     public function importPromoCodes(Request $request, $promotionId)
     {
-        // $response = $this->forwardRequest("POST", $this->url, "front/promocode/{$promotionId}/import", $request);
         $response = $this->forwardRequestMedias(
             'POST',
             $this->url,
@@ -72,7 +68,6 @@ class PromoCodeController extends Controller
             $data = $response->json();
             return redirect()->back()->with('success', $data["message"]);
         }
-
         if ($response->status() === 422) {
             return redirect()->back()
                 ->withErrors($response->json('errors'))
@@ -86,23 +81,19 @@ class PromoCodeController extends Controller
         $response = $this->forwardRequest("POST", $this->url, "front/promocode/{$promotionId}/promocode-settings", $request);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             $settings = $response->json('setting');
-            // dd($settings);
-
             return redirect()
                 ->route('admin.promocode.create', ['promotion_id' => $promotionId])
                 ->with([
                     'settings' => $settings,
-                    'success'  => '✅ Promocode sozlamalari yangilandi.',
+                    'success' => '✅ Promocode sozlamalari yangilandi.',
                 ]);
         }
     }
     public function showPromocodeSettingsForm(Request $request, $promotionId)
     {
-
         $response = $this->forwardRequest("GET", $this->url, "front/promocode/{$promotionId}/promocode-settings", $request);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             $settings = $response->json('settings');
-            // dd($settings);
             return view('admin.promocode.settings', ['settings' => $settings, 'promotion_id' => $promotionId, 'success' => 'Promocode sozlamalarini sozlang']);
         }
     }
@@ -144,10 +135,6 @@ class PromoCodeController extends Controller
     }
     public function searchPromocodes(Request $request, $promotionId)
     {
-        $query   = $request->input('q');
-        $perPage = $request->input('per_page', 20);
-
-        // Forward qilinadigan endpoint
         $response = $this->forwardRequest(
             "GET",
             $this->url,

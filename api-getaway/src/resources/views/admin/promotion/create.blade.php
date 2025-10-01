@@ -53,22 +53,25 @@
             // ✅ Offer file
             const offerInput = document.querySelector('.filepond-offer');
             if (offerInput) {
-                FilePond.create(offerInput, {
-                    allowMultiple: false,
-                    storeAsFile: true,
-                    maxFiles: 1,
-                    allowReorder: false,
-                    instantUpload: false,
-                    acceptedFileTypes: [
-                        'application/pdf',
-                        'application/msword',
-                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                        'application/vnd.oasis.opendocument.text',
-                        'application/rtf',
-                        'text/plain'
-                    ],
-                    labelIdle: 'Ommaviy ofertani bu yerga yuklang yoki tanlang',
-                });
+      FilePond.create(offerInput, {
+    allowMultiple: false,
+      allowImagePreview: true,
+    imagePreviewHeight: 120,
+    allowVideoPreview: false,
+    storeAsFile: true,
+    maxFiles: 1,
+    allowReorder: false,
+    instantUpload: false,
+    acceptedFileTypes: [
+        'application/pdf',
+        'application/msword', // .doc
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+        'application/vnd.oasis.opendocument.text', // .odt
+        'application/rtf', // .rtf
+        'text/plain' // .txt
+    ],
+    labelIdle: 'Ommaviy ofertani bu yerga yuklang yoki tanlang',
+});
             }
 
             // ✅ Banner
@@ -111,94 +114,131 @@
                     <form action="{{ route('admin.promotion.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="row">
-                            {{-- Translatable fields --}}
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
-                                    <label class="form-label">Nomi ({{ $label }})</label>
-                                    <input type="text" name="name[{{ $lang }}]" class="form-control" required>
-                                    <small class="text-muted">Aksiya nomini {{ $label }} tilida kiriting (masalan,
-                                        "Bahor aksiyasi").</small>
-                                </div>
-                            @endforeach
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
-                                    <label class="form-label">Sarlavha ({{ $label }})</label>
-                                    <input type="text" name="title[{{ $lang }}]" class="form-control" required>
-                                    <small class="text-muted">Sarlavha foydalanuvchilarga ko‘rinadigan qisqa tanishtiruv
-                                        bo‘lib xizmat qiladi.</small>
-                                </div>
-                            @endforeach
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
-                                    <label class="form-label">Tavsif ({{ $label }})</label>
-                                    <textarea name="description[{{ $lang }}]" class="form-control ckeditor" rows="6" required></textarea>
-                                    <small class="text-muted">Aksiya haqida batafsil ma’lumot yozing: qanday ishtirok
-                                        etiladi, yutuqlar va qoidalar.</small>
-                                </div>
+                            @php
+                                $languages = [
+                                    'uz' => 'O‘zbekcha',
+                                    'ru' => 'Русский',
+                                    'kr' => 'Krillcha',
+                                    'en' => 'English',
+                                ];
+                                $fields = [
+                                    'name' => [
+                                        'label' => 'Nomi',
+                                        'type' => 'text',
+                                        'extra' => 'Aksiya nomini :lang tilida kiriting (masalan, "Bahor aksiyasi").',
+                                    ],
+                                    'title' => [
+                                        'label' => 'Sarlavha',
+                                        'type' => 'text',
+                                        'extra' =>
+                                            'Sarlavha foydalanuvchilarga ko‘rinadigan qisqa tanishtiruv bo‘lib xizmat qiladi.',
+                                    ],
+                                    'description' => [
+                                        'label' => 'Tavsif',
+                                        'type' => 'textarea',
+                                        'extra' =>
+                                            'Aksiya haqida batafsil ma’lumot yozing: qanday ishtirok etiladi, yutuqlar va qoidalar.',
+                                    ],
+                                ];
+                            @endphp
+
+                            @foreach ($fields as $field => $meta)
+                                @foreach ($languages as $lang => $label)
+                                    <div class="col-lg-3 mb-3">
+                                        <label class="form-label fw-bold">
+                                            {{ $meta['label'] }} ({{ $label }}) <span class="text-danger">*</span>
+                                        </label>
+
+                                        @if ($meta['type'] === 'text')
+                                            <input type="text" name="{{ $field }}[{{ $lang }}]"
+                                                class="form-control" value="{{ old("$field.$lang") }}" required>
+                                        @elseif ($meta['type'] === 'textarea')
+                                            <textarea name="{{ $field }}[{{ $lang }}]" class="form-control ckeditor" rows="6" required>{{ old("$field.$lang") }}</textarea>
+                                        @endif
+
+                                        <small
+                                            class="text-muted">{{ str_replace(':lang', $label, $meta['extra']) }}</small>
+                                    </div>
+                                @endforeach
                             @endforeach
                         </div>
                         <div class="row">
 
 
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Kampaniya</label>
-                                <select name="company_id" class="form-select"
-                                    {{ isset($selectedCompanyId) ? 'readonly disabled' : '' }} required>
-                                    <option value="">Tanlang...</option>
-                                    @foreach ($companies as $company)
-                                        <option value="{{ $company['id'] }}"
-                                            {{ isset($selectedCompanyId) && $selectedCompanyId == $company['id'] ? 'selected' : '' }}>
-                                            {{ $company['name'] }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <small class="text-muted">Ushbu aksiya qaysi kompaniyaga tegishli ekanligini
-                                    belgilang.</small>
-                                @if (isset($selectedCompanyId))
-                                    <input type="hidden" name="company_id" value="{{ $selectedCompanyId }}">
-                                @endif
-                            </div>
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Boshlanish sanasi</label>
-                                <input type="datetime-local" name="start_date" class="form-control" required>
-                                <small class="text-muted">Aksiya rasmiy boshlanadigan sana va vaqtni kiriting.</small>
+                      <div class="col-lg-4 mb-3">
+    <label class="form-label">
+        Kampaniya <span class="text-danger">*</span>
+    </label>
+    <select name="company_id" class="form-select"
+        {{ isset($selectedCompanyId) ? 'readonly disabled' : '' }} required>
+        <option value="">Tanlang...</option>
+        @foreach ($companies as $company)
+            <option value="{{ $company['id'] }}"
+                {{ isset($selectedCompanyId) && $selectedCompanyId == $company['id'] ? 'selected' : '' }}>
+                {{ $company['name'] }}
+            </option>
+        @endforeach
+    </select>
+    <small class="text-muted">
+        Ushbu aksiya qaysi kompaniyaga tegishli ekanligini belgilang.
+    </small>
+    @if (isset($selectedCompanyId))
+        <input type="hidden" name="company_id" value="{{ $selectedCompanyId }}">
+    @endif
+</div>
+                    <div class="col-lg-4 mb-3">
+    <label class="form-label">
+        Boshlanish sanasi <span class="text-danger">*</span>
+    </label>
+    <input type="datetime-local" name="start_date" class="form-control" required>
+    <small class="text-muted">
+        Aksiya rasmiy boshlanadigan sana va vaqtni kiriting.
+    </small>
+</div>
 
-                            </div>
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Tugash sanasi</label>
-                                <input type="datetime-local" name="end_date" class="form-control" required>
-                                <small class="text-muted">Aksiya tugaydigan sana va vaqtni belgilang.</small>
-                            </div>
+<div class="col-lg-4 mb-3">
+    <label class="form-label">
+        Tugash sanasi <span class="text-danger">*</span>
+    </label>
+    <input type="datetime-local" name="end_date" class="form-control" required>
+    <small class="text-muted">
+        Aksiya tugaydigan sana va vaqtni belgilang.
+    </small>
+</div>
                         </div>
-                        <div class="row">
-                            {{-- JSON fields --}}
-
+                            <div class="row">
                             <div class="col-lg-4 mb-3">
-                                <label class="form-label">ishtirok etish turlari uslublarini tanlang</label>
-                                <select name="participants_type[]" class="form-control multiselect" multiple="multiple"
-                                    required" data-non-selected-text="Please choose">
-
+                                <label class="form-label">
+                                    Ishtirok etish turlari uslublarini tanlang <span class="text-danger">*</span>
+                                </label>
+                                <select name="participants_type[]" class="form-control multiselect" multiple required
+                                    data-non-selected-text="Please choose">
                                     @foreach ($partisipants_type as $name => $id)
                                         <option value="{{ $id }}">{{ $name }}</option>
                                     @endforeach
                                 </select>
-                                  <small class="text-muted">Foydalanuvchi aksiyada qanday ishtirok etishini belgilang (QR,
+                                <small class="text-muted">Foydalanuvchi aksiyada qanday ishtirok etishini belgilang (QR,
                                     kod, chek va h.k.).</small>
                             </div>
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Aksiya o'tqaziladigan platformalarni tanlang</label>
-                                <select name="platforms[]" class="form-control multiselect" multiple="multiple" required
-                                    data-non-selected-text="Please choose">
 
+                            <div class="col-lg-4 mb-3">
+                                <label class="form-label">
+                                    Aksiya o'tkaziladigan platformalarni tanlang <span class="text-danger">*</span>
+                                </label>
+                                <select name="platforms[]" class="form-control multiselect" multiple required
+                                    data-non-selected-text="Please choose">
                                     @foreach ($platforms as $name => $id)
                                         <option value="{{ $id }}">{{ $name }}</option>
                                     @endforeach
                                 </select>
-                                   <small class="text-muted">Aksiya qaysi platformalarda (web, telegram, sms) o'tkazilishini
+                                <small class="text-muted">Aksiya qaysi platformalarda (web, telegram, sms) o'tkazilishini
                                     tanlang.</small>
                             </div>
+
                             <div class="col-lg-4 mb-3">
-                                <label class="form-label fw-semibold">Yutuqni berish strategiyasi</label>
+                                <label class="form-label">
+                                    Yutuqni berish strategiyasi <span class="text-danger">*</span>
+                                </label>
                                 <select name="winning_strategy"
                                     class="form-control select2-single @error('winning_strategy') is-invalid @enderror"
                                     required>
@@ -224,7 +264,9 @@
                                     Aksiya davomida promokodlar qanday tarzda yutuqqa aylanishini belgilang.
                                 </small>
                             </div>
-                            <div class="col-lg-4 mb-3 mt-4">
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" name="status" value="1"
                                         id="statusSwitch">
@@ -246,50 +288,64 @@
                                 </div>
                             </div>
                         </div>
+<div class="row">
+    {{-- Oferta hujjati --}}
+    <div class="mb-3 col-lg-4">
+        <label class="form-label fw-bold">Ommaviy oferta hujjatini yuklang <span class="text-danger">*</span></label>
+        <input type="file"
+               name="offer_file"
+               class="filepond-offer"
+               required
+               data-max-file-size="2MB"
+               />
 
-                        <div class="row">
-                            {{-- Banner (yagona fayl) --}}
-                            <div class="mb-3 col-lg-4">
-                                <label class="form-label">Ommaviy oferta hujjatini yuklang</label>
-                                <input type="file" name="offer_file" class="filepond-offer" required
-                                    data-max-file-size="5MB" />
+        <div class="form-text text-muted">
+            <strong>Ruxsat etilgan formatlar:</strong> .pdf, .doc, .docx, .odt, .rtf, .txt <br>
+            <strong>Maksimal hajm:</strong> 2 MB
+        </div>
+    </div>
 
-                                <div class="form-text text-muted">
-                                    <strong>Ruxsat etilgan formatlar:</strong> .pdf, .doc, .docx <br>
-                                    <strong>Maksimal hajm:</strong> 5 MB
-                                </div>
-                            </div>
-                            <div class="mb-3 col-lg-4">
-                                <label class="form-label">Promoaksiya banneri </label>
-                                <input type="file" name="media_preview" class="filepond-banner" required
-                                    data-max-file-size="5MB" accept="image/*,video/mp4,video/webm" />
+    {{-- Banner --}}
+    <div class="mb-3 col-lg-4">
+        <label class="form-label fw-bold">Promoaksiya banneri <span class="text-danger">*</span></label>
+        <input type="file"
+               name="media_preview"
+               class="filepond-banner"
+               required
+               data-max-file-size="512KB"
+               accept="image/*,video/mp4,video/webm" />
 
-                                <div class="form-text text-muted">
-                                    Bu rasm yoki video promoaksiyaning tashqi ko‘rinishidir.<br>
-                                    <strong>Ruxsat etilgan formatlar:</strong> jpg, png, gif, mp4, webm. <br>
-                                    <strong>Maksimal hajm:</strong> 5 MB.
-                                </div>
-                            </div>
-                            @php
-                                $user = Session::get('user');
-                            @endphp
-                            <input type="text" name="created_by_user_id" value="{{ $user['id'] }}" hidden
-                                class="form-control" required maxlength="255">
-                            {{-- Galereya (bir nechta fayl) --}}
-                            <div class="mb-3 col-lg-4">
-                                <label class="form-label">Promoaksiya Media Galereyasi (Bir nechta media)</label>
-                                <input type="file" name="media_gallery[]" class="filepond-gallery" multiple required
-                                    data-max-file-size="20MB" data-max-files="10"
-                                    accept="image/*,video/mp4,video/webm" />
+        <div class="form-text text-muted">
+            Bu rasm yoki video promoaksiyaning tashqi ko‘rinishidir.<br>
+            <strong>Ruxsat etilgan formatlar:</strong> jpg, jpeg, png, gif, mp4, webm. <br>
+            <strong>Maksimal hajm:</strong> 512 KB
+        </div>
+    </div>
 
-                                <div class="form-text text-muted mt-1">
-                                    Bu media fayllar promoaksiyani batafsil tushuntiradi (ko‘rsatmalar, shartlar,
-                                    misollar).<br>
-                                    <strong>Ruxsat etilgan formatlar:</strong> jpg, png, gif, mp4, webm.<br>
-                                    <strong>Maksimal fayl soni:</strong> 10 ta. Har bir fayl hajmi: 20 MB gacha.
-                                </div>
-                            </div>
-                        </div>
+    {{-- User --}}
+    @php $user = Session::get('user'); @endphp
+    <input type="hidden" name="created_by_user_id" value="{{ $user['id'] }}" required>
+
+    {{-- Galereya --}}
+    <div class="mb-3 col-lg-4">
+        <label class="form-label fw-bold">Promoaksiya Media Galereyasi <span class="text-danger">*</span></label>
+        <input type="file"
+               name="media_gallery[]"
+               class="filepond-gallery"
+               multiple
+               required
+               data-max-file-size="235MB"
+               data-max-files="10"
+               accept="image/*,video/mp4,video/webm" />
+
+        <div class="form-text text-muted mt-1">
+            Promoaksiyani tushuntiruvchi qo‘shimcha media.<br>
+            <strong>Ruxsat etilgan formatlar:</strong> jpg, jpeg, png, gif, mp4, webm. <br>
+            <strong>Maksimal fayl soni:</strong> 10 ta. <br>
+            <strong>Har bir fayl hajmi:</strong> 235 MB gacha.
+        </div>
+    </div>
+</div>
 
 
                         <div class="d-flex justify-content-end gap-2">

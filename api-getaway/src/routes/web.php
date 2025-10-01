@@ -73,7 +73,7 @@ Route::get('/media/uploads/{context}/{fileName}', function ($context, $fileName)
 
     if ($response->ok()) {
         return Response::make($response->body(), 200, [
-            'Content-Type'        => $response->header('Content-Type') ?? 'application/octet-stream',
+            'Content-Type' => $response->header('Content-Type') ?? 'application/octet-stream',
             'Content-Disposition' => $response->header('Content-Disposition') ?? 'inline',
         ]);
     }
@@ -81,24 +81,34 @@ Route::get('/media/uploads/{context}/{fileName}', function ($context, $fileName)
     abort(404, 'File not found.');
 })->name('media.proxy');
 
+
+
+
 Route::get('/admin/login', [LoginController::class, 'showLoginForm'])->name('admin.login');
 Route::post('/admin/login', [LoginController::class, 'login']);
 Route::post('/admin/logout', [LoginController::class, 'logout'])->name('admin.logout');
-Route::middleware('checkadmin')->prefix('/admin')->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
-    Route::get('/profile/update', [ProfileController::class, 'updateProfile'])->name('admin.profile.update');
-    Route::prefix('/users')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->name('admin.users.index');
-        Route::get('/data', [UserController::class, 'data'])->name('admin.users.data');
-        Route::get('{id}/edit', [UserController::class, 'edit']);
-        Route::post('{id}/delete', [UserController::class, 'delete'])->name('admin.users.delete');
-        Route::post('{id}/status', [UserController::class, 'changeStatus'])->name('admin.users.status');
-        Route::put('{id}/update', [UserController::class, 'update'])->name('admin.users.update');
+
+
+
+Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(function () {
+
+
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update');
+
+
+    Route::controller(UserController::class)->group(function () {
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('{id}/edit', 'edit')->name('edit');
+            Route::put('{id}', 'update')->name('update');
+            Route::delete('{id}', 'delete')->name('delete');
+            Route::patch('{id}/status', 'changeStatus')->name('status');
+        });
+        Route::get('region/{region}/districts', 'getDistricts')->name('region.districts');
     });
-
-    Route::get('region/{regionId}/districts', [UserController::class, 'getDistricts'])->name('admin.region.districts');
-
-    Route::prefix('company')->name('admin.company.')->controller(CompanyController::class)->group(function () {
+    Route::prefix('company')->name('company.')->controller(CompanyController::class)->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/data', 'data')->name('data');
         Route::get('/create', 'create')->name('create');
@@ -110,19 +120,17 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
     });
     Route::prefix('socialcompany')
         ->controller(SocialMediaController::class)
-        ->as('admin.socialcompany.')
+        ->as('socialcompany.')
         ->group(function () {
-            Route::get('/{id}/data', 'data')->name('data');       // admin.socialcompany.data
-            Route::post('/{id}', 'store')->name('store');         // admin.socialcompany.store
-            Route::post('{id}/delete', 'delete')->name('delete'); // admin.socialcompany.delete
+            Route::get('/{id}/data', 'data')->name('data');       // socialcompany.data
+            Route::post('/{id}', 'store')->name('store');         // socialcompany.store
+            Route::post('{id}/delete', 'delete')->name('delete'); // socialcompany.delete
         });
-
-    // PromotionController uchun to'liq RESTful API route'lari
-    Route::prefix('promotion')->name('admin.promotion.')->controller(PromotionController::class)->group(function () {
+    Route::prefix('promotion')->name('promotion.')->controller(PromotionController::class)->group(function () {
         Route::get('/{id}/data', 'companydata')->name('companydata'); // AJAX uchun server-side table
         Route::get('/', 'index')->name('index');                      // GET /promotion
         Route::get('/{id}/edit', 'edit')->name('edit');               // GET /promotion/{id}/edit
-        Route::post('{id}/delete', 'delete')->name('delete');         // admin.socialcompany.delete
+        Route::post('{id}/delete', 'delete')->name('delete');         // socialcompany.delete
         Route::post('/{id}/status', 'changeStatus')->name('status');  // Status toggle
         Route::post('/{id}/public', 'changePublic')->name('public');
         Route::get('/data', 'data')->name('data');                     // AJAX uchun server-side table
@@ -132,7 +140,14 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
         Route::post('{promotion}/participant-type/{participant_type}/update', 'updateParticipantType')->name('participant-type.update');
         Route::post('{promotion}/platform/{platform}/update', 'updatePlatform')->name('platform.update');
     });
-    Route::prefix('promocode')->name('admin.promocode.')->controller(PromoCodeController::class)->group(function () {
+
+
+
+
+
+
+
+    Route::prefix('promocode')->name('promocode.')->controller(PromoCodeController::class)->group(function () {
         Route::get('/', 'index')->name('index');                         // GET /promocode
         Route::get('/data', 'data')->name('data');                       // GET /promocode/data
         Route::get('/create/{promotion_id?}', 'create')->name('create'); // GET /promocode/create
@@ -144,12 +159,18 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
         Route::get('/{generate}/showgenerate', 'generateShow')->name('generateshow');
         Route::get('/{promotion}/generate/promocodedata', 'generatePromocodeData')->name('generate.promocodedata'); // AJAX uchun server-side table
         Route::get('/{promotion}/promocodedata', 'promocodeData')->name('promocodedata');
+
+
+
+
+
+        
         Route::get('/{prize}/prizedata', 'prizeData')->name('prizedata');
         Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData');
         Route::get('/{promotion}/search', 'searchPromocodes')->name('search');
     });
     Route::prefix('prize-category')
-        ->name('admin.prize-category.')
+        ->name('prize-category.')
         ->controller(PrizeCategoryController::class)
         ->where(['type' => 'manual|smart_random|auto_bind|weighted_random'])
         ->group(function () {
@@ -157,7 +178,7 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::get('{promotion}/type/{type}/data', 'data')->name('data');
         });
     Route::prefix('prize')
-        ->name('admin.prize.')
+        ->name('prize.')
         ->controller(PrizeController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
@@ -175,7 +196,7 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::post('/{prize}/autobind/{promocodeId}', 'autobindDelete')->name('detachPromocodes');
         });
     Route::prefix('promotion_shops')
-        ->name('admin.promotion_shops.')
+        ->name('promotion_shops.')
         ->controller(PromotionShopController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
@@ -187,7 +208,7 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::get("/{promotion_id}/promotion_data", 'promotiondata')->name('promotion_data');
         });
     Route::prefix('promotion_products')
-        ->name('admin.promotion_products.')
+        ->name('promotion_products.')
         ->controller(PromotionProductController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
@@ -199,14 +220,14 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::get("/{shop_id}/promotion_data", 'promotiondata')->name('promotion_data');
             Route::post('/{id}/change_status', 'changeStatus')->name('change_status');
         });
-    Route::prefix('seles_receipts')->name('admin.seles_receipts.')
+    Route::prefix('seles_receipts')->name('seles_receipts.')
         ->controller(SelesReceiptController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/data', 'data')->name('data');
             Route::get('/{promotion_id}/promotion_receipt', 'wonPromotionSelesReceipts')->name('won_seles_receipts');
         });
-    Route::prefix('banners')->name('admin.banners.')
+    Route::prefix('banners')->name('banners.')
         ->controller(BannersController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
@@ -219,7 +240,7 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::get('/{banner}/edit', 'edit')->name('edit');
             Route::put('/{banner}', 'update')->name('update');
         });
-    Route::prefix('notifications')->name('admin.notifications.')
+    Route::prefix('notifications')->name('notifications.')
         ->controller(NotificationsController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
@@ -239,7 +260,7 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
     // web sayt routes
 
     Route::prefix('sponsors')
-        ->name('admin.sponsors.')
+        ->name('sponsors.')
         ->controller(SponsorController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
@@ -252,7 +273,7 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::post('/{sponsor}/status', 'changeStatus')->name('status');
         });
     Route::prefix('benefits')
-        ->name('admin.benefits.')
+        ->name('benefits.')
         ->controller(BenefitController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
@@ -265,7 +286,7 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::post('/{benefit}/status', 'changeStatus')->name('status');
         });
     Route::prefix('portfolio')
-        ->name('admin.portfolio.')
+        ->name('portfolio.')
         ->controller(PortfolioController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
@@ -278,7 +299,7 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::post('/{id}/status', 'changeStatus')->name('status');
         });
     Route::prefix('forsponsor')
-        ->name('admin.forsponsor.')
+        ->name('forsponsor.')
         ->controller(ForSponsorsController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
@@ -291,7 +312,7 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::post('/{id}/status', 'changeStatus')->name('status');
         });
     Route::prefix('socials')
-        ->name('admin.socials.')
+        ->name('socials.')
         ->controller(SocialsController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
@@ -304,7 +325,7 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::post('/{id}/status', 'changeStatus')->name('status');
         });
     Route::prefix('contacts')
-        ->name('admin.contacts.')
+        ->name('contacts.')
         ->controller(ContactController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
@@ -317,15 +338,15 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::post('/{id}/status', 'changeStatus')->name('status');
         });
     Route::prefix('settings')
-        ->name('admin.settings.')
+        ->name('settings.')
         ->controller(SettingsController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/edit', 'edit')->name('edit');
-        Route::put('/update', 'update')->name('update');
-    });
+            Route::put('/update', 'update')->name('update');
+        });
     Route::prefix('downloads')
-        ->name('admin.downloads.')
+        ->name('downloads.')
         ->controller(DownloadController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
@@ -333,7 +354,7 @@ Route::middleware('checkadmin')->prefix('/admin')->group(function () {
             Route::put('/update', 'update')->name('update');
         });
     Route::prefix('abouts')
-        ->name('admin.abouts.')
+        ->name('abouts.')
         ->controller(AboutsController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');

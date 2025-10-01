@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Jobs\DispatchNotificationFcmJob;
 use App\Jobs\StoreUploadedMediaJob;
@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Yajra\DataTables\DataTables;
+use App\Http\Controllers\Controller;
 
 class NotificationsController extends Controller
 {

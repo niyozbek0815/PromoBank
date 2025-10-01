@@ -51,7 +51,7 @@
 
             if (inputElement) {
                 const pond = FilePond.create(inputElement, {
-   allowMultiple: false,
+                    allowMultiple: false,
                     maxFiles: 1,
                     maxFileSize: '512KB',
                     acceptedFileTypes: ['image/*'],
@@ -78,7 +78,7 @@
             <h5 class="mb-0">About malumotlarini tahrirlash</h5>
         </div>
         <div class="card-body">
-            <form action="{{ route('admin.abouts.update')}}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.abouts.update') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -115,31 +115,32 @@
                 </div>
 
                 {{-- List --}}
-            <div class="row">
-    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill'] as $lang => $label)
-        <div class="col-lg-4 mb-3">
-            <label class="form-label fw-bold">List Items ({{ $label }})</label>
-            @php
-                $list = $about['list'][$lang] ?? [];
-                for ($i = count($list); $i < 6; $i++) {
-                    $list[$i] = '';
-                }
-            @endphp
-            <div class="list-items">
-                @foreach ($list as $i => $item)
-                    <input type="text" class="form-control mb-1" name="list_{{ $lang }}[]"
-                        value="{{ old('list_' . $lang . '.' . $i, $item) }}" required>
-                @endforeach
-            </div>
-        </div>
-    @endforeach
-</div>
+                <div class="row">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill'] as $lang => $label)
+                        <div class="col-lg-4 mb-3">
+                            <label class="form-label fw-bold">List Items ({{ $label }})</label>
+                            @php
+                                $list = $about['list'][$lang] ?? [];
+                                for ($i = count($list); $i < 6; $i++) {
+                                    $list[$i] = '';
+                                }
+                            @endphp
+                            <div class="list-items">
+                                @foreach ($list as $i => $item)
+                                    <input type="text" class="form-control mb-1" name="list_{{ $lang }}[]"
+                                        value="{{ old('list_' . $lang . '.' . $i, $item) }}" required>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
 
                 {{-- Image --}}
                 <div class="row">
                     <div class="col-lg-6 mb-3">
                         <label class="form-label fw-bold">Rasm</label>
-                        <input type="file" name="about_image" class="filepond-image" data-max-file-size="512KB" accept="image/*">
+                        <input type="file" name="about_image" class="filepond-image" data-max-file-size="512KB"
+                            accept="image/*">
                         @if (!empty($about['image']))
                             <div id="oldPreview" class="preview-container mt-2">
                                 <img src="{{ asset($about['image']) }}" alt="About Image">

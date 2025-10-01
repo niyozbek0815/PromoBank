@@ -31,7 +31,7 @@ class Company extends Model
     ];
     public function getLogoAttribute()
     {
-        return $this->getMedia('logo'); // yoki 'avatar'
+        return $this->getMedia('company_logo'); // yoki 'avatar'
     }
 
     public function socialMedia()

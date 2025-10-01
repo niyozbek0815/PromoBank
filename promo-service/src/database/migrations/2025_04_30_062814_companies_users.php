@@ -14,13 +14,8 @@ return new class extends Migration
         Schema::create('companies_users', function (Blueprint $table) {
             $table->unsignedBigInteger('company_id');
             $table->unsignedBigInteger('user_id');
-
             $table->primary(['company_id', 'user_id']);
-
-            // Faqat companies jadvaliga foreign key
             $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
-
-            // 'user_id' uchun foreign key YO'Q!
         });
     }
 

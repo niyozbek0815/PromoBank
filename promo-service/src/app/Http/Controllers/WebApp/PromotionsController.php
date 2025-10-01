@@ -64,6 +64,7 @@ class PromotionsController extends Controller
     public function viaReceipt(SendPromocodeRequest $request, $id)
     {
         $user = $request['auth_user'];
+        Log::info("user", ['user' => $user]);
         $req = $request->validated();
         $data = $this->scraper->scrapeReceipt($req);
 

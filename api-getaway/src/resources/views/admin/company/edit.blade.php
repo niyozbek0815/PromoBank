@@ -1,28 +1,84 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Company edit')
+@section('title', 'Company taxrirlash')
 
 @push('scripts')
+    <style>
+        .preview-container {
+            width: 100%;
+            max-height: 300px;
+            background: #0000001d;
+            border: 10px solid #ddd;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            min-height: 200px;
+            position: relative;
+        }
+
+        .preview-container img {
+            max-height: 100%;
+            height: 270px;
+            width: auto;
+            display: block;
+            margin: auto;
+            object-fit: contain;
+        }
+    </style>
     @php
+        $clients = $data['clients'] ?? [];
         $social_types = $data['select_types'];
-        $data = $data['data'];
+        $company = $data['data'];
     @endphp
     <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/form_layouts.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
+    {{-- FilePond CSS --}}
+    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet" />
+    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
+
+    {{-- FilePond JS --}}
+    <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
     <script>
-        $(document).on('change', 'input[name="logo"]', function(evt) {
-            const [file] = this.files;
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    $('#company-logo-preview').attr('src', e.target.result);
-                }
-                reader.readAsDataURL(file);
+        document.addEventListener('DOMContentLoaded', function() {
+            FilePond.registerPlugin(
+                FilePondPluginFileValidateType,
+                FilePondPluginFileValidateSize,
+                FilePondPluginImagePreview
+            );
+
+            const inputElement = document.querySelector('input.filepond-logo');
+            const oldPreview = document.getElementById('oldLogoPreview');
+
+            if (inputElement) {
+                const pond = FilePond.create(inputElement, {
+                    allowMultiple: false,
+                    maxFiles: 1,
+                    maxFileSize: '512KB',
+                    acceptedFileTypes: ['image/*'],
+                    storeAsFile: true,
+                });
+
+                // Fayl qo‘shilganda eski preview yashirish
+                pond.on('addfile', () => {
+                    if (oldPreview) oldPreview.style.display = 'none';
+                });
+
+                // Fayl o‘chirilganda eski preview qaytarish
+                pond.on('removefile', () => {
+                    if (oldPreview) oldPreview.style.display = 'flex';
+                });
             }
         });
+    </script>
+    <script>
         $(document).on('change', '#status', function() {
             let checked = $(this).is(':checked');
             let label = $('#status-label');
@@ -381,96 +437,127 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">Company edit</h5>
+                    <h5 class="mb-0">Company taxrirlash</h5>
                 </div>
 
                 <div class="card-body">
-                    <form action="{{ route('admin.company.update', $data['id']) }}" method="POST"
+                    <form action="{{ route('admin.company.update', $company['id']) }}" method="POST"
                         enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
+                        @php
+                            $languages = [
+                                'uz' => 'O‘zbekcha',
+                                'ru' => 'Русский',
+                                'kr' => 'Krillcha',
+                                'en' => 'English',
+                            ];
+                        @endphp
 
                         <div class="row">
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
-                                    <label class="form-label">Nomi ({{ $label }})</label>
+                            @foreach ($languages as $lang => $label)
+                                <div class="col-lg-3 mb-3">
+                                    <label class="form-label">
+                                        Nomi ({{ $label }}) <span class="text-danger">*</span>
+                                    </label>
                                     <input type="text" name="name[{{ $lang }}]"
-                                        value="{{ $data['name'][$lang] ?? '' }}" class="form-control" required
+                                        value="{{ old("name.$lang", $company['name'][$lang] ?? '') }}"
+                                        class="form-control @error("name.$lang") is-invalid @enderror" required
                                         maxlength="255">
+                                    @error("name.$lang")
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             @endforeach
                         </div>
-                        <input type="hidden" id="company-id" value="{{ $data['id'] }}">
+
+                        <input type="hidden" id="company-id" value="{{ $company['id'] }}">
+
                         <div class="row">
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
+                            @foreach ($languages as $lang => $label)
+                                <div class="col-lg-3 mb-3">
                                     <label class="form-label">Sarlavha ({{ $label }})</label>
                                     <input type="text" name="title[{{ $lang }}]"
-                                        value="{{ $data['title'][$lang] ?? '' }}" class="form-control" maxlength="255">
+                                        value="{{ old("title.$lang", $company['title'][$lang] ?? '') }}"
+                                        class="form-control @error("title.$lang") is-invalid @enderror" maxlength="255">
+                                    @error("title.$lang")
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             @endforeach
                         </div>
+
                         <div class="row">
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
+                            @foreach ($languages as $lang => $label)
+                                <div class="col-lg-3 mb-3">
                                     <label class="form-label">Tavsif ({{ $label }})</label>
-                                    <textarea name="description[{{ $lang }}]" class="form-control" rows="2">{{ $data['description'][$lang] ?? '' }}</textarea>
+                                    <textarea name="description[{{ $lang }}]" class="form-control @error("description.$lang") is-invalid @enderror"
+                                        rows="2" maxlength="1000">{{ old("description.$lang", $company['description'][$lang] ?? '') }}</textarea>
+                                    @error("description.$lang")
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             @endforeach
                         </div>
                         <div class="row">
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label">Company Logo</label>
-                                <div class="mb-2">
-                                    @if (!empty($data['logo']))
-                                        <img src="{{ $data['logo'] }}" alt="Company logosi" id="company-logo-preview"
-                                            class="img-thumbnail" style="max-width: 130px; height: 130px;">
-                                    @else
-                                        <img src="{{ asset('adminpanel/assets/images/default-logo.png') }}"
-                                            alt="Default logo" class="img-thumbnail"
-                                            style="max-width: 130px; height: 120px;" id="company-logo-preview">
-                                    @endif
-                                </div>
-                                <input type="file" name="logo" class="form-control">
-                                <div class="form-text text-muted">Ruxsat etilgan formatlar: gif, png, jpg. Maksimal hajm:
-                                    2Mb</div>
+                                <label class="form-label fw-bold">Logo</label>
+                                <input type="file" name="logo" class="filepond-logo" data-max-file-size="512KB"
+                                    accept="image/*">
+                                @if (!empty($company['logo']['url']))
+                                    <div id="oldLogoPreview" class="preview-container mt-2">
+                                        <img src="{{ $company['logo']['url'] }}" alt="Company Logo">
+                                    </div>
+                                @endif
                             </div>
                             <div class="col-lg-8">
                                 <div class="row">
                                     <div class="col-lg-6 mb-3">
-                                        <label class="form-label">Email</label>
-                                        <input type="email" name="email" value="{{ $data['email'] }}"
-                                            class="form-control" maxlength="255" required>
+                                        <label class="form-label">
+                                            Email <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="email" name="email" value="{{ old('email', $company['email']) }}"
+                                            class="form-control @error('email') is-invalid @enderror" required
+                                            maxlength="255">
+                                        @error('email')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-lg-6 mb-3">
                                         <label class="form-label">Hudud</label>
-                                        <input type="text" name="region" value="{{ $data['region'] }}"
+                                        <input type="text" name="region" value="{{ $company['region'] }}"
                                             class="form-control" maxlength="255">
                                     </div>
                                     <div class="col-lg-6 mb-3">
                                         <label class="form-label">Manzil</label>
-                                        <input type="text" name="address" value="{{ $data['address'] }}"
+                                        <input type="text" name="address" value="{{ $company['address'] }}"
                                             class="form-control" maxlength="255">
                                     </div>
                                     <div class="col-lg-6 mb-3">
-                                        <label class="form-label">Javobgar shaxs</label>
-                                        <select name="user_id" class="form-select" required>
+                                        <label class="form-label">
+                                            Javobgar shaxs <span class="text-danger">*</span>
+                                        </label>
+                                        <select name="user_id" class="form-select @error('user_id') is-invalid @enderror"
+                                            required>
                                             <option value="">Tanlang...</option>
-                                            @foreach ($clients['clients'] ?? [] as $client)
+                                            @foreach ($clients ?? [] as $client)
                                                 <option value="{{ $client['id'] }}"
-                                                    {{ $data['user_id'] == $client['id'] ? 'selected' : '' }}>
+                                                    {{ old('user_id', $company['user_id'] ?? null) == $client['id'] ? 'selected' : '' }}>
                                                     {{ $client['name'] }} ({{ $client['email'] }})
                                                 </option>
                                             @endforeach
                                         </select>
+                                        @error('user_id')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
 
                                     <div class="col-lg-6 mb-3 d-flex align-items-center">
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="status" name="status"
-                                                value="1" {{ $data['status'] == '1' ? 'checked' : '' }}>
+                                                value="1" {{ $company['status'] == '1' ? 'checked' : '' }}>
                                             <label class="form-check-label ms-2" for="status" id="status-label">
-                                                @if ($data['status'] == '1')
+                                                @if ($company['status'] == '1')
                                                     <i class="ph ph-check-circle text-success"></i> Faol
                                                 @else
                                                     <i class="ph ph-x-circle text-danger"></i> Faol emas
@@ -503,7 +590,7 @@
             </div>
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">social link ma'lumotlari</h5>
+                    <h5 class="mb-0">Company uchun qo'shimcha ma'lumotlari</h5>
                     <div class="btn-group">
                         <button type="button" class="btn btn-outline-success collapse-toggler"
                             data-target="#collapse-social">
@@ -549,7 +636,7 @@
 
                             <div class="page-header-content d-flex justify-content-between align-items-center">
                                 <h4 class="page-title mb-0">PromoAksiyalar</h4>
-                                <a href="{{ route('admin.promotion.create', ['company_id' => $data['id']]) }}"
+                                <a href="{{ route('admin.promotion.create', ['company_id' => $company['id']]) }}"
                                     class="btn btn-outline-success ms-3">
                                     <i class="ph-plus-circle me-1"></i> Yangi promoaksiya
                                 </a>
@@ -576,10 +663,10 @@
                     <div class="collapse table-panel" id="collapse-settings">
                         <div class="border rounded p-3">
                             <h6 class="mb-3">Sozlamalar</h6>
-                            <ul class="list-group">
+                            {{-- <ul class="list-group">
                                 <li class="list-group-item">Tillar: uz, ru, kr</li>
                                 <li class="list-group-item">Timezone: Asia/Tashkent</li>
-                            </ul>
+                            </ul> --}}
                         </div>
                     </div>
                 </div>
@@ -589,10 +676,10 @@
         <div class="modal fade" id="socialMediaModal" tabindex="-1" aria-labelledby="socialMediaModalLabel"
             aria-hidden="true">
             <div class="modal-dialog">
-                <form action="{{ route('admin.socialcompany.store', $data['id']) }}" method="POST">
+                <form action="{{ route('admin.socialcompany.store', $company['id']) }}" method="POST">
                     @csrf
                     <input type="hidden" name="id" id="social-id">
-                    <input type="hidden" name="company_id" id="social-company-id" value="{{ $data['id'] }}">
+                    <input type="hidden" name="company_id" id="social-company-id" value="{{ $company['id'] }}">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="socialMediaModalLabel">Ijtimoiy tarmoqni qo'shish yoki saqlash

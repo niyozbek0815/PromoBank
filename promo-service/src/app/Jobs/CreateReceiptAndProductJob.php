@@ -71,7 +71,9 @@ class CreateReceiptAndProductJob implements ShouldQueue
                     'summa'        => $this->data['summa'],
                     'lat'          => $this->data['lat'] ?? null,
                     'long'         => $this->data['long'] ?? null,
+                    // "payment_type" => "naqt",
                 ]);
+                Log::info('Receipts', ['receipts' => $receipt]);
 
                 $products = collect($this->data['products'])->map(function ($product) use ($receipt) {
                     return [
@@ -83,6 +85,7 @@ class CreateReceiptAndProductJob implements ShouldQueue
                         'updated_at' => now(),
                     ];
                 });
+                Log::info("receipt", ['receipt' => $receipt]);
 
                 SalesProduct::insert($products->toArray());
                 return $receipt['id'];
@@ -96,7 +99,8 @@ class CreateReceiptAndProductJob implements ShouldQueue
                 ]);
                 $this->dispatchPromoCodeJob($user['id'], $receipt_id);
             };
-            if ($this->manualPrizeCount == 0 && empty($thiss->selectedPrize)) {
+            if ($this->manualPrizeCount == 0 && empty($this->selectedPrize)) {
+                Log::info("Ball berildi");
                 $this->giveEncouragementPoints($user['id'], $receipt_id);
             }
         } catch (\Exception $e) {

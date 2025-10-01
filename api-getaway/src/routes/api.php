@@ -15,7 +15,17 @@ use App\Http\Controllers\WebApp\PromotionsController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/telegram/webhook', [TelegramController::class, 'webhook']);
-
+Route::prefix('webapp')->name('webapp.')->group(function () {
+    Route::controller(WebAppAuthController::class)->prefix('auth')->group(function () {
+        Route::post('/', 'login')->name('auth.login');
+        Route::post('/refresh', 'refresh')->name('auth.refresh');
+        Route::post('/logout', 'logout')->name('auth.logout');
+    });
+    Route::controller(PromotionsController::class)->prefix('promotions')->name('promotions.')->group(function () {
+        Route::post('{promotion}/promocode', 'verifyPromo')->name('verifyPromo')->middleware(['webapp.auth']);
+        Route::post('{promotion}/receipt', 'verifyReceipt')->name('verifyReceipt')->middleware(['webapp.auth']);
+    });
+});
 
 Route::controller(AuthController::class)->prefix('auth')->group(function () {
     Route::post('/guest-login', 'guest');
@@ -29,23 +39,13 @@ Route::controller(AuthController::class)->prefix('auth')->group(function () {
     // Route::post('/logout', 'logout')->middleware('guestCheck'); // POST /auth/logout
 });
 
-Route::prefix('webapp')->name('webapp.')->group(function () {
-    // 🔑 Auth routes
-    Route::controller(WebAppAuthController::class)->prefix('auth')->group(function () {
-        Route::post('/', 'login')->name('auth.login');
-        Route::post('/refresh', 'refresh')->name('auth.refresh');
-        Route::post('/logout', 'logout')->name('auth.logout');
-    });
 
-    // 🎟 Promo routes
-    Route::controller(PromotionsController::class)->prefix('promotions')->name('promotions.')->group(function () {
-        Route::post('{promotion}/promocode', 'verifyPromo')->name('verifyPromo')->middleware(['webapp.auth']);
-        Route::post('{promotion}/receipt', 'verifyReceipt')->name('verifyReceipt')->middleware(['webapp.auth']);
-    });
-});
 Route::controller(AddresController::class)->middleware(['guestCheck'])->group(function () {
     Route::get('/regions', 'region');
     Route::get('/regions/{region_id}/districts', 'district');
+});
+Route::controller(AddresController::class)->middleware(['guestCheck'])->group(function () {
+    Route::get('/support', 'region');
 });
 Route::controller(PromoController::class)->prefix('promotions')->group(function () {
     Route::get('/', 'index')->middleware(['guestCheck']);

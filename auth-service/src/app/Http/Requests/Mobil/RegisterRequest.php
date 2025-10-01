@@ -22,14 +22,11 @@ class RegisterRequest extends FormRequest
             'gender'      => ['required', 'in:e,a'],
             'birthdate'   => ['required', 'date_format:Y-m-d'],
             'avatar'      => ['nullable', 'string', function ($attribute, $value, $fail) {
-                // 1. Base64 formatini tekshir
                 if (! preg_match('/^data:image\/(jpg|jpeg|png|webp);base64,/', $value)) {
                     return $fail('Avatar maydonida faqat JPG, JPEG, PNG yoki WEBP formatdagi base64 rasm yuborilishi kerak.');
                 }
-
                 // 2. Base64 ni dekodlab rasm hajmini tekshir
                 $sizeInBytes = (int) (strlen(base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $value))) ?? 0);
-
                 if ($sizeInBytes > 512 * 1024) { // 512 KB
                     return $fail('Avatar hajmi 512KB dan oshmasligi kerak.');
                 }

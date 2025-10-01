@@ -45,113 +45,134 @@ class PromotionMessageSeeder extends Seeder
                 'success' => [
                     'uz' => "Promocode muvaffaqiyatli ro'yhatga olindi. SMS orqali tasdiqlandi.",
                     'ru' => "Промокод успешно зарегистрирован. Подтверждено через SMS.",
-                    'kr' => "프로모코드가 성공적으로 등록되었습니다. SMS로 확인되었습니다.",
+                    'en' => "Promocode successfully registered. Confirmed via SMS.",
+                    'kr' => "Промокод муваффақиятли рўйхатга олинди. SMS орқали тасдиқланди.",
                 ],
                 'fail' => [
                     'uz' => "Afsuski, bu safar sizga sovg‘a chiqmadi. Omadingizni yana sinab ko‘ring!",
                     'ru' => "Промокод не зарегистрирован. Пожалуйста, попробуйте еще раз.",
-                    'kr' => "프로모코드를 등록하지 못했습니다. 다시 시도해 주세요.",
+                    'en' => "Unfortunately, no prize this time. Try again!",
+                    'kr' => "Афсуски, бу сафар сизга совға чиқмади. Омадингизни яна синаб кўринг!",
                 ],
                 'claim' => [
-                    'uz' => "Promocodedan avval foydalanilgan",
-                    'ru' => "Ваша заявка на промокод успешно принята.",
-                    'kr' => "프로모코드가 성공적으로 처리되었습니다.",
+                    'uz' => "Promocodedan avval foydalanilgan.",
+                    'ru' => "Промокод уже был использован ранее.",
+                    'en' => "The promocode has already been used.",
+                    'kr' => "Промокоддан аввал фойдаланилган.",
                 ],
                 'info' => [
                     'uz' => "Promo-kodingiz haqida qo'shimcha ma'lumot: ...",
                     'ru' => "Дополнительная информация о вашем промокоде: ...",
-                    'kr' => "귀하의 프로모코드에 대한 추가 정보: ...",
+                    'en' => "Additional information about your promocode: ...",
+                    'kr' => "Промо-кодингиз ҳақида қўшимча маълумот: ...",
                 ],
                 'etc' => [
                     'uz' => "Boshqa xabarlar haqida ma'lumot.",
                     'ru' => "Дополнительная информация.",
-                    'kr' => "기타 정보.",
+                    'en' => "Additional information.",
+                    'kr' => "Бошқа хабарлар ҳақида маълумот.",
                 ],
             ],
             'mobile' => [
                 'success' => [
                     'uz' => "Promocode muvaffaqiyatli ro'yhatga olindi.",
                     'ru' => "Промокод успешно зарегистрирован.",
-                    'kr' => "프로모코드가 성공적으로 등록되었습니다.",
+                    'en' => "Promocode successfully registered.",
+                    'kr' => "Промокод муваффақиятли рўйхатга олинди.",
                 ],
                 'fail' => [
                     'uz' => "Promocode ro'yhatga olinmadi. Iltimos, yana bir bor urunib ko'ring.",
                     'ru' => "Промокод не зарегистрирован. Пожалуйста, попробуйте еще раз.",
-                    'kr' => "프로모코드를 등록하지 못했습니다. 다시 시도해 주세요.",
+                    'en' => "Promocode not registered. Please try again.",
+                    'kr' => "Промокод рўйхатга олинмади. Илтимос, яна бир бор уриниб кўринг.",
                 ],
                 'claim' => [
-                    'uz' => "Promocodedan avval foydalanilgan",
-                    'ru' => "Ваша заявка на промокод успешно принята.",
-                    'kr' => "프로모코드가 성공적으로 처리되었습니다.",
+                    'uz' => "Promocodedan avval foydalanilgan.",
+                    'ru' => "Промокод уже был использован ранее.",
+                    'en' => "The promocode has already been used.",
+                    'kr' => "Промокоддан аввал фойдаланилган.",
                 ],
                 'info' => [
                     'uz' => "Promo-kodingiz haqida qo'shimcha ma'lumot: ...",
                     'ru' => "Дополнительная информация о вашем промокоде: ...",
-                    'kr' => "귀하의 프로모코드에 대한 추가 정보: ...",
+                    'en' => "Additional information about your promocode: ...",
+                    'kr' => "Промо-кодингиз ҳақида қўшимча маълумот: ...",
                 ],
                 'etc' => [
                     'uz' => "Boshqa xabarlar haqida ma'lumot.",
                     'ru' => "Дополнительная информация.",
-                    'kr' => "기타 정보.",
+                    'en' => "Additional information.",
+                    'kr' => "Бошқа хабарлар ҳақида маълумот.",
                 ],
             ],
             'bot' => [
                 'success' => [
                     'uz' => "Promocode muvaffaqiyatli ro'yhatga olindi. Telegram bot orqali tasdiqlandi.",
                     'ru' => "Промокод успешно зарегистрирован через Telegram бота.",
-                    'kr' => "프로모코드가 성공적으로 등록되었습니다. 텔레그램 봇을 통해 확인되었습니다.",
+                    'en' => "Promocode successfully registered via Telegram bot.",
+                    'kr' => "Промокод муваффақиятли рўйхатга олинди. Telegram бот орқали тасдиқланди.",
                 ],
                 'fail' => [
                     'uz' => "Promocode ro'yhatga olinmadi. Iltimos, yana bir bor urunib ko'ring.",
                     'ru' => "Промокод не зарегистрирован. Пожалуйста, попробуйте еще раз.",
-                    'kr' => "프로모코드를 등록하지 못했습니다. 다시 시도해 주세요.",
+                    'en' => "Promocode not registered. Please try again.",
+                    'kr' => "Промокод рўйхатга олинмади. Илтимос, яна бир бор уриниб кўринг.",
                 ],
                 'claim' => [
-                    'uz' => "Promocodedan avval foydalanilgan",
-                    'ru' => "Ваша заявка на промокод успешно принята.",
-                    'kr' => "프로모코드가 성공적으로 처리되었습니다.",
+                    'uz' => "Promocodedan avval foydalanilgan.",
+                    'ru' => "Промокод уже был использован ранее.",
+                    'en' => "The promocode has already been used.",
+                    'kr' => "Промокоддан аввал фойдаланилган.",
                 ],
                 'info' => [
                     'uz' => "Promo-kodingiz haqida qo'shimcha ma'lumot: ...",
                     'ru' => "Дополнительная информация о вашем промокоде: ...",
-                    'kr' => "귀하의 프로모코드에 대한 추가 정보: ...",
+                    'en' => "Additional information about your promocode: ...",
+                    'kr' => "Промо-кодингиз ҳақида қўшимча маълумот: ...",
                 ],
                 'etc' => [
                     'uz' => "Boshqa xabarlar haqida ma'lumot.",
                     'ru' => "Дополнительная информация.",
-                    'kr' => "기타 정보.",
+                    'en' => "Additional information.",
+                    'kr' => "Бошқа хабарлар ҳақида маълумот.",
                 ],
             ],
             'all' => [
                 'success' => [
                     'uz' => "Promocode muvaffaqiyatli ro'yhatga olindi. Barcha platformalar uchun tasdiqlandi.",
                     'ru' => "Промокод успешно зарегистрирован. Подтверждено на всех платформах.",
-                    'kr' => "프로모코드가 성공적으로 등록되었습니다. 모든 플랫폼에서 확인되었습니다.",
+                    'en' => "Promocode successfully registered. Confirmed on all platforms.",
+                    'kr' => "Промокод муваффақиятли рўйхатга олинди. Барча платформаларда тасдиқланди.",
                 ],
                 'fail' => [
                     'uz' => "Promocode ro'yhatga olinmadi. Iltimos, yana bir bor urunib ko'ring.",
                     'ru' => "Промокод не зарегистрирован. Пожалуйста, попробуйте еще раз.",
-                    'kr' => "프로모코드를 등록하지 못했습니다. 다시 시도해 주세요.",
+                    'en' => "Promocode not registered. Please try again.",
+                    'kr' => "Промокод рўйхатга олинмади. Илтимос, яна бир бор уриниб кўринг.",
                 ],
                 'claim' => [
-                    'uz' => "Promocodedan avval foydalanilgan",
-                    'ru' => "Ваша заявка на промокод успешно принята.",
-                    'kr' => "프로모코드가 성공적으로 처리되었습니다.",
+                    'uz' => "Promocodedan avval foydalanilgan.",
+                    'ru' => "Промокод уже был использован ранее.",
+                    'en' => "The promocode has already been used.",
+                    'kr' => "Промокоддан аввал фойдаланилган.",
                 ],
                 'info' => [
                     'uz' => "Promo-kodingiz haqida qo'shimcha ma'lumot: ...",
                     'ru' => "Дополнительная информация о вашем промокоде: ...",
-                    'kr' => "귀하의 프로모코드에 대한 추가 정보: ...",
+                    'en' => "Additional information about your promocode: ...",
+                    'kr' => "Промо-кодингиз ҳақида қўшимча маълумот: ...",
                 ],
                 'etc' => [
                     'uz' => "Boshqa xabarlar haqida ma'lumot.",
                     'ru' => "Дополнительная информация.",
-                    'kr' => "기타 정보.",
+                    'en' => "Additional information.",
+                    'kr' => "Бошқа хабарлар ҳақида маълумот.",
                 ],
             ],
         ];
 
         // Platforma va type bo'yicha xabarni qaytaradi
-        return $messages[$platform][$type] ?? ['uz' => 'No message available', 'ru' => 'Нет сообщения', 'kr' => '메시지가 없습니다'];
+        return $messages[$platform][$type]
+            ?? ['uz' => 'Xabar topilmadi', 'ru' => 'Сообщение не найдено', 'en' => 'Message not found', 'kr' => 'Хабар топилмади'];
     }
 }

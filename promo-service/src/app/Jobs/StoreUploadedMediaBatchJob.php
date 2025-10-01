@@ -127,7 +127,7 @@ class StoreUploadedMediaBatchJob implements ShouldQueue
     protected function getModelTypeByContext(string $context): string
     {
         return match ($context) {
-            'promotion-gallary' => \App\Models\Promotions::class,
+            'promotion-gallery' => \App\Models\Promotions::class,
             'user_avatar' => \App\Models\User::class,
             'banners'     => \App\Models\Banner::class,
             default       => throw new \InvalidArgumentException("Noma'lum context: {$context}"),

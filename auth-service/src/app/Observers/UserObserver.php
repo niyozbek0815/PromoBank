@@ -4,7 +4,7 @@ namespace App\Observers;
 
 use App\Jobs\SyncUserFromAuth;
 use App\Models\User;
-
+use Spatie\Permission\Models\Role;
 class UserObserver
 {
     /**
@@ -12,7 +12,7 @@ class UserObserver
      */
     public function created(User $user): void
     {
-SyncUserFromAuth::dispatch($user['id'],$user['phone'],$user['name'])->onQueue('promo_queue');
+        SyncUserFromAuth::dispatch($user['id'], $user['phone'], $user['name'])->onQueue('promo_queue');
     }
 
     /**
@@ -20,7 +20,14 @@ SyncUserFromAuth::dispatch($user['id'],$user['phone'],$user['name'])->onQueue('p
      */
     public function updated(User $user): void
     {
-        SyncUserFromAuth::dispatch($user['id'],$user['phone'],$user['name'])->onQueue('promo_queue');
+        SyncUserFromAuth::dispatch($user['id'], $user['phone'], $user['name'])->onQueue('promo_queue');
+        if (!$user->roles()->exists()) {
+            $userRole = Role::firstOrCreate([
+                'name' => 'user',
+                'guard_name' => 'web',
+            ]);
+            $user->assignRole($userRole);
+        }
     }
 
     /**
