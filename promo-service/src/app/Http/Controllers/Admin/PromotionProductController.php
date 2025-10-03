@@ -11,23 +11,17 @@ use Yajra\DataTables\Facades\DataTables;
 
 class PromotionProductController extends Controller
 {
-    /**
-     * Yaratish formasi uchun kerak bo‘lgan ma'lumotlarni olish
-     */
+
     public function create(Request $request, $shop_id = null)
     {
-        // 🔹 Barcha promotionlarni olish
         $promotions = Promotions::select('id', 'name')
             ->get()
             ->map(fn($promotion) => [
                 'id'   => $promotion->id,
                 'name' => $promotion->getTranslation('name', 'uz'),
-            ]);
+             ]);
 
-        // 🔹 Barcha do‘konlar (promotion_id bilan birga)
         $shops = PromotionShop::select('id', 'name', 'promotion_id')->get();
-
-        // 🔹 Agar shop_id berilgan bo‘lsa, shu do‘konning promotion_id sini topish
         $selected_promotion = $shop_id
         ? optional($shops->firstWhere('id', $shop_id))->promotion_id
         : null;
@@ -39,10 +33,6 @@ class PromotionProductController extends Controller
             'selected_promotion' => $selected_promotion,
         ]);
     }
-
-    /**
-     * Yangi product saqlash
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -96,7 +86,6 @@ class PromotionProductController extends Controller
             ->with(['promotion', 'shop'])
             ->where('shop_id', $shopId)
             ->select('promotion_products.*');
-        Log::info("Querying promotion products for shop ID: {$shopId}", ['query' => $query->get()]);
         return DataTables::of($query)
             ->addColumn('promotion_name', fn($product) => $product->promotion?->getTranslation('name', 'uz') ?? '-')
             ->addColumn('shop_name', fn($product) => $product->shop?->name ?? '-')

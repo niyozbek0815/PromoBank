@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BannersController;
 use App\Http\Controllers\Admin\CompanyController;
+use App\Http\Controllers\Admin\MessagesController;
 use App\Http\Controllers\Admin\PrizeCategoryController;
 use App\Http\Controllers\Admin\PrizeController;
 use App\Http\Controllers\Admin\PromoCodeController;
@@ -115,7 +116,7 @@ Route::prefix('front')->group(function () {
         ->name('admin.prize.')
         ->controller(PrizeController::class)
         ->group(function () {
-            Route::get('/', 'index')->name('index');
+            // Route::get('/', 'index')->name('index');
             Route::get('/data', 'prizeData')->name('data');
             Route::get('/{prize}/status', 'changeStatus')->name('status');
             Route::get('/create', 'create')->name('create');
@@ -171,5 +172,18 @@ Route::prefix('front')->group(function () {
             Route::post('/{banner}/delete', 'destroy')->name('delete');
             Route::get('/{banner}/edit', 'edit')->name('edit');
             Route::put('/{banner}', 'update')->name('update');
+        });
+
+
+    Route::prefix('settings')
+        ->name('settings.')
+        ->group(function () {
+            Route::prefix('messages')
+                ->name('messages.')
+                ->controller(MessagesController::class)
+                ->group(function () {
+                    Route::get('/data', 'data')->name('data');
+                    Route::get('/{id}/edit', 'edit')->name('edit');
+                    Route::match(['put', 'patch'], '/{id}', 'update')->name('update');                });
         });
 });

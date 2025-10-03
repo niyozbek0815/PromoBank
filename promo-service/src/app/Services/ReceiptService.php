@@ -223,3 +223,5 @@ class ReceiptService
         return strtr($message, $placeholders);
     }
 }
+
+

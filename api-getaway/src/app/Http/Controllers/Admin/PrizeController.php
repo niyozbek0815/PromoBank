@@ -26,7 +26,6 @@ class PrizeController extends Controller
     }
     public function changeStatus(Request $request, $id)
     {
-        Log::info("data");
         $response = $this->forwardRequest("GET", $this->url, "front/prize/{$id}/status", $request);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());
@@ -58,17 +57,18 @@ class PrizeController extends Controller
             "front/prize/{$prizeId}/update",
             $request
         );
-        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
-            return redirect()
-                ->back()
-                ->with('success', 'Sovg‘a ma’lumotlari muvaffaqiyatli yangilandi.');
-        }
         if ($response->status() === 422) {
             return redirect()
                 ->back()
                 ->withErrors($response->json('errors'))
                 ->withInput();
         }
+        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
+            return redirect()
+                ->back()
+                ->with('success', 'Sovg‘a ma’lumotlari muvaffaqiyatli yangilandi.');
+        }
+
         abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
     }
     public function storeMessage(Request $request, $prizeId)
@@ -80,12 +80,6 @@ class PrizeController extends Controller
             "front/prize/{$prizeId}/message",
             $request
         );
-        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
-            return redirect()
-                ->back()
-                ->with('success', 'Sovg‘a ma’lumotlari muvaffaqiyatli yangilandi.');
-        }
-
         // 2️⃣ Validatsiya xatoliklari (422)
         if ($response->status() === 422) {
             return redirect()
@@ -93,6 +87,13 @@ class PrizeController extends Controller
                 ->withErrors($response->json('errors'))
                 ->withInput();
         }
+        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
+            return redirect()
+                ->back()
+                ->with('success', 'Sovg‘a ma’lumotlari muvaffaqiyatli yangilandi.');
+        }
+
+
 
         // 3️⃣ Boshqa xatoliklar
         abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
@@ -126,20 +127,12 @@ class PrizeController extends Controller
     }
     public function deleteRule(Request $request, $prizeId, $ruleId)
     {
-        // dd($request->all());
         $response = $this->forwardRequest(
             'DELETE',
             $this->url,
             "front/prize/{$prizeId}/smartrules/{$ruleId}",
             $request
         );
-
-        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
-            return redirect()
-                ->back()
-                ->with('success', 'Smart qoida muvaffaqiyatli o‘chirildi.');
-        }
-
         // Validatsiya yoki mantiqiy xatolik (422)
         if ($response->status() === 422) {
             return redirect()
@@ -147,6 +140,13 @@ class PrizeController extends Controller
                 ->withErrors($response->json('errors'))
                 ->withInput();
         }
+        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
+            return redirect()
+                ->back()
+                ->with('success', 'Smart qoida muvaffaqiyatli o‘chirildi.');
+        }
+
+
 
         // Boshqa xatoliklar
         abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
@@ -172,14 +172,12 @@ class PrizeController extends Controller
     }
     public function autobindDelete(Request $request, $prizeId, $promocodeId)
     {
-        Log::info("Autobind delete requested for prize ID: {$prizeId}");
         $response = $this->forwardRequest(
             "POST",
             $this->url,
             "front/prize/{$prizeId}/autobind/{$promocodeId}",
             $request
         );
-        Log::info("Autobind delete response: " . $response->body());
         if ($response instanceof \Illuminate\Http\Client\Response) {
             $settings = $response->json('settings');
             if ($settings === null) {

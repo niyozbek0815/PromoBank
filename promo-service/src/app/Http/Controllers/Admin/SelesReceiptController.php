@@ -9,7 +9,7 @@ use Yajra\DataTables\DataTables;
 
 class SelesReceiptController extends Controller
 {
-        public function data(Request $request)
+    public function data(Request $request)
     {
         $query = SalesReceipt::query()
             ->select(
@@ -24,26 +24,28 @@ class SelesReceiptController extends Controller
             ->join('promo_code_users', 'promo_code_users.receipt_id', '=', 'sales_receipts.id')
             ->leftJoin('users_caches', 'users_caches.user_id', '=', 'sales_receipts.user_id')
             ->groupBy('sales_receipts.id', 'users_caches.phone', 'users_caches.name');
-    return DataTables::of($query)
-        ->addColumn('id', fn($r) => $r->id)
-    ->addColumn('user_info', function ($r) {
-        $name = $r->user_name ?? '-';
-        $phone = $r->phone ?? '-';
-        return "<div>{$name}</div><div style='color: #6c757d; font-size: 12px;'>{$phone}</div>";
-    })
-        ->addColumn('manual_count', fn($r) => (int)$r->manual_count)
-        ->addColumn('prize_count', fn($r) => (int)$r->prize_count)
-        ->addColumn('summa', fn($r) => number_format((float)str_replace(' ','',$r->summa),0,'.',' '))
-        ->addColumn('check_date', fn($r) => $r->check_date ? date('d.m.Y H:i', strtotime($r->check_date)) : '-')
-        ->addColumn('created_at', fn($r) => $r->created_at ? date('d.m.Y H:i', strtotime($r->created_at)) : '-')
-        ->addColumn('actions', fn($r) =>
-            view('admin.actions', [
-                'row' => $r,
-                'routes' => ['show' => "/admin/sales-receipts/{$r->id}/show"],
-            ])->render()
-        )
-    ->rawColumns(['actions', 'user_info']) // HTML chiqishi uchun
-        ->make(true);
+        return DataTables::of($query)
+            ->addColumn('id', fn($r) => $r->id)
+            ->addColumn('user_info', function ($r) {
+                $name = $r->user_name ?? '-';
+                $phone = $r->phone ?? '-';
+                return "<div>{$name}</div><div style='color: #6c757d; font-size: 12px;'>{$phone}</div>";
+            })
+            ->addColumn('manual_count', fn($r) => (int) $r->manual_count)
+            ->addColumn('prize_count', fn($r) => (int) $r->prize_count)
+            ->addColumn('summa', fn($r) => number_format((float) str_replace(' ', '', $r->summa), 0, '.', ' '))
+            ->addColumn('check_date', fn($r) => $r->check_date ? date('d.m.Y H:i', strtotime($r->check_date)) : '-')
+            ->addColumn('created_at', fn($r) => $r->created_at ? date('d.m.Y H:i', strtotime($r->created_at)) : '-')
+            ->addColumn(
+                'actions',
+                fn($r) =>
+                view('admin.actions', [
+                    'row' => $r,
+                    'routes' => ['show' => "/admin/sales-receipts/{$r->id}/show"],
+                ])->render()
+            )
+            ->rawColumns(['actions', 'user_info']) // HTML chiqishi uchun
+            ->make(true);
     }
     public function wonPromotionSelesReceipts($promotionId)
     {
@@ -61,25 +63,27 @@ class SelesReceiptController extends Controller
             ->leftJoin('users_caches', 'users_caches.user_id', '=', 'sales_receipts.user_id')
             ->where('promo_code_users.promotion_id', $promotionId)
             ->groupBy('sales_receipts.id', 'users_caches.phone', 'users_caches.name');
-    return DataTables::of($query)
-        ->addColumn('id', fn($r) => $r->id)
-    ->addColumn('user_info', function ($r) {
-        $name = $r->user_name ?? '-';
-        $phone = $r->phone ?? '-';
-        return "<div>{$name}</div><div style='color: #6c757d; font-size: 12px;'>{$phone}</div>";
-    })
-        ->addColumn('manual_count', fn($r) => (int)$r->manual_count)
-        ->addColumn('prize_count', fn($r) => (int)$r->prize_count)
-        ->addColumn('summa', fn($r) => number_format((float)str_replace(' ','',$r->summa),0,'.',' '))
-        ->addColumn('check_date', fn($r) => $r->check_date ? date('d.m.Y H:i', strtotime($r->check_date)) : '-')
-        ->addColumn('created_at', fn($r) => $r->created_at ? date('d.m.Y H:i', strtotime($r->created_at)) : '-')
-        ->addColumn('actions', fn($r) =>
-            view('admin.actions', [
-                'row' => $r,
-                'routes' => ['show' => "/admin/sales-receipts/{$r->id}/show"],
-            ])->render()
-        )
-    ->rawColumns(['actions', 'user_info']) // HTML chiqishi uchun
-        ->make(true);
+        return DataTables::of($query)
+            ->addColumn('id', fn($r) => $r->id)
+            ->addColumn('user_info', function ($r) {
+                $name = $r->user_name ?? '-';
+                $phone = $r->phone ?? '-';
+                return "<div>{$name}</div><div style='color: #6c757d; font-size: 12px;'>{$phone}</div>";
+            })
+            ->addColumn('manual_count', fn($r) => (int) $r->manual_count)
+            ->addColumn('prize_count', fn($r) => (int) $r->prize_count)
+            ->addColumn('summa', fn($r) => number_format((float) str_replace(' ', '', $r->summa), 0, '.', ' '))
+            ->addColumn('check_date', fn($r) => $r->check_date ? date('d.m.Y H:i', strtotime($r->check_date)) : '-')
+            ->addColumn('created_at', fn($r) => $r->created_at ? date('d.m.Y H:i', strtotime($r->created_at)) : '-')
+            ->addColumn(
+                'actions',
+                fn($r) =>
+                view('admin.actions', [
+                    'row' => $r,
+                    'routes' => ['show' => "/admin/sales-receipts/{$r->id}/show"],
+                ])->render()
+            )
+            ->rawColumns(['actions', 'user_info']) // HTML chiqishi uchun
+            ->make(true);
     }
 }

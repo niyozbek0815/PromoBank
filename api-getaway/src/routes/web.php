@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DownloadController;
 use App\Http\Controllers\Admin\ForSponsorsController;
 use App\Http\Controllers\Admin\LoginController;
+use App\Http\Controllers\Admin\MessagesController;
 use App\Http\Controllers\Admin\NotificationsController;
 use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\PrizeCategoryController;
@@ -140,13 +141,6 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
         Route::post('{promotion}/participant-type/{participant_type}/update', 'updateParticipantType')->name('participant-type.update');
         Route::post('{promotion}/platform/{platform}/update', 'updatePlatform')->name('platform.update');
     });
-
-
-
-
-
-
-
     Route::prefix('promocode')->name('promocode.')->controller(PromoCodeController::class)->group(function () {
         Route::get('/', 'index')->name('index');                         // GET /promocode
         Route::get('/data', 'data')->name('data');                       // GET /promocode/data
@@ -159,12 +153,6 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
         Route::get('/{generate}/showgenerate', 'generateShow')->name('generateshow');
         Route::get('/{promotion}/generate/promocodedata', 'generatePromocodeData')->name('generate.promocodedata'); // AJAX uchun server-side table
         Route::get('/{promotion}/promocodedata', 'promocodeData')->name('promocodedata');
-
-
-
-
-
-        
         Route::get('/{prize}/prizedata', 'prizeData')->name('prizedata');
         Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData');
         Route::get('/{promotion}/search', 'searchPromocodes')->name('search');
@@ -177,30 +165,12 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::get('{promotion}/type/{type}', 'show')->name('show');
             Route::get('{promotion}/type/{type}/data', 'data')->name('data');
         });
-    Route::prefix('prize')
-        ->name('prize.')
-        ->controller(PrizeController::class)
-        ->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::get('/data', 'data')->name('data');
-            Route::get('/{prize}/status', 'changeStatus')->name('status');
-            Route::get('/create', 'create')->name('create');
-            Route::post('/store', 'store')->name('store');
-            Route::get('/{prize}/edit', 'edit')->name('edit');
-            Route::put('/{prize}', 'update')->name('update');
-            Route::get('/{prize}/delete', 'delete')->name('delete');
-            Route::post('/{prize}/message', 'storeMessage')->name('message.store');
-            Route::post('/{prize}/smartrules', 'storeRules')->name('smartrules.updateOrCreate');
-            Route::post('/{prize}/smartrules/{rule}/delete', 'deleteRule')->name('smartrules.delete');
-            Route::post('/{prize}/autobind', 'autobind')->name('attachPromocodes');
-            Route::post('/{prize}/autobind/{promocodeId}', 'autobindDelete')->name('detachPromocodes');
-        });
     Route::prefix('promotion_shops')
         ->name('promotion_shops.')
         ->controller(PromotionShopController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
-            Route::get('/data', 'data')->name('data');
+            // Route::get('/data', 'data')->name('data');
             Route::get('/create/{promotion_id?}', 'create')->name('create');
             Route::post('/store', 'store')->name('store');
             Route::get('/{id}/edit', 'edit')->name('edit');
@@ -227,6 +197,30 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::get('/data', 'data')->name('data');
             Route::get('/{promotion_id}/promotion_receipt', 'wonPromotionSelesReceipts')->name('won_seles_receipts');
         });
+
+
+
+
+
+    Route::prefix('prize')
+        ->name('prize.')
+        ->controller(PrizeController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/{prize}/status', 'changeStatus')->name('status');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{prize}/edit', 'edit')->name('edit');
+            Route::put('/{prize}', 'update')->name('update');
+            Route::get('/{prize}/delete', 'delete')->name('delete');
+            Route::post('/{prize}/message', 'storeMessage')->name('message.store');
+            Route::post('/{prize}/smartrules', 'storeRules')->name('smartrules.updateOrCreate');
+            Route::post('/{prize}/smartrules/{rule}/delete', 'deleteRule')->name('smartrules.delete');
+            Route::post('/{prize}/autobind', 'autobind')->name('attachPromocodes');
+            Route::post('/{prize}/autobind/{promocodeId}', 'autobindDelete')->name('detachPromocodes');
+        });
+
     Route::prefix('banners')->name('banners.')
         ->controller(BannersController::class)
         ->group(function () {
@@ -254,6 +248,10 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::get('/{type}/urls', 'getUrls')->name('getUrls');
             Route::get('/users', 'getUsers')->name('getUsers');
         });
+
+
+
+
 
 
 
@@ -360,6 +358,26 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::get('/', 'index')->name('index');
             Route::get('/edit', 'edit')->name('edit');
             Route::put('/update', 'update')->name('update');
+        });
+
+
+
+
+
+
+
+    Route::prefix('settings')
+        ->name('settings.')
+        ->group(function () {
+            Route::prefix('messages')
+                ->name('messages.')
+                ->controller(MessagesController::class)
+                ->group(function () {
+                    Route::get('/', 'index')->name('index');
+                    Route::get('/data', 'data')->name('data');
+                    Route::get('/{id}/edit', 'edit')->name('edit');
+                    Route::put('/{id}', 'update')->name('update');
+                });
         });
 });
 Route::get('/fcm-test', function () {

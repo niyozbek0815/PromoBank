@@ -286,7 +286,6 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
     }
     public function prizeData(Request $request, int $prizeId)
     {
-        Log::info("Fetching prize data for prize ID: {$prizeId}");
 
         $prize = Prize::with(['smartRandomValues.rule', 'category'])->findOrFail($prizeId);
 
@@ -380,9 +379,6 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
             });
         }
 
-        Log::info("getBindings", $query->getBindings());
-        Log::info("toSql", ['sql' => $query->toSql()]);
-
         return DataTables::of($query)
             ->filterColumn('platform_name', function ($query, $keyword) {
                 $query->whereRaw('LOWER(platforms.name) LIKE ?', ["%" . strtolower($keyword) . "%"]);
@@ -424,21 +420,14 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
     }
     public function searchPromocodes(Request $request, $promotionId)
     {
-        // Har sahifadagi element soni — default 20
-        $perPage = $request->input('per_page', 20);
-
-        // Asosiy query
-        $query = PromoCode::where('promotion_id', $promotionId);
-
-        // Qidiruv bo‘lsa
-        if ($request->filled('q')) {
-            $query->where('promocode', 'like', '%' . $request->q . '%');
+        $perPage = (int) $request->input('per_page', 20);
+        $query = PromoCode::query()
+            ->select(['id', 'promocode'])
+            ->where('promotion_id', $promotionId);
+        if ($search = $request->input('q')) {
+            $query->where('promocode', 'like', "%{$search}%");
         }
-
-        // Oxiridan tartiblash va paginate qilish
-        $promocodes = $query->orderByDesc('id')->paginate($perPage);
-
-        // Select2 formatida qaytarish
+        $promocodes = $query->latest('id')->paginate($perPage);
         return response()->json([
             'data'          => $promocodes->map(function ($item) {
                 return [

@@ -11,23 +11,20 @@ use App\Models\SmartRandomRule;
 use App\Models\SmartRandomValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 
 class PrizeController extends Controller
 {
-    public function index(Request $request)
-    {
-        $query = Prize::query();
-
-        return DataTables::of($query)
-            ->addColumn('action', function ($row) {
-                return view('admin.prizes.partials.actions', compact('row'));
-            })
-            ->make(true);
-    }
-    public function prizeData(Request $request)
-    {
+    // public function index(Request $request)
+    // {
+    //     $query = Prize::query();
+    //     return DataTables::of($query)
+    //         ->addColumn('action', function ($row) {
+    //             return view('admin.prizes.partials.actions', compact('row'));
+    //         })
+    //         ->make(true);
+    // }
+    public function prizeData(Request $request)  {
         $query = Prize::with([
             'category:id,name,display_name',
             'promotion:id,name', // faqat kerakli ustunlar
@@ -64,14 +61,9 @@ class PrizeController extends Controller
 
     public function changeStatus(Request $request, $id)
     {
-        Log::info('User status changed', [
-            'user_id' => $id,
-        ]);
-
         $data            = Prize::findOrFail($id);
         $data->is_active = ! $data->is_active;
         $data->save();
-
         return response()->json([
             'message'   => 'Status yangilandi',
             'is_active' => $data->is_active,
@@ -123,9 +115,6 @@ class PrizeController extends Controller
             'valid_until'        => 'required|date|after:valid_from',
             'is_active'          => 'nullable|boolean',
             'probability_weight' => 'nullable|integer|min:0',
-        ]);
-        Log::info('User updated', [
-            'user_id' => $prize->id,
         ]);
 
         DB::beginTransaction();
@@ -182,6 +171,8 @@ class PrizeController extends Controller
             'message.uz'       => 'required|string',
             'message.ru'       => 'nullable|string',
             'message.kr'       => 'nullable|string',
+            'message.en' => 'nullable|string',
+
         ]);
 
         $existing = PrizeMessage::where('prize_id', $prizeId)

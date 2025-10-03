@@ -56,15 +56,15 @@ class PromoController extends Controller
     public function listParticipationHistory(Request $request, $promotionId)
     {
         $user       = $request['auth_user'];
-        $promo_user = PromoCodeUser::where('promotion_id', $promotionId)
+        $promo_user = PromoCodeUser::with([
+            'promoCode:promocode,id',
+            'receipt:id,chek_id,name,created_at',
+            'platform:id,name',
+            'promotionProduct:id,name',
+            'prize:id,name',
+        ])
+        ->where('promotion_id', $promotionId)
             ->where('user_id', $user['id'])
-            ->with([
-                'promoCode:promocode,id',
-                'receipt:id,chek_id,name,created_at',
-                'platform:id,name',
-                'promotionProduct:id,name',
-                'prize:id,name',
-            ])
             ->orderByDesc('id')
             ->get();
         return $this->successResponse(PromoHistoryRecource::collection($promo_user), "success");

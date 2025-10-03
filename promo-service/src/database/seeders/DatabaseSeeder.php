@@ -14,11 +14,10 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(
             [
+                MessagesSeeder::class,
                 SocialTypeSeeder::class,
                 CompanySeeder::class,
-                SocialMediaSeeder::class,
                 CompaniesUsersSeeder::class,
-                // WinnerSelectionTypeSeeder::class,
                 PlatformSeeder::class,
                 PromotionSeeder::class,
                 PromoGenerationSeeder::class,
@@ -32,8 +31,6 @@ class DatabaseSeeder extends Seeder
                 PrizePromoSeeder::class,
                 SmartRandomRuleSeeder::class,
                 SmartRandomValueSeeder::class,
-                PrizeMessageSeeder::class,
-                PromotionMessageSeeder::class,
                 PromotionShopProductSeeder::class,
             ]
 

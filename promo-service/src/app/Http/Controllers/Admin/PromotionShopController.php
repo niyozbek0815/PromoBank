@@ -9,6 +9,34 @@ use Yajra\DataTables\DataTables;
 
 class PromotionShopController extends Controller
 {
+    public function promotiondata(Request $request, $promotionId)
+    {
+        $query = PromotionShop::query()
+            ->where('promotion_id', $promotionId)
+            ->with(['promotion'])   // promotion modelini olish
+            ->withCount('products') // products_count qo‘shish
+            ->select('promotion_shops.*');
+        return DataTables::of($query)
+            ->addColumn('promotion_name', function ($shop) {
+                return $shop->promotion?->getTranslation('name', 'uz') ?? '-';
+            })
+            ->addColumn('products_count', function ($shop) {
+                return $shop->products_count ?? 0;
+            })
+            ->addColumn('created_at', function ($shop) {
+                return optional($shop->created_at)?->format('d.m.Y H:i') ?? '-';
+            })
+            ->addColumn('actions', function ($item) {
+                return view('admin.actions', [
+                    'row' => $item,
+                    'routes' => [
+                        'edit' => "/admin/promotion_shops/{$item->id}/edit",
+                    ],
+                ])->render();
+            })
+            ->rawColumns(['promotion_name', 'actions'])
+            ->make(true);
+    }
     public function create(Request $request, $promotion_id = null)
     {
         $promotions = Promotions::select('id', 'name')
@@ -29,45 +57,16 @@ class PromotionShopController extends Controller
     {
         $request->validate([
             'promotion_id' => 'required|exists:promotions,id',
-            'name'         => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:promotion_shops,name',
             'adress'       => 'required|string|max:500',
         ]);
-
-        $shop = PromotionShop::create($request->only(['promotion_id', 'name', 'adress']));
-
+        PromotionShop::create($request->only(['promotion_id', 'name', 'adress']));
         return response()->json([
             'success' => true,
             'message' => 'Do‘kon qo‘shildi',
         ]);
     }
-    public function promotiondata(Request $request, $promotionId)
-    {
-        $query = PromotionShop::query()
-        ->where('promotion_id', $promotionId)
-            ->with(['promotion'])   // promotion modelini olish
-            ->withCount('products') // products_count qo‘shish
-            ->select('promotion_shops.*');
-        return DataTables::of($query)
-            ->addColumn('promotion_name', function ($shop) {
-                return $shop->promotion?->getTranslation('name', 'uz') ?? '-';
-            })
-            ->addColumn('products_count', function ($shop) {
-                return $shop->products_count ?? 0;
-            })
-            ->addColumn('created_at', function ($shop) {
-                return optional($shop->created_at)?->format('d.m.Y H:i') ?? '-';
-            })
-            ->addColumn('actions', function ($item) {
-                return view('admin.actions', [
-                    'row'    => $item,
-                    'routes' => [
-                        'edit' => "/admin/promotion_shops/{$item->id}/edit",
-                    ],
-                ])->render();
-            })
-            ->rawColumns(['promotion_name', 'actions'])
-            ->make(true);
-    }
+
     public function edit(Request $request, $id)
     {
         $shop       = PromotionShop::findOrFail($id);
@@ -87,6 +86,11 @@ class PromotionShopController extends Controller
     }
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'promotion_id' => 'required|exists:promotions,id',
+            'name' => 'required|string|max:255',
+            'adress' => 'required|string|max:500',
+        ]);
         $shop = PromotionShop::findOrFail($id);
         $shop->update($request->all());
         return response()->json([

@@ -50,9 +50,12 @@ class PromotionResource extends JsonResource
             'end_date'           => $this->end_date,
             'offer'              => is_array($this->offer) && isset($this->offer['url']) ? $this->offer['url'] : 'https://qadarun.com/namuna/php.docx',
             'banner'             => is_array($this->banner) && isset($this->banner['url']) ? $this->banner['url'] : $defaultimage->random()['url'],
-            'gallery'            => ! empty($this->gallery) && count($this->gallery) >= 1
-            ? $this->gallery
-            : $defaultMedia->shuffle()->take(4)->values()->all(),
+            'gallery'            => [
+                  ['url' => 'https://qadarun.com/namuna/10.jpg', 'mime_type' => 'image/jpeg'],
+            ['url' => 'https://qadarun.com/namuna/11.jpg', 'mime_type' => 'image/jpeg'],
+            ['url' => 'https://qadarun.com/namuna/12.jpg', 'mime_type' => 'image/jpeg'],
+             ['url' => 'https://qadarun.com/namuna/video6.mp4', 'mime_type' => 'video/mp4'],
+            ],
             'participation_type' => ParticipationTypeResource::collection($this->participationTypes),
             'company'            => new CompanyResource(resource: $this->company),
         ];

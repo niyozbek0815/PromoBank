@@ -21,8 +21,6 @@
                         option.style.display = (option.dataset.promotion === promotionId) ?
                             'block' : 'none';
                     });
-
-                    // Filterdan keyin shop selectni default holatga qaytaramiz
                     shopSelect.value = '';
                 });
             }
@@ -39,9 +37,6 @@
                 <div class="card-body">
                     <form action="{{ route('admin.promotion_products.store') }}" method="POST">
                         @csrf
-
-                        {{-- 🏪 Do‘kon tanlash --}}
-                        {{-- 🎯 Promotion tanlash --}}
                         <div class="mb-3">
                             <label class="form-label">Aksiya</label>
 

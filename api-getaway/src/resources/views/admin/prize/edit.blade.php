@@ -504,180 +504,153 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             <h5 class="mb-0">🎁 Sovg'a ma'lumotlarini tahrirlash</h5>
         </div>
         <div class="card-body">
-            <form action="{{ route('admin.prize.update', $prize['id']) }}" method="POST">
-                @csrf
-                @method('PUT')
+        <form action="{{ route('admin.prize.update', $prize['id']) }}" method="POST">
+    @csrf
+    @method('PUT')
 
-                {{-- 📌 Sovg'a asosiy ma'lumotlar --}}
-                <div class="row">
-                    <!-- Sovg'a nomi -->
-                    <div class="col-6">
-                        <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label">🎁 Sovg‘a nomi</label>
-                                <input type="text" name="name" value="{{ old('name', $prize['name']) }}"
-                                    class="form-control" required>
-                                <small class="form-text text-muted d-block mt-1">
-                                    Sovg‘aning foydalanuvchiga ko‘rsatiladigan nomini kiriting. Masalan: <em>"iPhone 14",
-                                        "Chegirma kuponi", "Maxfiy paket"</em>.
-                                </small>
-                            </div>
-
-                            <!-- Sovg'a kategoriyasi -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">📂 Sovg‘a kategoriyasi</label>
-                                <select name="category_id" class="form-select" required>
-                                    <option value="">Tanlang...</option>
-                                    @foreach ($prizecategory as $category)
-                                        <option value="{{ $category['id'] }}"
-                                            {{ old('category_id', $prize['category_id']) == $category['id'] ? 'selected' : '' }}>
-                                            {{ $category['display_name'] }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <small class="form-text text-muted d-block mt-1">
-                                    Sovg‘a qanday turdagi bo‘lishini belgilang: <em>avtomatik (random), qo‘l bilan (manual),
-                                        smart (shartli)</em>.
-                                </small>
-                            </div>
-
-                            <!-- Promotion (readonly) -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">📢 Aksiya (Promotion)</label>
-                                <select class="form-select" disabled>
-                                    <option selected>{{ $prize['promotion']['name']['uz'] ?? 'Tanlanmagan' }}</option>
-                                </select>
-                                <input type="hidden" name="promotion_id" value="{{ $prize['promotion']['id'] }}">
-                                <small class="form-text text-muted d-block mt-1">
-                                    Bu sovg‘a qaysi aksiya (kampaniya)ga tegishli ekanligini bildiradi. Ushbu qiymat
-                                    o‘zgartirilmaydi.
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tavsif -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">📝 Tavsif</label>
-                        <textarea name="description" class="form-control" rows="6" required>{{ old('description', $prize['description']) }}</textarea>
-                        <small class="form-text text-muted d-block mt-1">
-                            Foydalanuvchiga sovg‘a haqida ko‘proq ma'lumot bering. Bu joyda sovg‘aning qanday
-                            ishlatilishi, unikal xususiyatlari yoki foydalanish qoidalari haqida yozishingiz mumkin.
-                        </small>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">🎁 Berilgan miqdor (Awarded Quantity)</label>
-                        <input type="number" class="form-control" value="{{ $prize['awarded_quantity'] ?? 0 }}" readonly>
-                        <small class="form-text text-muted d-block mt-1">
-                            Bu raqam ushbu sovg‘adan nechta foydalanuvchiga topshirilgan yoki yutib olinganligini bildiradi.
-                            Qiymat avtomatik ravishda hisoblanadi va o‘zgartirib bo‘lmaydi.
-                        </small>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="quantity" class="form-label fw-semibold">🎁 Sovg‘alar soni (Umumiy miqdor)</label>
-                        <input type="number" name="quantity" id="quantity"
-                            class="form-control @error('quantity') is-invalid @enderror"
-                            value="{{ old('quantity', $prize['quantity'] ?? 0) }}" min="0" required>
-                        <small class="form-text text-muted d-block mt-1">
-                            Aksiyada taqdim etiladigan <strong>umumiy sovg‘alar sonini</strong> kiriting. <br>
-                            Masalan: 100 — jami 100 ta sovg‘a mavjud bo‘ladi.
-                        </small>
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label for="dailyLimit" class="form-label fw-semibold">📅 Kunlik limit (ixtiyoriy)</label>
-                        <input type="number" name="daily_limit" id="dailyLimit"
-                            class="form-control @error('daily_limit') is-invalid @enderror"
-                            value="{{ old('daily_limit', $prize['daily_limit'] ?? '') }}" min="0">
-                        <small class="form-text text-muted d-block mt-1">
-                            Bir kunda maksimal necha sovg‘a yutib olinishi mumkinligini belgilang. <br>
-                            Agar <strong>cheklanmasin</strong> desangiz — bo‘sh qoldiring.
-                        </small>
-                        @error('daily_limit')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label for="indexInput" class="form-label fw-semibold">
-                            🏅 Sovg'a darajasi (Index)
-                        </label>
-                        <input type="number" name="index" id="indexInput"
-                            class="form-control @error('index') is-invalid @enderror"
-                            value="{{ old('index', $prize['index'] ?? '') }}" placeholder="Masalan: 1" min="1"
-                            required>
-                        <small class="form-text text-muted d-block mt-1">
-                            Son qanchalik <strong>kichik</strong> bo‘lsa, sovg‘a shunchalik <strong>muhim</strong>
-                            hisoblanadi.
-                            Sovg‘alar shu qiymat asosida ustuvorlik bilan taqsimlanadi (1 - eng ustuvor).
-                        </small>
-                    </div>
-                    @php
-                        $category = $prize['category'];
-                    @endphp
-                    @if ($category['name'] === 'weighted_random')
-                        <div class="col-md-4 mb-3">
-                            <label for="probabilityWeight" class="form-label fw-semibold">
-                                🎲 Yutuq ehtimoli og‘irligi (Probability weight)
-                            </label>
-                            <input type="number" name="probability_weight" id="probabilityWeight"
-                                class="form-control @error('probability_weight') is-invalid @enderror"
-                                value="{{ old('probability_weight', $prize['probability_weight'] ?? 100) }}"
-                                placeholder="Masalan: 100" min="0" required>
-                            <small class="form-text text-muted d-block mt-1">
-                                Bu qiymat sovg‘aning tanlanish ehtimoliga ta’sir qiladi.
-                                Qancha katta bo‘lsa, yutuq shunchalik yutish extimoli <strong>kichiklashib boradi</strong>
-                                Masalan, 100000 — eng kam, 1 — eng ko‘p.
-                            </small>
-                        </div>
-                    @endif
-
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">🟢 Boshlanish vaqti</label>
-                        <input type="datetime-local" name="valid_from" class="form-control"
-                            value="{{ old('valid_from', \Carbon\Carbon::parse($prize['valid_from'])->format('Y-m-d\TH:i')) }}">
-                        <small class="form-text text-muted d-block mt-1">
-                            Sovg‘aning foydalanuvchi tomonidan yutib olinishi <strong>qachondan boshlanishi</strong>
-                            kerakligini bu yerda belgilang.
-                        </small>
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">🔴 Tugash vaqti</label>
-                        <input type="datetime-local" name="valid_until" class="form-control"
-                            value="{{ old('valid_until', \Carbon\Carbon::parse($prize['valid_until'])->format('Y-m-d\TH:i')) }}">
-                        <small class="form-text text-muted d-block mt-1">
-                            Sovg‘aning foydalanuvchilarga yutib berilishi <strong>qachongacha davom etishini</strong> bu
-                            yerda belgilang.
-                        </small>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="isActiveSwitch" name="is_active"
-                                value="1" {{ old('is_active', $prize['is_active'] ?? false) ? 'checked' : '' }}>
-                            <label class="form-check-label fw-semibold" for="isActiveSwitch">🔛 Sovg‘ani
-                                faollashtirish</label>
-                        </div>
-                        <small class="form-text text-muted d-block mt-1">
-                            Agar ushbu tugma yoqilgan (<strong>faol</strong>) bo‘lsa — foydalanuvchilar bu sovg‘ani
-                            <strong>yutib olishlari mumkin</strong>. <br>
-                            Aks holda, sovg‘a <span class="text-danger">nofaol</span> deb hisoblanadi va <strong>pausaga
-                                olinadi</strong>.
-                            Uni qayta faollashtirmaguncha ishtirokchilarga berilmaydi.
-                        </small>
-                    </div>
+    <div class="row">
+        <!-- 🎁 Sovg'a nomi -->
+        <div class="col-6">
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">🎁 Sovg‘a nomi <span class="text-danger">*</span></label>
+                    <input type="text" name="name"
+                           value="{{ old('name', $prize['name']) }}"
+                           class="form-control @error('name') is-invalid @enderror"
+                           maxlength="255" required>
+                    @error('name')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <small class="form-text text-muted">Masalan: <em>"iPhone 14", "Kupon", "Maxfiy paket"</em>.</small>
                 </div>
 
-
-                {{-- 🔘 Submit --}}
-                <div class="d-flex justify-content-end">
-                    <a href="
-                {{-- {{ route('admin.prize.index') }} --}}
-                 "
-                        class="btn btn-outline-secondary me-2">Bekor qilish</a>
-                    <button type="submit" class="btn btn-primary">Yangilash</button>
+                <!-- 📂 Sovg'a kategoriyasi -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">📂 Sovg‘a kategoriyasi <span class="text-danger">*</span></label>
+                    <select name="category_id" class="form-select @error('category_id') is-invalid @enderror" required>
+                        <option value="">Tanlang...</option>
+                        @foreach ($prizecategory as $category)
+                            <option value="{{ $category['id'] }}"
+                                {{ old('category_id', $prize['category_id']) == $category['id'] ? 'selected' : '' }}>
+                                {{ $category['display_name'] }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('category_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
-            </form>
+
+                <!-- 📢 Promotion (readonly) -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">📢 Aksiya (Promotion) <span class="text-danger">*</span></label>
+                    <select class="form-select" disabled>
+                        <option selected>{{ $prize['promotion']['name']['uz'] ?? 'Tanlanmagan' }}</option>
+                    </select>
+                    <input type="hidden" name="promotion_id" value="{{ $prize['promotion']['id'] }}" required>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📝 Tavsif -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">📝 Tavsif <span class="text-danger">*</span></label>
+            <textarea name="description" class="form-control @error('description') is-invalid @enderror"
+                      rows="6" required>{{ old('description', $prize['description']) }}</textarea>
+            @error('description')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <!-- 📊 Miqdorlar -->
+        <div class="col-md-4 mb-3">
+            <label class="form-label">🎁 Berilgan miqdor</label>
+            <input type="number" class="form-control" value="{{ $prize['awarded_quantity'] ?? 0 }}" readonly>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">🎁 Sovg‘alar soni (Umumiy) <span class="text-danger">*</span></label>
+            <input type="number" name="quantity" class="form-control @error('quantity') is-invalid @enderror"
+                   value="{{ old('quantity', $prize['quantity'] ?? 0) }}" min="0" required>
+            @error('quantity')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">📅 Kunlik limit</label>
+            <input type="number" name="daily_limit" class="form-control @error('daily_limit') is-invalid @enderror"
+                   value="{{ old('daily_limit', $prize['daily_limit'] ?? '') }}" min="0">
+            @error('daily_limit')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <!-- 🏅 Index -->
+        <div class="col-md-4 mb-3">
+            <label class="form-label">🏅 Sovg‘a darajasi (Index) <span class="text-danger">*</span></label>
+            <input type="number" name="index" class="form-control @error('index') is-invalid @enderror"
+                   value="{{ old('index', $prize['index'] ?? '') }}" min="1" required>
+            @error('index')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <!-- 🎲 Probability -->
+        @php $category = $prize['category']; @endphp
+        @if ($category['name'] === 'weighted_random')
+            <div class="col-md-4 mb-3">
+                <label class="form-label">🎲 Yutuq ehtimoli og‘irligi <span class="text-danger">*</span></label>
+                <input type="number" name="probability_weight"
+                       class="form-control @error('probability_weight') is-invalid @enderror"
+                       value="{{ old('probability_weight', $prize['probability_weight'] ?? 100) }}"
+                       min="0" required>
+                @error('probability_weight')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+        @endif
+
+        <!-- ⏳ Vaqt -->
+        <div class="col-md-4 mb-3">
+            <label class="form-label">🟢 Boshlanish vaqti <span class="text-danger">*</span></label>
+            <input type="datetime-local" name="valid_from"
+                   class="form-control @error('valid_from') is-invalid @enderror"
+                   value="{{ old('valid_from', \Carbon\Carbon::parse($prize['valid_from'])->format('Y-m-d\TH:i')) }}"
+                   required>
+            @error('valid_from')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">🔴 Tugash vaqti <span class="text-danger">*</span></label>
+            <input type="datetime-local" name="valid_until"
+                   class="form-control @error('valid_until') is-invalid @enderror"
+                   value="{{ old('valid_until', \Carbon\Carbon::parse($prize['valid_until'])->format('Y-m-d\TH:i')) }}"
+                   required>
+            @error('valid_until')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <!-- 🔛 Is Active -->
+        <div class="col-md-4 mb-3">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="isActiveSwitch"
+                       name="is_active" value="1"
+                       {{ old('is_active', $prize['is_active'] ?? false) ? 'checked' : '' }}>
+                <label class="form-check-label fw-semibold" for="isActiveSwitch">🔛 Faolmi?</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔘 Submit -->
+    <div class="d-flex justify-content-end">
+        <a href="#" class="btn btn-outline-secondary me-2">Bekor qilish</a>
+        <button type="submit" class="btn btn-primary">Yangilash</button>
+    </div>
+</form>
         </div>
     </div>
 

@@ -20,8 +20,6 @@ class PrizeCategoryController extends Controller
             "front/prize-category/{$promotion}/type/{$type}/data",
             $request,
         );
-        Log::info($response->json());
-
         if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
             return response()->json($response->json(), $response->status());
         }
@@ -38,8 +36,7 @@ class PrizeCategoryController extends Controller
         );
         if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
             $data = $response->json();
-
-            return view("admin.prize.manual_show", compact('data'));
+            return view("admin.prize.show", compact('data'));
         }
         abort(404, 'Xizmatdan maʼlumot olishda xatolik yuz berdi.');
     }
