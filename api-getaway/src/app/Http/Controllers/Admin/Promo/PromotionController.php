@@ -80,6 +80,7 @@ class PromotionController extends Controller
             return back()->with('error', 'Promoaksiya topilmadi.');
         }
         $data = $response->json();
+        // dd($data);
         return view('admin.promotion.edit', $data);
     }
     public function store(Request $request)

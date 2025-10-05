@@ -24,6 +24,22 @@ class MessagesController extends Controller
         }
         return response()->json(['message' => 'Promo service error'], 500);
     }
+    public function promotionMessagesData(Request $request,$id)
+    {
+        $response = $this->forwardRequest("GET", $this->url, "front/promotion_messages/data/{$id}", $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return response()->json(['message' => 'Promo service error'], 500);
+    }
+    public function prizeMessagesData(Request $request, $id)
+    {
+        $response = $this->forwardRequest("GET", $this->url, "front/prize_messages/data/{$id}", $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return response()->json(['message' => 'Promo service error'], 500);
+    }
     public function edit(Request $request,$id)
     {        $response = $this->forwardRequest("GET", $this->url, "front/settings/messages/{$id}/edit", $request);
         if ($response instanceof \Illuminate\Http\Client\Response) {
@@ -47,10 +63,28 @@ class MessagesController extends Controller
                 ->withInput();
         }
         if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
-          return view('admin.messages.index')
+          return redirect()
+                ->back()
                 ->with('success', 'Sovg‘a ma’lumotlari muvaffaqiyatli yangilandi.');
         }
 
         abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
+    }
+    public function promotionGenerate(Request $request, $id)
+    {
+        $response = $this->forwardRequest("GET", $this->url, "front/promotion_messages/{$id}/generate", $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return redirect()->back()->with(['success' => "Xabarlar muafaqiyatli yaratildi."]);
+        }
+        return response()->json(['message' => 'Promo service error'], 500);
+    }
+    public function prizeGenerate(Request $request, $id)
+    {
+        $response = $this->forwardRequest("GET", $this->url, "front/prize_messages/{$id}/generate", $request);
+        // dd($response->json());
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return redirect()->back()->with(['success' => "Xabarlar muafaqiyatli yaratildi."]);
+        }
+        return response()->json(['message' => 'Promo service error'], 500);
     }
 }

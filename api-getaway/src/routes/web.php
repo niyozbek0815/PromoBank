@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\PrizeCategoryController;
 use App\Http\Controllers\Admin\PrizeController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\PromoCodeController;
+use App\Http\Controllers\Admin\PromotionMessagesController;
 use App\Http\Controllers\Admin\PromotionProductController;
 use App\Http\Controllers\Admin\PromotionShopController;
 use App\Http\Controllers\Admin\Promo\PromotionController;
@@ -93,11 +94,8 @@ Route::post('/admin/logout', [LoginController::class, 'logout'])->name('admin.lo
 
 Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(function () {
 
-
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update');
-
-
     Route::controller(UserController::class)->group(function () {
         Route::prefix('users')->name('users.')->group(function () {
             Route::get('/', 'index')->name('index');
@@ -141,6 +139,14 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
         Route::post('{promotion}/participant-type/{participant_type}/update', 'updateParticipantType')->name('participant-type.update');
         Route::post('{promotion}/platform/{platform}/update', 'updatePlatform')->name('platform.update');
     });
+    Route::prefix('promotion_messages')
+        ->name('promotion_messages.')
+        ->controller(MessagesController::class)
+        ->group(function () {
+            Route::get('/data/{id}', 'promotionMessagesData')->name('data');
+            Route::get('/{id}/generate', 'promotionGenerate')->name('generate');
+        });
+
     Route::prefix('promocode')->name('promocode.')->controller(PromoCodeController::class)->group(function () {
         Route::get('/', 'index')->name('index');                         // GET /promocode
         Route::get('/data', 'data')->name('data');                       // GET /promocode/data
@@ -220,7 +226,13 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::post('/{prize}/autobind', 'autobind')->name('attachPromocodes');
             Route::post('/{prize}/autobind/{promocodeId}', 'autobindDelete')->name('detachPromocodes');
         });
-
+    Route::prefix('prize_messages')
+        ->name('prize_messages.')
+        ->controller(MessagesController::class)
+        ->group(function () {
+            Route::get('/data/{id}', 'prizeMessagesData')->name('data');
+            Route::get('/{id}/generate', 'prizeGenerate')->name('generate');
+        });
     Route::prefix('banners')->name('banners.')
         ->controller(BannersController::class)
         ->group(function () {

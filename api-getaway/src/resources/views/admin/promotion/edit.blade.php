@@ -1,5 +1,5 @@
 @extends('admin.layouts.app')
-@section('title', "Promoaksiya taxrirlash")
+@section('title', 'Promoaksiya taxrirlash')
 @push('scripts')
     <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
     <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
@@ -148,6 +148,98 @@
                         this.classList.remove('active');
                     }
                 });
+            });
+        });
+    </script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        $(document).ready(function() {
+            if ($.fn.DataTable.isDataTable('#messages-table')) {
+                $('#messages-table').DataTable().destroy();
+            }
+
+            $('#messages-table').DataTable({
+                processing: true,
+                serverSide: false,
+                            ajax: {
+                url: '{{ secure_url(route("admin.promotion_messages.data", $promotion["id"], false)) }}',
+                dataSrc: function (json) {
+                    return json.data || [];
+                },
+                error: function (xhr, error, code) {
+                }
+            },
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        orderable: false,
+                        searchable: false
+                    }, // tartib raqami
+                    {
+                        data: 'id',
+                        name: 'id'
+                    },
+                    {
+                        data: 'type',
+                        name: 'type'
+                    },
+                    {
+                        data: 'status',
+                        name: 'status',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'message',
+                        name: 'message'
+                    },
+                    {
+                        data: 'actions',
+                        name: 'actions',
+                        orderable: false,
+                        searchable: false
+                    }
+                ],
+                buttons: [{
+                        extend: 'copy',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        filename: "Messages",
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        filename: "Messages",
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    }
+                ]
             });
         });
     </script>
@@ -518,20 +610,20 @@
 
                         {{-- 📦 Selection Inputs --}}
                         <div class="row">
-                                <div class="col-lg-4 mb-3">
-                                    <label class="form-label">Kampaniya <span class="text-danger">*</span></label>
-                                    <select name="company_id" class="form-select" required>
-                                        <option value="" disabled selected>Tanlang...</option>
-                                        @foreach ($companies as $company)
-                                            <option value="{{ $company['id'] }}"
-                                                {{ old('company_id', $promotion['company_id']) == $company['id'] ? 'selected' : '' }}>
-                                                {{ $company['name'] }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <small class="text-muted">Ushbu aksiya qaysi kompaniyaga tegishli ekanligini
-                                        belgilang.</small>
-                                </div>
+                            <div class="col-lg-4 mb-3">
+                                <label class="form-label">Kampaniya <span class="text-danger">*</span></label>
+                                <select name="company_id" class="form-select" required>
+                                    <option value="" disabled selected>Tanlang...</option>
+                                    @foreach ($companies as $company)
+                                        <option value="{{ $company['id'] }}"
+                                            {{ old('company_id', $promotion['company_id']) == $company['id'] ? 'selected' : '' }}>
+                                            {{ $company['name'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted">Ushbu aksiya qaysi kompaniyaga tegishli ekanligini
+                                    belgilang.</small>
+                            </div>
                             <div class="col-lg-4 mb-3">
                                 <label class="form-label">Boshlanish sanasi <span class="text-danger">*</span></label>
                                 <input type="datetime-local" name="start_date" class="form-control"
@@ -675,7 +767,10 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Promoaksiya ma'lumotlari</h5>
                 <div class="btn-group">
-
+                    <button type="button" class="btn btn-outline-success collapse-toggler"
+                        data-target="#collapse-messages">
+                        <i class="ph ph-chat-dots me-1"></i> Xabar sozlamalari
+                    </button>
                     @if (!empty($promotion['platforms']))
                         <button type="button" class="btn btn-outline-success collapse-toggler"
                             data-target="#collapse-platform">
@@ -814,6 +909,34 @@
                                 </div>
                             @endforeach
                         </div>
+                    </div>
+                </div>
+
+                <div class="collapse table-panel" id="collapse-messages">
+                    <div class="border rounded p-3">
+                        <div class="page-header-content d-flex justify-content-between align-items-center">
+                            <h4 class="page-title mb-0">Xabar sozlamalari</h4>
+                            @if ($messagesExists == false)
+                                <div>
+                                    <a href="{{ route('admin.promotion_messages.generate', ['id' => $promotion['id']]) }}"
+                                        class="btn btn-outline-success ms-3">
+                                        <i class="ph-plus-circle me-1"></i> Default xabarlarni yaratish
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                        <table id="messages-table" class="table datatable-button-init-basic">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>ID</th>
+                                    <th>Turi</th>
+                                    <th>Status</th>
+                                    <th>Xabar (UZ)</th>
+                                    <th>Amallar</th>
+                                </tr>
+                            </thead>
+                        </table>
                     </div>
                 </div>
                 @if ($hasPromoType)

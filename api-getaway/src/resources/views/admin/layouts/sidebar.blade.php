@@ -233,7 +233,7 @@
                         <li class="nav-item">
                             <a href="{{ route('admin.settings.messages.index') }}"
                                 class="nav-link {{ request()->routeIs('admin.settings.messages*') ? 'active' : '' }}">
-                              <i class="fa-regular fa-messages"></i> Default xabarlar
+                             <i class="ph ph-chat-dots"></i> Default xabarlar
                             </a>
                         </li>
                     </ul>

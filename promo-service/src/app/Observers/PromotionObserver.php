@@ -18,11 +18,9 @@ class PromotionObserver
         $platformMessages = Messages::where('scope_type', 'platform')
             ->whereNull('scope_id')
             ->get();
-
         if ($platformMessages->isEmpty()) {
             return;
         }
-
         DB::transaction(function () use ($platformMessages, $promotion) {
             foreach ($platformMessages as $msg) {
                 Messages::updateOrCreate(

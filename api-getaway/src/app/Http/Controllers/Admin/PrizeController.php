@@ -39,11 +39,7 @@ class PrizeController extends Controller
         if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
             $data = $response->json();
             // dd($data);
-            return view('admin.prize.edit', [
-                'prize'         => $data['prize'],
-                'prizecategory' => $data['prizecategory'],
-                'smartRule'     => $data['smartRule'] ?? null,
-            ]);
+            return view('admin.prize.edit', $response->json());
         }
 
         abort(404, 'Xizmatdan maʼlumot olishda xatolik yuz berdi.');

@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Messages;
 use App\Models\Prize;
 use App\Models\PrizeCategory;
 use App\Models\PrizeMessage;
@@ -89,7 +90,9 @@ class PrizeController extends Controller
                 },
             ])
             ->findOrFail($id);
-
+        $messagesExists = Messages::where('scope_type', 'prize')
+            ->where('scope_id', $id)
+            ->exists();
         $smartRule = [];
         if ($prize->category->name === 'smart_random') {
             $smartRule = SmartRandomRule::select('id', 'key', 'label', 'input_type', 'description', 'accepted_operators')->get();
@@ -99,6 +102,7 @@ class PrizeController extends Controller
             'prize'         => $prize,
             'smartRule'     => $smartRule,
             'prizecategory' => $prizecategory,
+            'messagesExists'=>$messagesExists
         ]);
     }
     public function update(Request $request, Prize $prize)

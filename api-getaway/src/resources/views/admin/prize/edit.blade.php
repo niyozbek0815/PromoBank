@@ -173,7 +173,98 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             });
         });
     </script>
+  <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
 
+        $(document).ready(function() {
+            if ($.fn.DataTable.isDataTable('#messages-table')) {
+                $('#messages-table').DataTable().destroy();
+            }
+
+            $('#messages-table').DataTable({
+                processing: true,
+                serverSide: false,
+                            ajax: {
+                url: '{{ secure_url(route("admin.prize_messages.data", $prize['id'], false)) }}',
+                dataSrc: function (json) {
+                    return json.data || [];
+                },
+                error: function (xhr, error, code) {
+                }
+            },
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        orderable: false,
+                        searchable: false
+                    }, // tartib raqami
+                    {
+                        data: 'id',
+                        name: 'id'
+                    },
+                    {
+                        data: 'type',
+                        name: 'type'
+                    },
+                    {
+                        data: 'status',
+                        name: 'status',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'message',
+                        name: 'message'
+                    },
+                    {
+                        data: 'actions',
+                        name: 'actions',
+                        orderable: false,
+                        searchable: false
+                    }
+                ],
+                buttons: [{
+                        extend: 'copy',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        filename: "Messages",
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        filename: "Messages",
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    }
+                ]
+            });
+        });
+    </script>
     <script>
         function confirmDelete(ruleId) {
             Swal.fire({
@@ -501,7 +592,7 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
 @section('content')
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0">🎁 Sovg'a ma'lumotlarini tahrirlash</h5>
+            <h5 class="mb-0">Sovg'a ma'lumotlarini tahrirlash</h5>
         </div>
         <div class="card-body">
         <form action="{{ route('admin.prize.update', $prize['id']) }}" method="POST">
@@ -509,11 +600,11 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
     @method('PUT')
 
     <div class="row">
-        <!-- 🎁 Sovg'a nomi -->
+        <!-- Sovg'a nomi -->
         <div class="col-6">
             <div class="row">
                 <div class="col-md-12 mb-3">
-                    <label class="form-label">🎁 Sovg‘a nomi <span class="text-danger">*</span></label>
+                    <label class="form-label">Sovg‘a nomi <span class="text-danger">*</span></label>
                     <input type="text" name="name"
                            value="{{ old('name', $prize['name']) }}"
                            class="form-control @error('name') is-invalid @enderror"
@@ -524,9 +615,9 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                     <small class="form-text text-muted">Masalan: <em>"iPhone 14", "Kupon", "Maxfiy paket"</em>.</small>
                 </div>
 
-                <!-- 📂 Sovg'a kategoriyasi -->
+                <!--  Sovg'a kategoriyasi -->
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">📂 Sovg‘a kategoriyasi <span class="text-danger">*</span></label>
+                    <label class="form-label"> Sovg‘a kategoriyasi <span class="text-danger">*</span></label>
                     <select name="category_id" class="form-select @error('category_id') is-invalid @enderror" required>
                         <option value="">Tanlang...</option>
                         @foreach ($prizecategory as $category)
@@ -541,9 +632,9 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                     @enderror
                 </div>
 
-                <!-- 📢 Promotion (readonly) -->
+                <!--  Promotion (readonly) -->
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">📢 Aksiya (Promotion) <span class="text-danger">*</span></label>
+                    <label class="form-label"> Aksiya (Promotion) <span class="text-danger">*</span></label>
                     <select class="form-select" disabled>
                         <option selected>{{ $prize['promotion']['name']['uz'] ?? 'Tanlanmagan' }}</option>
                     </select>
@@ -552,9 +643,9 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             </div>
         </div>
 
-        <!-- 📝 Tavsif -->
+        <!--  Tavsif -->
         <div class="col-md-6 mb-3">
-            <label class="form-label">📝 Tavsif <span class="text-danger">*</span></label>
+            <label class="form-label"> Tavsif <span class="text-danger">*</span></label>
             <textarea name="description" class="form-control @error('description') is-invalid @enderror"
                       rows="6" required>{{ old('description', $prize['description']) }}</textarea>
             @error('description')
@@ -564,12 +655,12 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
 
         <!-- 📊 Miqdorlar -->
         <div class="col-md-4 mb-3">
-            <label class="form-label">🎁 Berilgan miqdor</label>
+            <label class="form-label">Berilgan miqdor</label>
             <input type="number" class="form-control" value="{{ $prize['awarded_quantity'] ?? 0 }}" readonly>
         </div>
 
         <div class="col-md-4 mb-3">
-            <label class="form-label">🎁 Sovg‘alar soni (Umumiy) <span class="text-danger">*</span></label>
+            <label class="form-label">Sovg‘alar soni (Umumiy) <span class="text-danger">*</span></label>
             <input type="number" name="quantity" class="form-control @error('quantity') is-invalid @enderror"
                    value="{{ old('quantity', $prize['quantity'] ?? 0) }}" min="0" required>
             @error('quantity')
@@ -578,7 +669,7 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
         </div>
 
         <div class="col-md-4 mb-3">
-            <label class="form-label">📅 Kunlik limit</label>
+            <label class="form-label"> Kunlik limit</label>
             <input type="number" name="daily_limit" class="form-control @error('daily_limit') is-invalid @enderror"
                    value="{{ old('daily_limit', $prize['daily_limit'] ?? '') }}" min="0">
             @error('daily_limit')
@@ -586,9 +677,9 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             @enderror
         </div>
 
-        <!-- 🏅 Index -->
+        <!--  Index -->
         <div class="col-md-4 mb-3">
-            <label class="form-label">🏅 Sovg‘a darajasi (Index) <span class="text-danger">*</span></label>
+            <label class="form-label"> Sovg‘a darajasi (Index) <span class="text-danger">*</span></label>
             <input type="number" name="index" class="form-control @error('index') is-invalid @enderror"
                    value="{{ old('index', $prize['index'] ?? '') }}" min="1" required>
             @error('index')
@@ -596,11 +687,11 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             @enderror
         </div>
 
-        <!-- 🎲 Probability -->
+        <!--  Probability -->
         @php $category = $prize['category']; @endphp
         @if ($category['name'] === 'weighted_random')
             <div class="col-md-4 mb-3">
-                <label class="form-label">🎲 Yutuq ehtimoli og‘irligi <span class="text-danger">*</span></label>
+                <label class="form-label"> Yutuq ehtimoli og‘irligi <span class="text-danger">*</span></label>
                 <input type="number" name="probability_weight"
                        class="form-control @error('probability_weight') is-invalid @enderror"
                        value="{{ old('probability_weight', $prize['probability_weight'] ?? 100) }}"
@@ -613,7 +704,7 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
 
         <!-- ⏳ Vaqt -->
         <div class="col-md-4 mb-3">
-            <label class="form-label">🟢 Boshlanish vaqti <span class="text-danger">*</span></label>
+ Boshlanish vaqti <span class="text-danger">*</span></label>
             <input type="datetime-local" name="valid_from"
                    class="form-control @error('valid_from') is-invalid @enderror"
                    value="{{ old('valid_from', \Carbon\Carbon::parse($prize['valid_from'])->format('Y-m-d\TH:i')) }}"
@@ -624,7 +715,7 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
         </div>
 
         <div class="col-md-4 mb-3">
-            <label class="form-label">🔴 Tugash vaqti <span class="text-danger">*</span></label>
+            <label class="form-label"> Tugash vaqti <span class="text-danger">*</span></label>
             <input type="datetime-local" name="valid_until"
                    class="form-control @error('valid_until') is-invalid @enderror"
                    value="{{ old('valid_until', \Carbon\Carbon::parse($prize['valid_until'])->format('Y-m-d\TH:i')) }}"
@@ -664,62 +755,9 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             $hasAutoBind = $category['name'] === 'auto_bind';
             $hasReceiptScan = $participationTypes->contains(fn($type) => $type['slug'] === 'receipt_scan');
             $langs = ['uz' => "O'zbek", 'ru' => 'Русский', 'kr' => 'Кирилл'];
-
-            // Message'larni kalit bo‘yicha yig‘amiz (platform:participant_type:message_type)
 $existingMessages = collect($prize['message'] ?? [])->keyBy(
     fn($msg) => implode(':', [$msg['platform'], $msg['participant_type'], $msg['message_type']]),
 );
-
-$messageForms = [
-    [
-        'show' => $hasSms && $hasSmartRandom,
-        'title' => '🧠 Smart Random – SMS uchun',
-        'color' => 'info',
-        'platform' => 'sms',
-        'participant_type' => 'smart_random',
-        'message_type' => 'success',
-    ],
-    [
-        'show' => $hasSms && $hasReceiptScan,
-        'title' => '📸 Receipt Scan – SMS uchun',
-        'color' => 'warning',
-        'platform' => 'sms',
-        'participant_type' => 'receipt_scan',
-        'message_type' => 'success',
-    ],
-    [
-        'show' => $hasOtherPlatforms && $hasSmartRandom,
-        'title' => '🌐 Smart Random – Platformalar uchun',
-        'color' => 'info',
-        'platform' => 'all',
-        'participant_type' => 'smart_random',
-        'message_type' => 'success',
-    ],
-    [
-        'show' => $hasOtherPlatforms && $hasReceiptScan,
-        'title' => '🌐 Receipt Scan – Platformalar uchun',
-        'color' => 'warning',
-        'platform' => 'all',
-        'participant_type' => 'receipt_scan',
-        'message_type' => 'success',
-    ],
-    [
-        'show' => $hasOtherPlatforms,
-        'title' => '🌐 Umumiy Success – Platformalar uchun',
-        'color' => 'success',
-        'platform' => 'all',
-        'participant_type' => 'all',
-        'message_type' => 'success',
-    ],
-    [
-        'show' => $hasSms,
-        'title' => '📩 Umumiy Success – SMS uchun',
-        'color' => 'success',
-        'platform' => 'sms',
-        'participant_type' => 'all',
-        'message_type' => 'success',
-                ],
-            ];
         @endphp
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Sovg'a ma'lumotlari</h5>
@@ -751,78 +789,31 @@ $messageForms = [
 
         <div class="card-body">
             <div class="collapse table-panel" id="collapse-message">
-                <div class="border rounded p-4">
-                    <h4 class="mb-4 fw-bold">📩 Xabar sozlamalari</h4>
-
-
-                    <div class="row">
-                        @foreach ($messageForms as $formIndex => $form)
-                            @if ($form['show'])
-                                @php
-                                    $uid = 'msgform-' . $formIndex;
-                                    $key = implode(':', [
-                                        $form['platform'],
-                                        $form['participant_type'],
-                                        $form['message_type'],
-                                    ]);
-                                    $existing = $existingMessages[$key] ?? null;
-                                    $existingId = $existing['id'] ?? null;
-                                    $existingTexts = $existing['message'] ?? [];
-                                @endphp
-
-                                <div class="col-md-6 mb-3">
-                                    <form method="POST" action="{{ route('admin.prize.message.store', $prize['id']) }}"
-                                        class="card shadow-sm strategy-card border border-{{ $form['color'] }} rounded p-4 h-100 bg-light">
-                                        @csrf
-
-                                        {{-- Yashirin inputlar --}}
-                                        <input type="hidden" name="platform" value="{{ $form['platform'] }}">
-                                        <input type="hidden" name="participant_type"
-                                            value="{{ $form['participant_type'] }}">
-                                        <input type="hidden" name="message_type" value="{{ $form['message_type'] }}">
-                                        @if ($existingId)
-                                            <input type="hidden" name="id" value="{{ $existingId }}">
-                                        @endif
-
-                                        <div class="card-header bg-{{ $form['color'] }} text-white mb-3 rounded">
-                                            <strong>{{ $form['title'] }}</strong>
-                                        </div>
-
-                                        <div class="card-body p-0">
-                                            <ul class="nav nav-tabs mb-2" role="tablist">
-                                                @foreach ($langs as $langCode => $langLabel)
-                                                    <li class="nav-item">
-                                                        <a class="nav-link @if ($loop->first) active @endif"
-                                                            data-bs-toggle="tab"
-                                                            href="#{{ $uid }}-{{ $langCode }}"
-                                                            role="tab">
-                                                            {{ $langLabel }}
-                                                        </a>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-
-                                            <div class="tab-content">
-                                                @foreach ($langs as $langCode => $langLabel)
-                                                    <div class="tab-pane fade @if ($loop->first) show active @endif"
-                                                        id="{{ $uid }}-{{ $langCode }}" role="tabpanel">
-                                                        <textarea class="form-control mb-2" name="message[{{ $langCode }}]" rows="3" required
-                                                            placeholder="{{ $langLabel }} tilidagi xabar">{{ old("message.$langCode") ?? ($existingTexts[$langCode] ?? '') }}</textarea>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-
-                                        <div class="text-end mt-3">
-                                            <button type="submit" class="btn btn-{{ $form['color'] }}">
-                                                Saqlash</button>
-                                        </div>
-                                    </form>
+                        <div class="border rounded p-3">
+                        <div class="page-header-content d-flex justify-content-between align-items-center">
+                            <h4 class="page-title mb-0">Xabar sozlamalari</h4>
+                            @if ($messagesExists == false)
+                                <div>
+                                    <a href="{{ route('admin.prize_messages.generate', ['id' => $prize['id']]) }}"
+                                        class="btn btn-outline-success ms-3">
+                                        <i class="ph-plus-circle me-1"></i> Default xabarlarni yaratish
+                                    </a>
                                 </div>
                             @endif
-                        @endforeach
+                        </div>
+                        <table id="messages-table" class="table datatable-button-init-basic">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>ID</th>
+                                    <th>Turi</th>
+                                    <th>Status</th>
+                                    <th>Xabar (UZ)</th>
+                                    <th>Amallar</th>
+                                </tr>
+                            </thead>
+                        </table>
                     </div>
-                </div>
             </div>
             <div class="collapse table-panel" id="collapse-actions">
                 <div class="border rounded p-3">

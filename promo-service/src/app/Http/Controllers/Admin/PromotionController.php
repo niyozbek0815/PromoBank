@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\StoreUploadedMediaBatchJob;
 use App\Jobs\StoreUploadedMediaJob;
 use App\Models\Company;
+use App\Models\Messages;
 use App\Models\ParticipationType;
 use App\Models\Platform;
 use App\Models\PlatformPromotion;
@@ -491,6 +492,11 @@ class PromotionController extends Controller
             'platforms:id,name',
             'participationTypes:id,name',
         ])->findOrFail($id);
+        $messagesExists = Messages::where('scope_type', 'promotion')
+            ->where('scope_id', $id)
+            ->exists();
+
+
         $prizeCategories = PrizeCategory::withCount([
             'prizes as prize_count' => fn($q) => $q->where('promotion_id', $id),
         ])->get(['id', 'name', 'display_name', 'description']);
@@ -529,6 +535,7 @@ class PromotionController extends Controller
             'companies' => $companies,
             'partisipants_type' => $availableParticipants,
             'prizeCategories' => $prizeCategories,
+            'messagesExists'=>$messagesExists
         ]);
     }
     private function mapPlatforms($platform): array

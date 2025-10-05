@@ -129,6 +129,13 @@ Route::prefix('front')->group(function () {
             Route::post('/{prize}/autobind', 'autobind')->name('attachPromocodes');
             Route::post('/{prize}/autobind/{promocodeId}', 'autobindDelete')->name('detachPromocodes');
         });
+    Route::prefix('prize_messages')
+        ->name('prize_messages.')
+        ->controller(MessagesController::class)
+        ->group(function () {
+            Route::get('/data/{id}', 'prizeMessagesData')->name('data');
+            Route::get('/{id}/generate', 'prizeGenerate')->name('generate');
+        });
     Route::prefix('promotion_shops')
         ->name('admin.promotion_shops.')
         ->controller(PromotionShopController::class)
@@ -174,7 +181,13 @@ Route::prefix('front')->group(function () {
             Route::put('/{banner}', 'update')->name('update');
         });
 
-
+    Route::prefix('promotion_messages')
+        ->name('promotion_messages.')
+        ->controller(MessagesController::class)
+        ->group(function () {
+            Route::get('/data/{id}', 'promotionMessagesData')->name('data');
+            Route::get('/{id}/generate', 'promotionGenerate')->name('generate');
+        });
     Route::prefix('settings')
         ->name('settings.')
         ->group(function () {
