@@ -41,17 +41,34 @@ class PromoCodeController extends Controller
             return view('admin.promocode.create', ['settings' => $settings, 'promotion_id' => $id, 'success' => 'Iltimos promocode generatsiya qilishdan oldin sozlamalarni tekshiring.']);
         }
     }
+    public function show(Request $request, $id = null)
+    {
+        $response = $this->forwardRequest(
+            "GET",
+            $this->url,
+            "front/promocode/{$id}/show",
+            $request
+        );
+        // dd($response->json());
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            $data = $response->json();
+            return view('admin.promocode.show', $data);
+        }
+        return redirect()->back()->with('error', 'Malumot olishda xatolik.');
+
+    }
     public function generatePromoCodes(Request $request, $promotionId)
     {
         $response = $this->forwardRequest("POST", $this->url, "front/promocode/{$promotionId}/generate", $request);
-        if ($response->ok()) {
-            $data = $response->json();
-            return redirect()->back()->with('success', $data["message"]);
-        }
+
         if ($response->status() === 422) {
             return redirect()->back()
                 ->withErrors($response->json('errors'))
                 ->withInput();
+        }
+        if ($response->ok()) {
+            $data = $response->json();
+            return redirect()->back()->with('success', $data["message"]);
         }
         return redirect()->back()->with('error', 'Generatsiya qilishda xatolik.');
     }
@@ -64,15 +81,39 @@ class PromoCodeController extends Controller
             $request,
             ['file']// Fayl nomlari (formdagi `name=""`)
         );
-        if ($response->ok()) {
-            $data = $response->json();
-            return redirect()->back()->with('success', $data["message"]);
-        }
         if ($response->status() === 422) {
             return redirect()->back()
                 ->withErrors($response->json('errors'))
                 ->withInput();
         }
+        if ($response->ok()) {
+            $data = $response->json();
+            return redirect()->back()->with('success', $data["message"]);
+        }
+
+        return redirect()->back()->with('error', 'Generatsiya qilishda xatolik.');
+
+    }
+    public function storePromoCodes(Request $request, $promotionId)
+    {
+        $response = $this->forwardRequestMedias(
+            'POST',
+            $this->url,
+            "front/promocode/{$promotionId}/store",
+            $request,
+            ['file']// Fayl nomlari (formdagi `name=""`)
+        );
+
+        if ($response->status() === 422) {
+            return redirect()->back()
+                ->withErrors($response->json('errors'))
+                ->withInput();
+        }
+        if ($response->ok()) {
+            $data = $response->json();
+            return redirect()->back()->with('success', $data["message"]);
+        }
+
         return redirect()->back()->with('error', 'Generatsiya qilishda xatolik.');
 
     }

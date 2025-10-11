@@ -166,27 +166,28 @@
             $('#messages-table').DataTable({
                 processing: true,
                 serverSide: false,
-                            ajax: {
-                url: '{{ secure_url(route("admin.promotion_messages.data", $promotion["id"], false)) }}',
-                dataSrc: function (json) {
-                    return json.data || [];
+                ajax: {
+                    url: '{{ secure_url(route('admin.promotion_messages.data', $promotion['id'], false)) }}',
+                    dataSrc: function(json) {
+                        return json.data || [];
+                    },
+                    error: function(xhr, error, code) {}
                 },
-                error: function (xhr, error, code) {
-                }
-            },
                 columns: [{
-                        data: 'DT_RowIndex',
-                        name: 'DT_RowIndex',
-                        orderable: false,
-                        searchable: false
-                    }, // tartib raqami
-                    {
                         data: 'id',
                         name: 'id'
                     },
                     {
+                        data: 'scope_type',
+                        name: 'scope_type'
+                    },
+                    {
                         data: 'type',
                         name: 'type'
+                    },
+                    {
+                        data: 'channel',
+                        name: 'channel'
                     },
                     {
                         data: 'status',
@@ -501,12 +502,6 @@
                         data: 'generation_name',
                         name: 'promo_codes.generation_id',
                         searchable: false
-                    },
-                    {
-                        data: 'platform',
-                        name: 'platform_name',
-                        searchable: false
-
                     }, // ✅ ALIAS nomi
                     {
                         data: 'actions',
@@ -846,12 +841,6 @@
                                                     placeholder="+99890xxxxxxx">
                                             </div>
                                         @endif
-
-                                        {{-- <div class="mb-3">
-                                            <label class="form-label">Qo‘shimcha qoidalar (JSON yoki matn)</label>
-                                            <textarea name="additional_rules" rows="3" class="form-control"
-                                                placeholder='{"limit": 3, "allowed_time": "09:00-18:00"}'>{{ old("platforms_rules.{$platform['id']}", $platform['additional_rules']) }}</textarea>
-                                        </div> --}}
                                         <div class="text-end">
                                             <button type="submit" class="btn btn-primary">
                                                 Saqlash
@@ -929,8 +918,9 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>ID</th>
+                                    <th>Qo‘llanish sohasi</th>
                                     <th>Turi</th>
+                                    <th>Platforma</th>
                                     <th>Status</th>
                                     <th>Xabar (UZ)</th>
                                     <th>Amallar</th>
@@ -963,7 +953,6 @@
                                         <th>Foydalanilgan</th>
                                         <th>Foydalanilgan vaqti</th>
                                         <th>Generation</th>
-                                        <th>Platforma</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>

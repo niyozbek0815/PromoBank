@@ -8,7 +8,9 @@
     <script src="{{ asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
     <script>
         $.ajaxSetup({
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
         });
 
         $(document).ready(function() {
@@ -19,19 +21,74 @@
             $('#messages-table').DataTable({
                 processing: true,
                 serverSide: false,
-ajax: '{{ secure_url(route("admin.settings.messages.data", [], false)) }}',                columns: [
-                    { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false }, // tartib raqami
-                    { data: 'id', name: 'id' },
-                    { data: 'type', name: 'type' },
-                    { data: 'status', name: 'status', orderable: false, searchable: false },
-                    { data: 'message', name: 'message' },
-                    { data: 'actions', name: 'actions', orderable: false, searchable: false }
+                ajax: '{{ secure_url(route('admin.settings.messages.data', [], false)) }}',
+                columns: [{
+                        data: 'id',
+                        name: 'id'
+                    },
+                    {
+                        data: 'scope_type',
+                        name: 'scope_type'
+                    },
+                    {
+                        data: 'type',
+                        name: 'type'
+                    },
+                    {
+                        data: 'channel',
+                        name: 'channel'
+                    },
+                    {
+                        data: 'status',
+                        name: 'status',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'message',
+                        name: 'message'
+                    },
+                    {
+                        data: 'actions',
+                        name: 'actions',
+                        orderable: false,
+                        searchable: false
+                    }
                 ],
-                buttons: [
-                    { extend: 'copy', exportOptions: { modifier: { page: 'all' } } },
-                    { extend: 'excel', filename: "Messages", exportOptions: { modifier: { page: 'all' } } },
-                    { extend: 'csv', filename: "Messages", exportOptions: { modifier: { page: 'all' } } },
-                    { extend: 'print', exportOptions: { modifier: { page: 'all' } } }
+                buttons: [{
+                        extend: 'copy',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        filename: "Messages",
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        filename: "Messages",
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
+                    }
                 ]
             });
         });
@@ -48,8 +105,9 @@ ajax: '{{ secure_url(route("admin.settings.messages.data", [], false)) }}',     
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>ID</th>
+                        <th>Qo‘llanish sohasi</th>
                         <th>Turi</th>
+                        <th>Platforma</th>
                         <th>Status</th>
                         <th>Xabar (UZ)</th>
                         <th>Amallar</th>

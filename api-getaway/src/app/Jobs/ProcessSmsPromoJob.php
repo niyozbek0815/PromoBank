@@ -14,19 +14,13 @@ class ProcessSmsPromoJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public $phone;
-    public $promocode;
-    public $shortphone;
-    public $correlationId;
-    public $created_at;
-
-    public function __construct(string $phone, $promocode, $shortphone, $correlationId, $created_at)
-    {
-        $this->phone         = $phone;
-        $this->promocode     = $promocode;
-        $this->shortphone    = $shortphone;
-        $this->correlationId = $correlationId;
-        $this->created_at    = $created_at;
+    public function __construct(
+        public  string $phone,
+        public  string $promocode,
+        public  string $shortPhone,
+        public  string $correlationId,
+        public  string $createdAt
+    ) {
     }
 
     /**

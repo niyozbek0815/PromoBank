@@ -35,7 +35,7 @@ class PrizeController extends Controller
     public function edit(Request $request, $prize)
     {
         $response = $this->forwardRequest("GET", $this->url, "front/prize/{$prize}/edit", $request);
-        // dd( $response->json('prize'));
+        // dd( $response->json());
         if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
             $data = $response->json();
             // dd($data);
@@ -65,33 +65,6 @@ class PrizeController extends Controller
                 ->with('success', 'Sovg‘a ma’lumotlari muvaffaqiyatli yangilandi.');
         }
 
-        abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
-    }
-    public function storeMessage(Request $request, $prizeId)
-    {
-        // dd($request->all());
-        $response = $this->forwardRequest(
-            'POST',
-            $this->url,
-            "front/prize/{$prizeId}/message",
-            $request
-        );
-        // 2️⃣ Validatsiya xatoliklari (422)
-        if ($response->status() === 422) {
-            return redirect()
-                ->back()
-                ->withErrors($response->json('errors'))
-                ->withInput();
-        }
-        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
-            return redirect()
-                ->back()
-                ->with('success', 'Sovg‘a ma’lumotlari muvaffaqiyatli yangilandi.');
-        }
-
-
-
-        // 3️⃣ Boshqa xatoliklar
         abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
     }
     public function storeRules(Request $request, $prizeId)

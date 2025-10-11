@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('generation_id')->constrained('promo_generations')->onDelete('cascade');
             $table->foreignId('promotion_id')->constrained('promotions')->onDelete('cascade');
-            $table->bigInteger('platform_id')->nullable();
             $table->string('promocode');
             $table->boolean('is_used')->default(false);
             $table->timestamp('used_at')->nullable();

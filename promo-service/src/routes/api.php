@@ -92,8 +92,10 @@ Route::prefix('front')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/data', 'data')->name('data'); // GET /promocode/data
             Route::get('/create/{promotion_id?}', 'create')->name('create');
+            Route::get('/{promotion}/show', 'show')->name('show');
             Route::post('/{promotion}/generate', 'generatePromoCodes')->name('generate');
             Route::post('/{promotion}/import', 'importPromoCodes')->name('import');
+            Route::post('/{promotion}/store', 'storePromoCodes')->name('store');
             Route::get('{promotion}/promocode-settings', 'showPromocodeSettingsForm')->name('settings.form');
             Route::post('{promotion}/promocode-settings', "updatePromocodeSettings")->name('settings.update');
             Route::get('/{promotion}/generatedata', 'generateData')->name('generateData'); // AJAX uchun server-side table

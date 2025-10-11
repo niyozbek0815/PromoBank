@@ -50,4 +50,8 @@ class PromoCodeUser extends Model
     {
         return $this->belongsTo(Promotions::class);
     }
+    public function userCache()
+    {
+        return $this->belongsTo(UsersCache::class, 'user_id', 'user_id');
+    }
 }

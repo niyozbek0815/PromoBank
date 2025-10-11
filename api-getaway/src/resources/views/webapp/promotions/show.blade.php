@@ -6,10 +6,7 @@
     @php
         $locale = app()->getLocale();
     @endphp
-    {{-- <div style="margin-top:200px;">
-        <button id="btnTestPromo" class="btn btn-primary">🧪 Default PromoCode yuborish</button>
-        <button id="btnTestReceipt" class="btn btn-secondary">🧪 Default Receipt yuborish</button>
-    </div> --}}
+
     <section class="banner">
         <div class="content">
             <div class="container">
@@ -191,22 +188,22 @@
             </div>
         </div>
     </div>
-<div id="codeModal" class="scannerModal" style="display:none;">
-    <div class="modal-content">
-        <h4>{{ __('messages.code_title') }}</h4>
-        <form id="codeForm" onsubmit="submitCode(event)">
-            <input type="text" id="manualCode" placeholder="{{ __('messages.code_placeholder') }}" required>
-            <div class="d-flex justify-content-end gap-2 mt-2">
-                <button type="button" class="btn btn-secondary" onclick="closeCodeModal()">
-                    {{ __('messages.scanner_cancel') }}
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    {{ __('messages.scanner_submit') }}
-                </button>
-            </div>
-        </form>
+    <div id="codeModal" class="scannerModal" style="display:none;">
+        <div class="modal-content">
+            <h4>{{ __('messages.code_title') }}</h4>
+            <form id="codeForm" onsubmit="submitCode(event)">
+                <input type="text" id="manualCode" placeholder="{{ __('messages.code_placeholder') }}" required>
+                <div class="d-flex justify-content-end gap-2 mt-2">
+                    <button type="button" class="btn btn-secondary" onclick="closeCodeModal()">
+                        {{ __('messages.scanner_cancel') }}
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        {{ __('messages.scanner_submit') }}
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
     <div id="appModal" class="scannerModal">
         <div class="modal-content">
             <h4>📱 {{ __('messages.download_title') }}</h4>
@@ -252,172 +249,177 @@
 
 @section('scripts')
     <script>
-
-
-
-
         const promotionId = {{ $promotion['id'] }};
         let scannerQrCode = null;
         let receiptQrCode = null;
 
 
-function openAppModal(e) {
-    e.preventDefault();
-    document.getElementById('appModal').style.display = 'flex';
-}
+        function openAppModal(e) {
+            e.preventDefault();
+            document.getElementById('appModal').style.display = 'flex';
+        }
 
-function closeAppModal() {
-    document.getElementById('appModal').style.display = 'none';
-}
-function openSmsModal(e) {
-    e.preventDefault();
-    document.getElementById('smsModal').style.display = 'flex';
-}
+        function closeAppModal() {
+            document.getElementById('appModal').style.display = 'none';
+        }
 
-function closeSmsModal() {
-    document.getElementById('smsModal').style.display = 'none';
-}
-function openCodeModal(event) {
-    event.preventDefault();
-    document.getElementById('codeModal').style.display = 'flex';
-}
+        function openSmsModal(e) {
+            e.preventDefault();
+            document.getElementById('smsModal').style.display = 'flex';
+        }
 
-function closeCodeModal() {
-    document.getElementById('codeModal').style.display = 'none';
-}
-function submitCode(e) {
-    e.preventDefault();
-    const code = document.getElementById("manualCode").value.trim();
-    if (!code) {
-        Swal.fire("❌ Xatolik", "Iltimos, promo kodni kiriting", "error");
-        return;
-    }
+        function closeSmsModal() {
+            document.getElementById('smsModal').style.display = 'none';
+        }
 
-    closeCodeModal(); // modalni yopamiz
-    const url = "{{ secure_url('api/webapp/promotions') }}/" + promotionId + "/promocode";
+        function openCodeModal(event) {
+            event.preventDefault();
+            document.getElementById('codeModal').style.display = 'flex';
+        }
 
-    sendToServer(url, code, "promocode");
-}
+        function closeCodeModal() {
+            document.getElementById('codeModal').style.display = 'none';
+        }
 
+        function submitCode(e) {
+            e.preventDefault();
+            const code = document.getElementById("manualCode").value.trim();
+            if (!code) {
+                Swal.fire("❌ Xatolik", "Iltimos, promo kodni kiriting", "error");
+                return;
+            }
 
+            closeCodeModal(); // modalni yopamiz
+            const url = "{{ secure_url('api/webapp/promotions') }}/" + promotionId + "/promocode";
 
-
-        // --- Loader boshqarish ---Fsend
+            sendToServer(url, code, "promocode");
+        }
         function showLoader() {
-    const el = document.getElementById("globalLoader");
-                if (el) el.style.display = "flex";        }
+            const el = document.getElementById("globalLoader");
+            if (el) el.style.display = "flex";
+        }
 
         function hideLoader() {
             const el = document.getElementById("globalLoader");
             if (el) el.style.display = "none";
         }
+async function sendToServer(url, qrValue, type = "code") {
+    const token = window.__ACCESS_TOKEN__;
+    if (!token) {
+        Swal.fire("❌ Ro‘yxatdan o‘tish xatoligi", "Token mavjud emas yoki muddati tugagan", "error");
+        return;
+    }
 
-        async function sendToServer(url, qrValue, type = "code") {
-            const token = window.__ACCESS_TOKEN__;
-            if (!token) {
-                Swal.fire("❌ Ro‘yxatdan o‘tish xatoligi", "Token mavjud emas yoki muddati tugagan",
-                    "error");
-                return;
-            }
+    const payload = { promocode: qrValue };
 
-            const payload = {
-                promocode: qrValue
-            };
+    try {
+        showLoader();
 
-            try {
-                showLoader();
-                const resp = await fetch(url, {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                        "Accept": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                });
+        const resp = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
 
-                let serverData = {};
-                try {
-                    serverData = await resp.json();
-                } catch (e) {
-                    serverData = {};
-                } finally {
-                    hideLoader();
-                }
-
-                // ❌ Failed case
-                if (serverData.status === "failed" || !resp.ok) {
-                    await showMessagesSequential(serverData.message ||
-                        "Xatolik, birozdan so‘ng qayta urinib ko‘ring", "error", "❌ Xatolik");
-                    return;
-                } else {
-                    // ✅ Success holatida
-                    if (serverData.message) {
-                        await showMessagesSequential(serverData.message, "success", "✅ Muvaffaqiyatli");
-                    }
-
-                    if (serverData.data) {
-                        const receipt = serverData.data; // 👈 shu joyda e’lon qilamiz
-
-                        const receiptHtml = `
-<div style="font-family: monospace; max-width: 360px; margin: 0 auto; border: 1px dashed #999; padding: 15px; background: #fafafa; color: #000;">
-    <h3 style="text-align:center; margin:0; font-size:16px; font-weight:bold; color:#1a73e8;">
-        ${receipt.name}
-    </h3>
-    <p style="text-align:center; margin:2px 0; font-size:12px; color:#555;">
-        ${receipt.address ?? ''}
-    </p>
-    <hr style="border:0; border-top:1px dashed #ccc; margin:6px 0;">
-
-    <p style="margin:2px 0; font-size:12px; color:#111"><b>Chek ID:</b> <span style="color:#333;">${receipt.chek_id}</span></p>
-    <p style="margin:2px 0; font-size:12px; color:#111"><b>NKM:</b> <span style="color:#333;">${receipt.nkm_number}</span></p>
-    <p style="margin:2px 0; font-size:12px; color:#111"><b>SN:</b> <span style="color:#333;">${receipt.sn}</span></p>
-    <p style="margin:2px 0; font-size:12px; color:#111"><b>Sana:</b> <span style="color:#333;">${receipt.check_date}</span></p>
-
-    <hr style="border:0; border-top:1px dashed #ccc; margin:6px 0;">
-
-    <div style="font-size:12px;">
-        ${receipt.products.map(p => `
-                    <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dotted #eee;">
-                        <div style="flex:1; text-align:left; color:#000;">
-                            ${p.name}
-                        </div>
-                        <div style="flex:0 0 90px; text-align:right;">
-                            <div style="font-size:11px; color:#888;">x${p.count}</div>
-                            <div style="font-size:12px; font-weight:bold; color:#2e7d32;">
-                                ${p.summa.toLocaleString()} so'm
-                            </div>
-                        </div>
-                    </div>
-                `).join("")}
-    </div>
-
-    <hr style="border:0; border-top:1px dashed #ccc; margin:6px 0;">
-
-    <p style="text-align:right; font-size:14px; font-weight:bold; margin:4px 0; color:#d32f2f;">
-        Jami: ${receipt.summa.toLocaleString()} so'm
-    </p>
-    <p style="text-align:right; font-size:12px; margin:0; color:#444;">
-        QQS: ${receipt.qqs_summa}
-    </p>
-</div>
-`;
-
-                        Swal.fire({
-                            title: "✅ Muvaffaqiyatli",
-                            html: receiptHtml,
-                            icon: "success",
-                            width: 400,
-                            showConfirmButton: true,
-                        });
-                    }
-                }
-            } catch (e) {
-                hideLoader();
-                Swal.fire("❌ Xatolik", `Load failed: ${e.message}\nURL: ${url}`, "error");
-            }
+        const statusCode = resp.status;
+        let serverData = {};
+        try {
+            serverData = await resp.json();
+        } catch (e) {
+            serverData = {};
+        } finally {
+            hideLoader();
         }
 
+        // --- 🔴 Agar 422 qaytsa (Laravel validation yoki custom error) ---
+        if (statusCode === 422) {
+            const errors = [];
+
+            if (serverData.message) errors.push(serverData.message);
+            if (serverData.errors) {
+                for (const key in serverData.errors) {
+                    if (Array.isArray(serverData.errors[key])) {
+                        errors.push(...serverData.errors[key]);
+                    } else {
+                        errors.push(serverData.errors[key]);
+                    }
+                }
+            }
+
+            await showMessagesSequential(
+                errors.length ? errors : ["Ma’lumotni tekshiring"],
+                "error",
+                "❌ Xatolik"
+            );
+            return;
+        }
+
+        // --- ❌ Boshqa muvaffaqiyatsiz statuslar ---
+        if (!resp.ok || serverData.status === "failed" || serverData.status === "error") {
+            await showMessagesSequential(
+                serverData.message || "Xatolik, birozdan so‘ng qayta urinib ko‘ring",
+                "error",
+                "❌ Xatolik"
+            );
+            return;
+        }
+
+        // --- ✅ Muvaffaqiyatli holat ---
+        if (serverData.message) {
+            await showMessagesSequential(serverData.message, "success", "✅ Muvaffaqiyatli");
+        }
+
+if (type === "receipt" && serverData.data) {
+            const receipt = serverData.data;
+   const receiptHtml = `
+    <div style="font-family: monospace; max-width: 360px; margin: 0 auto; border: 1px dashed #999; padding: 15px; background: #fafafa; color: #000;">
+        <h3 style="text-align:center; margin:0; font-size:16px; font-weight:bold; color:#1a73e8;">${receipt.name ?? ''}</h3>
+        <p style="text-align:center; margin:2px 0; font-size:12px; color:#555;">${receipt.address ?? ''}</p>
+        <hr style="border:0; border-top:1px dashed #ccc; margin:6px 0;">
+        <p style="margin:2px 0; font-size:12px;"><b>Chek ID:</b> ${receipt.chek_id ?? '-'}</p>
+        <p style="margin:2px 0; font-size:12px;"><b>NKM:</b> ${receipt.nkm_number ?? '-'}</p>
+        <p style="margin:2px 0; font-size:12px;"><b>SN:</b> ${receipt.sn ?? '-'}</p>
+        <p style="margin:2px 0; font-size:12px;"><b>Sana:</b> ${receipt.check_date ?? '-'}</p>
+        <hr style="border:0; border-top:1px dashed #ccc; margin:6px 0;">
+        <div style="font-size:12px;">
+            ${(receipt.products || []).map(p => `
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dotted #eee;">
+                    <div style="flex:1; text-align:left;">${p.name ?? ''}</div>
+                    <div style="flex:0 0 90px; text-align:right;">
+                        <div style="font-size:11px; color:#888;">x${p.count ?? 1}</div>
+                        <div style="font-size:12px; font-weight:bold; color:#2e7d32;">
+                            ${(Number(p.summa) || 0).toLocaleString()} so'm
+                        </div>
+                    </div>
+                </div>
+            `).join("")}
+        </div>
+        <hr style="border:0; border-top:1px dashed #ccc; margin:6px 0;">
+        <p style="text-align:right; font-size:14px; font-weight:bold; margin:4px 0; color:#d32f2f;">
+            Jami: ${(Number(receipt.summa) || 0).toLocaleString()} so'm
+        </p>
+        <p style="text-align:right; font-size:12px; margin:0; color:#444;">QQS: ${receipt.qqs_summa ?? '-'}</p>
+    </div>
+`;
+
+            Swal.fire({
+                title: "✅ Muvaffaqiyatli",
+                html: receiptHtml,
+                icon: "success",
+                width: 400,
+                showConfirmButton: true,
+            });
+        }
+
+    } catch (e) {
+        hideLoader();
+        Swal.fire("❌ Xatolik", `Load failed: ${e.message}\nURL: ${url}`, "error");
+    }
+}
 
         // --- Yangi element yaratish ---
         function createScannerElement(wrapperId, prefix) {
@@ -548,149 +550,5 @@ function submitCode(e) {
             }
         }
     </script>
-    {{-- <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const promotionId = {{ $promotion['id'] }};
 
-            // Loader boshqarish
-            function showLoader() {
-                const el = document.getElementById("globalLoader");
-                if (el) el.style.display = "flex";
-            }
-
-            function hideLoader() {
-                const el = document.getElementById("globalLoader");
-                if (el) el.style.display = "none";
-            }
-
-            // Ketma-ket SweetAlert ko'rsatish
-
-
-            // API helper
-            async function sendToServer(url, qrValue, type = "code") {
-                const token = window.__ACCESS_TOKEN__;
-                if (!token) {
-                    Swal.fire("❌ Ro‘yxatdan o‘tish xatoligi", "Token mavjud emas yoki muddati tugagan",
-                        "error");
-                    return;
-                }
-
-                const payload = {
-                    promocode: qrValue
-                };
-
-                try {
-                    showLoader();
-                    const resp = await fetch(url, {
-                        method: "POST",
-                        headers: {
-                            "Authorization": `Bearer ${token}`,
-                            "Content-Type": "application/json",
-                            "Accept": "application/json"
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    let serverData = {};
-                    try {
-                        serverData = await resp.json();
-                    } catch (e) {
-                        serverData = {};
-                    } finally {
-                        hideLoader();
-                    }
-
-                    // ❌ Failed case
-                    if (serverData.status === "failed" || !resp.ok) {
-                        await showMessagesSequential(serverData.message ||
-                            "Xatolik, birozdan so‘ng qayta urinib ko‘ring", "error", "❌ Xatolik");
-                        return;
-                    } else {
-                        // ✅ Success holatida
-                        if (serverData.message) {
-                            await showMessagesSequential(serverData.message, "success", "✅ Muvaffaqiyatli");
-                        }
-
-                        if (serverData.data) {
-                            const receipt = serverData.data; // 👈 shu joyda e’lon qilamiz
-
-                            const receiptHtml = `
-<div style="font-family: monospace; max-width: 360px; margin: 0 auto; border: 1px dashed #999; padding: 15px; background: #fafafa; color: #000;">
-    <h3 style="text-align:center; margin:0; font-size:16px; font-weight:bold; color:#1a73e8;">
-        ${receipt.name}
-    </h3>
-    <p style="text-align:center; margin:2px 0; font-size:12px; color:#555;">
-        ${receipt.address ?? ''}
-    </p>
-    <hr style="border:0; border-top:1px dashed #ccc; margin:6px 0;">
-
-    <p style="margin:2px 0; font-size:12px; color:#111"><b>Chek ID:</b> <span style="color:#333;">${receipt.chek_id}</span></p>
-    <p style="margin:2px 0; font-size:12px; color:#111"><b>NKM:</b> <span style="color:#333;">${receipt.nkm_number}</span></p>
-    <p style="margin:2px 0; font-size:12px; color:#111"><b>SN:</b> <span style="color:#333;">${receipt.sn}</span></p>
-    <p style="margin:2px 0; font-size:12px; color:#111"><b>Sana:</b> <span style="color:#333;">${receipt.check_date}</span></p>
-
-    <hr style="border:0; border-top:1px dashed #ccc; margin:6px 0;">
-
-    <div style="font-size:12px;">
-        ${receipt.products.map(p => `
-                    <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dotted #eee;">
-                        <div style="flex:1; text-align:left; color:#000;">
-                            ${p.name}
-                        </div>
-                        <div style="flex:0 0 90px; text-align:right;">
-                            <div style="font-size:11px; color:#888;">x${p.count}</div>
-                            <div style="font-size:12px; font-weight:bold; color:#2e7d32;">
-                                ${p.summa.toLocaleString()} so'm
-                            </div>
-                        </div>
-                    </div>
-                `).join("")}
-    </div>
-
-    <hr style="border:0; border-top:1px dashed #ccc; margin:6px 0;">
-
-    <p style="text-align:right; font-size:14px; font-weight:bold; margin:4px 0; color:#d32f2f;">
-        Jami: ${receipt.summa.toLocaleString()} so'm
-    </p>
-    <p style="text-align:right; font-size:12px; margin:0; color:#444;">
-        QQS: ${receipt.qqs_summa}
-    </p>
-</div>
-`;
-
-                            Swal.fire({
-                                title: "✅ Muvaffaqiyatli",
-                                html: receiptHtml,
-                                icon: "success",
-                                width: 400,
-                                showConfirmButton: true,
-                            });
-                        }
-                    }
-                } catch (e) {
-                    hideLoader();
-                    Swal.fire("❌ Xatolik", `Load failed: ${e.message}\nURL: ${url}`, "error");
-                }
-            }
-
-            // Default kod yuborish
-            function sendDefaultCode(type = "promocode") {
-                const defaultCode = (type === "promocode") ?
-                    "DEFAULT-PROMO-CODE-123" :
-                    "https://ofd.soliq.uz/check?t=UZ210317273049&r=554736&c=20250901091427&s=511857000402";
-                const url = (type === "promocode") ?
-                    "{{ secure_url('api/webapp/promotions') }}/" + promotionId + "/promocode" :
-                    "{{ secure_url('api/webapp/promotions') }}/" + promotionId + "/receipt";
-                sendToServer(url, defaultCode, type);
-            }
-            const btnPromo = document.getElementById("btnTestPromo");
-            const btnReceipt = document.getElementById("btnTestReceipt");
-            if (btnPromo) btnPromo.addEventListener("click", function() {
-                sendDefaultCode("promocode");
-            });
-            if (btnReceipt) btnReceipt.addEventListener("click", function() {
-                sendDefaultCode("code");
-            });
-        });
-    </script> --}}
 @endsection

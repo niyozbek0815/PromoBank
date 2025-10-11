@@ -42,6 +42,7 @@ class MessagesController extends Controller
     }
     public function edit(Request $request,$id)
     {        $response = $this->forwardRequest("GET", $this->url, "front/settings/messages/{$id}/edit", $request);
+        // dd($response->json());
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return view('admin.messages.edit',['message'=>$response->json()]);
         }
@@ -55,7 +56,6 @@ class MessagesController extends Controller
             "front/settings/messages/{$id}",
             $request
         );
-        // dd($response->json());
         if ($response->status() === 422) {
             return redirect()
                 ->back()
@@ -73,6 +73,8 @@ class MessagesController extends Controller
     public function promotionGenerate(Request $request, $id)
     {
         $response = $this->forwardRequest("GET", $this->url, "front/promotion_messages/{$id}/generate", $request);
+        // dd($response->json());
+
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return redirect()->back()->with(['success' => "Xabarlar muafaqiyatli yaratildi."]);
         }

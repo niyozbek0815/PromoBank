@@ -52,12 +52,6 @@
                         searchable: false
                     },
                     {
-                        data: 'platform_name',
-                        name: 'platform_name',
-                        searchable: false
-
-                    }, // ✅ ALIAS nomi
-                    {
                         data: 'actions',
                         name: 'actions',
                         orderable: false,
@@ -121,7 +115,6 @@
                                 <th>Foydalanilgan vaqti</th>
                                 <th>Promotion</th>
                                 <th>Generation</th>
-                                <th>Platforma</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>

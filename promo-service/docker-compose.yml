@@ -22,7 +22,7 @@ services:
   #     - ./mysql/data:/var/lib/mysql
   #   ports:
   #     - "3306:3306"
-  #   environment:
+  #   environment:z
   #     MYSQL_DATABASE: blog
   #     MYSQL_ROOT_PASSWORD: password
   promo_db:

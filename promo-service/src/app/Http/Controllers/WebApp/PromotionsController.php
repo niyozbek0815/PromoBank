@@ -7,38 +7,26 @@ use App\Http\Requests\SendPromocodeRequest;
 use App\Repositories\PromotionRepository;
 use App\Services\ReceiptScraperService;
 use App\Services\ReceiptWebAppService;
-use App\Services\WebAppPromocodeService;
+use App\Services\ViaPromocodeService;
 use Illuminate\Support\Facades\Log;
 
 class PromotionsController extends Controller
 {
     public function __construct(
-        private WebAppPromocodeService $webAppPromocodeService,
+        private ViaPromocodeService $viaPromocodeService,
+
         private PromotionRepository $promotionRepository,
         private ReceiptWebAppService $receiptWebAppService,
         private ReceiptScraperService $scraper,
     ) {
 
     }
-
-
     public function viaPromocode(SendPromocodeRequest $request, $id)
     {
         $user = $request['auth_user'];
-        Log::info(message: "User ID:", context: ['user' => $user]);
         $req = $request->validated();
-        $result = $this->webAppPromocodeService->proccess($req, $user, $id);
-
-        // ❌ Promocode topilmadi
-        if (!empty($result['promocode'])) {
-            return response()->json([
-                'success' => false,
-                'status' => 'failed',
-                'message' => ['Promocode not found.'],
-                'errors' => ['token' => ['Promocode not found.']],
-            ], 404);
-        }
-        if (!empty($result['promotion'])) {
+        $data = $this->viaPromocodeService->proccess($req, $user, $id, 'telegram');
+         if (!empty($result['promotion'])) {
             return response()->json([
                 'success' => false,
                 'status' => 'failed',
@@ -46,20 +34,23 @@ class PromotionsController extends Controller
                 'errors' => ['token' => ['Promotion not found.']],
             ], 404);
         }
-        if ($result['action'] === "claim") {
+        $status = $data['status'] ?? null;
+        $message = $data['message'] ?? null;
+
+        if (in_array($status, ['claim', 'invalid'], true)) {
             return response()->json([
                 'success' => false,
                 'status' => 'failed',
-                'message' => $result['message'] ?? "Kechirasiz, promocodedan avval foydalanilgan",
-                'errors' => ['token' => [$result['message'] ?? "Kechirasiz, promocodedan avval foydalanilgan"]],
-            ], $result['code'] ?? 422);
+                'message' => $message ,
+                'errors' => ['promocode' => [$message]],
+            ], 422);
         }
-        return response()->json([
-            'success' => true,
-            'status' => 'success',
-            'data' => $result,
-            'message' => $result['message'] ?? "Promocode muvaffaqiyatli ro'yhatga olindi",
-        ], 200);
+
+
+        return $this->successResponse(
+            $data,
+            $message
+        );
     }
     public function viaReceipt(SendPromocodeRequest $request, $id)
     {

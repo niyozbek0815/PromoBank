@@ -15,7 +15,6 @@ class PromoCode extends Model
         'promocode',
         'is_used',
         'used_at',
-        'platform_id'
     ];
 
     protected $casts = [
@@ -33,16 +32,29 @@ class PromoCode extends Model
         return $this->belongsTo(Promotions::class, 'promotion_id');
     }
 
-    public function platform()
-    {
-        return $this->belongsTo(Platform::class, 'platform_id');
-    }
-    // public function claims()
-    // {
-    //     return $this->hasMany(PromoCodeClaim::class);
-    // }
     public function prizePromos()
     {
         return $this->hasMany(PrizePromo::class);
     }
+    public function actions()
+    {
+        return $this->hasMany(PromoAction::class, 'promo_code_id')
+            ->with([
+                'userCache:id,user_id,name,phone,status',
+                'prize:id,name',
+                'platform:id,name', // ✅ Platform qo‘shildi
+            ]);
+    }
+
+    public function codeUsers()
+    {
+        return $this->hasMany(PromoCodeUser::class, 'promo_code_id')
+            ->with([
+                'userCache:id,user_id,name,phone,status',
+                'platform:id,name',
+                'promotion:id,name',
+                'prize:id,name',
+            ]);
+    }
+
 }

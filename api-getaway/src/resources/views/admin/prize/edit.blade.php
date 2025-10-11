@@ -173,7 +173,7 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             });
         });
     </script>
-  <script>
+    <script>
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -188,27 +188,28 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             $('#messages-table').DataTable({
                 processing: true,
                 serverSide: false,
-                            ajax: {
-                url: '{{ secure_url(route("admin.prize_messages.data", $prize['id'], false)) }}',
-                dataSrc: function (json) {
-                    return json.data || [];
+                ajax: {
+                    url: '{{ secure_url(route('admin.prize_messages.data', $prize['id'], false)) }}',
+                    dataSrc: function(json) {
+                        return json.data || [];
+                    },
+                    error: function(xhr, error, code) {}
                 },
-                error: function (xhr, error, code) {
-                }
-            },
                 columns: [{
-                        data: 'DT_RowIndex',
-                        name: 'DT_RowIndex',
-                        orderable: false,
-                        searchable: false
-                    }, // tartib raqami
-                    {
                         data: 'id',
                         name: 'id'
                     },
                     {
+                        data: 'scope_type',
+                        name: 'scope_type'
+                    },
+                    {
                         data: 'type',
                         name: 'type'
+                    },
+                    {
+                        data: 'channel',
+                        name: 'channel'
                     },
                     {
                         data: 'status',
@@ -285,49 +286,66 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             });
         }
         document.addEventListener('DOMContentLoaded', function() {
-            const allPanels = document.querySelectorAll('.table-panel');
-            let currentlyOpen = document.querySelector('#collapse-smart');
-            if (currentlyOpen) {
-                const defaultInstance = bootstrap.Collapse.getOrCreateInstance(currentlyOpen);
-                defaultInstance.show();
+            const toggles = document.querySelectorAll('.collapse-toggler');
+            const panels = document.querySelectorAll('.table-panel');
+            const defaultCollapseId = '#collapse-message'; // ✅ Default ochiq bo‘lishi kerak bo‘lgan collapse
+            let currentOpen = null;
 
-                // Default aktiv tugma topiladi va unga active qo‘yiladi
-                document.querySelectorAll('.collapse-toggler').forEach(btn => {
-                    const targetId = btn.getAttribute('data-target');
-                    if (targetId === '#collapse-smart') {
-                        btn.classList.add('active');
-                    } else {
+            // Bootstrap collapse instance olish
+            const getCollapseInstance = (el) => bootstrap.Collapse.getOrCreateInstance(el);
+
+            // Boshqa collapse'larni yopish
+            const closeAllExcept = (targetId) => {
+                panels.forEach(panel => {
+                    if ('#' + panel.id !== targetId && panel.classList.contains('show')) {
+                        getCollapseInstance(panel).hide();
+                    }
+                });
+            };
+
+            // Collapse ochish
+            const openCollapse = (targetId) => {
+                const target = document.querySelector(targetId);
+                if (!target) return;
+
+                closeAllExcept(targetId);
+
+                getCollapseInstance(target).show();
+                currentOpen = target;
+
+                // tugmalarni holatini yangilash
+                toggles.forEach(btn => {
+                    const isActive = btn.getAttribute('data-target') === targetId;
+                    btn.classList.toggle('active', isActive);
+                });
+            };
+            const closeCollapse = (targetId) => {
+                const target = document.querySelector(targetId);
+                if (!target) return;
+
+                getCollapseInstance(target).hide();
+                currentOpen = null;
+
+                toggles.forEach(btn => {
+                    if (btn.getAttribute('data-target') === targetId) {
                         btn.classList.remove('active');
                     }
                 });
-            }
-            document.querySelectorAll('.collapse-toggler').forEach(button => {
-                button.addEventListener('click', function() {
+            };
+            toggles.forEach(btn => {
+                btn.addEventListener('click', function() {
                     const targetId = this.getAttribute('data-target');
                     const target = document.querySelector(targetId);
+                    const isOpen = target.classList.contains('show');
 
-                    // Boshqa panel ochiq bo‘lsa, yopiladi
-                    if (currentlyOpen && currentlyOpen !== target) {
-                        const currentInstance = bootstrap.Collapse.getOrCreateInstance(
-                            currentlyOpen);
-                        currentInstance.hide();
-                    }
-
-                    const targetInstance = bootstrap.Collapse.getOrCreateInstance(target);
-
-                    if (!target.classList.contains('show')) {
-                        targetInstance.show();
-                        currentlyOpen = target;
-                        document.querySelectorAll('.collapse-toggler').forEach(btn => btn.classList
-                            .remove('active'));
-                        this.classList.add('active');
+                    if (isOpen) {
+                        closeCollapse(targetId);
                     } else {
-                        targetInstance.hide();
-                        currentlyOpen = null;
-                        this.classList.remove('active');
+                        openCollapse(targetId);
                     }
                 });
             });
+            openCollapse(defaultCollapseId);
         });
         document.addEventListener('DOMContentLoaded', function() {
             const tabs = document.querySelectorAll('.rule-tab');
@@ -418,12 +436,6 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                         searchable: false
                     },
                     {
-                        data: 'platform',
-                        name: 'platform_name',
-                        searchable: false
-
-                    }, // ✅ ALIAS nomi
-                    {
                         data: 'actions',
                         name: 'actions',
                         orderable: false,
@@ -503,12 +515,6 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                         name: 'promo_codes.generation_id',
                         searchable: false
                     },
-                    {
-                        data: 'platform',
-                        name: 'platform_name',
-                        searchable: false
-
-                    }, // ✅ ALIAS nomi
                     {
                         data: 'actions',
                         name: 'actions',
@@ -595,153 +601,152 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             <h5 class="mb-0">Sovg'a ma'lumotlarini tahrirlash</h5>
         </div>
         <div class="card-body">
-        <form action="{{ route('admin.prize.update', $prize['id']) }}" method="POST">
-    @csrf
-    @method('PUT')
+            <form action="{{ route('admin.prize.update', $prize['id']) }}" method="POST">
+                @csrf
+                @method('PUT')
 
-    <div class="row">
-        <!-- Sovg'a nomi -->
-        <div class="col-6">
-            <div class="row">
-                <div class="col-md-12 mb-3">
-                    <label class="form-label">Sovg‘a nomi <span class="text-danger">*</span></label>
-                    <input type="text" name="name"
-                           value="{{ old('name', $prize['name']) }}"
-                           class="form-control @error('name') is-invalid @enderror"
-                           maxlength="255" required>
-                    @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                    <small class="form-text text-muted">Masalan: <em>"iPhone 14", "Kupon", "Maxfiy paket"</em>.</small>
+                <div class="row">
+                    <!-- Sovg'a nomi -->
+                    <div class="col-6">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Sovg‘a nomi <span class="text-danger">*</span></label>
+                                <input type="text" name="name" value="{{ old('name', $prize['name']) }}"
+                                    class="form-control @error('name') is-invalid @enderror" maxlength="255" required>
+                                @error('name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Masalan: <em>"iPhone 14", "Kupon", "Maxfiy
+                                        paket"</em>.</small>
+                            </div>
+
+                            <!--  Sovg'a kategoriyasi -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"> Sovg‘a kategoriyasi <span class="text-danger">*</span></label>
+                                <select name="category_id" class="form-select @error('category_id') is-invalid @enderror"
+                                    required>
+                                    <option value="">Tanlang...</option>
+                                    @foreach ($prizecategory as $category)
+                                        <option value="{{ $category['id'] }}"
+                                            {{ old('category_id', $prize['category_id']) == $category['id'] ? 'selected' : '' }}>
+                                            {{ $category['display_name'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('category_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!--  Promotion (readonly) -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"> Aksiya (Promotion) <span class="text-danger">*</span></label>
+                                <select class="form-select" disabled>
+                                    <option selected>{{ $prize['promotion']['name']['uz'] ?? 'Tanlanmagan' }}</option>
+                                </select>
+                                <input type="hidden" name="promotion_id" value="{{ $prize['promotion']['id'] }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--  Tavsif -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"> Tavsif <span class="text-danger">*</span></label>
+                        <textarea name="description" class="form-control @error('description') is-invalid @enderror" rows="6" required>{{ old('description', $prize['description']) }}</textarea>
+                        @error('description')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- 📊 Miqdorlar -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Berilgan miqdor</label>
+                        <input type="number" class="form-control" value="{{ $prize['awarded_quantity'] ?? 0 }}" readonly>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Sovg‘alar soni (Umumiy) <span class="text-danger">*</span></label>
+                        <input type="number" name="quantity" class="form-control @error('quantity') is-invalid @enderror"
+                            value="{{ old('quantity', $prize['quantity'] ?? 0) }}" min="0" required>
+                        @error('quantity')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"> Kunlik limit</label>
+                        <input type="number" name="daily_limit"
+                            class="form-control @error('daily_limit') is-invalid @enderror"
+                            value="{{ old('daily_limit', $prize['daily_limit'] ?? '') }}" min="0">
+                        @error('daily_limit')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!--  Index -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"> Sovg‘a darajasi (Index) <span class="text-danger">*</span></label>
+                        <input type="number" name="index" class="form-control @error('index') is-invalid @enderror"
+                            value="{{ old('index', $prize['index'] ?? '') }}" min="1" required>
+                        @error('index')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!--  Probability -->
+                    @php $category = $prize['category']; @endphp
+                    @if ($category['name'] === 'weighted_random')
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label"> Yutuq ehtimoli og‘irligi <span class="text-danger">*</span></label>
+                            <input type="number" name="probability_weight"
+                                class="form-control @error('probability_weight') is-invalid @enderror"
+                                value="{{ old('probability_weight', $prize['probability_weight'] ?? 100) }}" min="0"
+                                required>
+                            @error('probability_weight')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    @endif
+
+                    <!-- ⏳ Vaqt -->
+                    <div class="col-md-4 mb-3">
+                        Boshlanish vaqti <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="valid_from"
+                            class="form-control @error('valid_from') is-invalid @enderror"
+                            value="{{ old('valid_from', \Carbon\Carbon::parse($prize['valid_from'])->format('Y-m-d\TH:i')) }}"
+                            required>
+                        @error('valid_from')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"> Tugash vaqti <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="valid_until"
+                            class="form-control @error('valid_until') is-invalid @enderror"
+                            value="{{ old('valid_until', \Carbon\Carbon::parse($prize['valid_until'])->format('Y-m-d\TH:i')) }}"
+                            required>
+                        @error('valid_until')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- 🔛 Is Active -->
+                    <div class="col-md-4 mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="isActiveSwitch" name="is_active"
+                                value="1" {{ old('is_active', $prize['is_active'] ?? false) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-semibold" for="isActiveSwitch">🔛 Faolmi?</label>
+                        </div>
+                    </div>
                 </div>
 
-                <!--  Sovg'a kategoriyasi -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label"> Sovg‘a kategoriyasi <span class="text-danger">*</span></label>
-                    <select name="category_id" class="form-select @error('category_id') is-invalid @enderror" required>
-                        <option value="">Tanlang...</option>
-                        @foreach ($prizecategory as $category)
-                            <option value="{{ $category['id'] }}"
-                                {{ old('category_id', $prize['category_id']) == $category['id'] ? 'selected' : '' }}>
-                                {{ $category['display_name'] }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('category_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                <!-- 🔘 Submit -->
+                <div class="d-flex justify-content-end">
+                    <a href="#" class="btn btn-outline-secondary me-2">Bekor qilish</a>
+                    <button type="submit" class="btn btn-primary">Yangilash</button>
                 </div>
-
-                <!--  Promotion (readonly) -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label"> Aksiya (Promotion) <span class="text-danger">*</span></label>
-                    <select class="form-select" disabled>
-                        <option selected>{{ $prize['promotion']['name']['uz'] ?? 'Tanlanmagan' }}</option>
-                    </select>
-                    <input type="hidden" name="promotion_id" value="{{ $prize['promotion']['id'] }}" required>
-                </div>
-            </div>
-        </div>
-
-        <!--  Tavsif -->
-        <div class="col-md-6 mb-3">
-            <label class="form-label"> Tavsif <span class="text-danger">*</span></label>
-            <textarea name="description" class="form-control @error('description') is-invalid @enderror"
-                      rows="6" required>{{ old('description', $prize['description']) }}</textarea>
-            @error('description')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <!-- 📊 Miqdorlar -->
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Berilgan miqdor</label>
-            <input type="number" class="form-control" value="{{ $prize['awarded_quantity'] ?? 0 }}" readonly>
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Sovg‘alar soni (Umumiy) <span class="text-danger">*</span></label>
-            <input type="number" name="quantity" class="form-control @error('quantity') is-invalid @enderror"
-                   value="{{ old('quantity', $prize['quantity'] ?? 0) }}" min="0" required>
-            @error('quantity')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <label class="form-label"> Kunlik limit</label>
-            <input type="number" name="daily_limit" class="form-control @error('daily_limit') is-invalid @enderror"
-                   value="{{ old('daily_limit', $prize['daily_limit'] ?? '') }}" min="0">
-            @error('daily_limit')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <!--  Index -->
-        <div class="col-md-4 mb-3">
-            <label class="form-label"> Sovg‘a darajasi (Index) <span class="text-danger">*</span></label>
-            <input type="number" name="index" class="form-control @error('index') is-invalid @enderror"
-                   value="{{ old('index', $prize['index'] ?? '') }}" min="1" required>
-            @error('index')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <!--  Probability -->
-        @php $category = $prize['category']; @endphp
-        @if ($category['name'] === 'weighted_random')
-            <div class="col-md-4 mb-3">
-                <label class="form-label"> Yutuq ehtimoli og‘irligi <span class="text-danger">*</span></label>
-                <input type="number" name="probability_weight"
-                       class="form-control @error('probability_weight') is-invalid @enderror"
-                       value="{{ old('probability_weight', $prize['probability_weight'] ?? 100) }}"
-                       min="0" required>
-                @error('probability_weight')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-        @endif
-
-        <!-- ⏳ Vaqt -->
-        <div class="col-md-4 mb-3">
- Boshlanish vaqti <span class="text-danger">*</span></label>
-            <input type="datetime-local" name="valid_from"
-                   class="form-control @error('valid_from') is-invalid @enderror"
-                   value="{{ old('valid_from', \Carbon\Carbon::parse($prize['valid_from'])->format('Y-m-d\TH:i')) }}"
-                   required>
-            @error('valid_from')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <label class="form-label"> Tugash vaqti <span class="text-danger">*</span></label>
-            <input type="datetime-local" name="valid_until"
-                   class="form-control @error('valid_until') is-invalid @enderror"
-                   value="{{ old('valid_until', \Carbon\Carbon::parse($prize['valid_until'])->format('Y-m-d\TH:i')) }}"
-                   required>
-            @error('valid_until')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <!-- 🔛 Is Active -->
-        <div class="col-md-4 mb-3">
-            <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="isActiveSwitch"
-                       name="is_active" value="1"
-                       {{ old('is_active', $prize['is_active'] ?? false) ? 'checked' : '' }}>
-                <label class="form-check-label fw-semibold" for="isActiveSwitch">🔛 Faolmi?</label>
-            </div>
-        </div>
-    </div>
-
-    <!-- 🔘 Submit -->
-    <div class="d-flex justify-content-end">
-        <a href="#" class="btn btn-outline-secondary me-2">Bekor qilish</a>
-        <button type="submit" class="btn btn-primary">Yangilash</button>
-    </div>
-</form>
+            </form>
         </div>
     </div>
 
@@ -755,9 +760,9 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             $hasAutoBind = $category['name'] === 'auto_bind';
             $hasReceiptScan = $participationTypes->contains(fn($type) => $type['slug'] === 'receipt_scan');
             $langs = ['uz' => "O'zbek", 'ru' => 'Русский', 'kr' => 'Кирилл'];
-$existingMessages = collect($prize['message'] ?? [])->keyBy(
-    fn($msg) => implode(':', [$msg['platform'], $msg['participant_type'], $msg['message_type']]),
-);
+            $existingMessages = collect($prize['message'] ?? [])->keyBy(
+                fn($msg) => implode(':', [$msg['platform'], $msg['participant_type'], $msg['message_type']]),
+            );
         @endphp
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Sovg'a ma'lumotlari</h5>
@@ -789,31 +794,32 @@ $existingMessages = collect($prize['message'] ?? [])->keyBy(
 
         <div class="card-body">
             <div class="collapse table-panel" id="collapse-message">
-                        <div class="border rounded p-3">
-                        <div class="page-header-content d-flex justify-content-between align-items-center">
-                            <h4 class="page-title mb-0">Xabar sozlamalari</h4>
-                            @if ($messagesExists == false)
-                                <div>
-                                    <a href="{{ route('admin.prize_messages.generate', ['id' => $prize['id']]) }}"
-                                        class="btn btn-outline-success ms-3">
-                                        <i class="ph-plus-circle me-1"></i> Default xabarlarni yaratish
-                                    </a>
-                                </div>
-                            @endif
-                        </div>
-                        <table id="messages-table" class="table datatable-button-init-basic">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>ID</th>
-                                    <th>Turi</th>
-                                    <th>Status</th>
-                                    <th>Xabar (UZ)</th>
-                                    <th>Amallar</th>
-                                </tr>
-                            </thead>
-                        </table>
+                <div class="border rounded p-3">
+                    <div class="page-header-content d-flex justify-content-between align-items-center">
+                        <h4 class="page-title mb-0">Xabar sozlamalari</h4>
+                        @if ($messagesExists == false)
+                            <div>
+                                <a href="{{ route('admin.prize_messages.generate', ['id' => $prize['id']]) }}"
+                                    class="btn btn-outline-success ms-3">
+                                    <i class="ph-plus-circle me-1"></i> Default xabarlarni yaratish
+                                </a>
+                            </div>
+                        @endif
                     </div>
+                    <table id="messages-table" class="table datatable-button-init-basic">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Qo‘llanish sohasi</th>
+                                <th>Turi</th>
+                                <th>Platforma</th>
+                                <th>Status</th>
+                                <th>Xabar (UZ)</th>
+                                <th>Amallar</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
             </div>
             <div class="collapse table-panel" id="collapse-actions">
                 <div class="border rounded p-3">
@@ -828,19 +834,15 @@ $existingMessages = collect($prize['message'] ?? [])->keyBy(
                                 <th>Foydalanilgan</th>
                                 <th>Foydalanilgan vaqti</th>
                                 <th>Generation</th>
-                                <th>Platforma</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                     </table>
                 </div>
             </div>
-            @push('scripts')
-            @endpush
-            <!-- Platforms -->
             @if ($hasSmartRandom)
 
-                <div class="card-body p-0" id="collapse-smart">
+                <div class="card-body p-0 collapse" id="collapse-smart">
                     <div class="mb-3">
                         <h6 class="fw-semibold text-muted mb-0">Smart Random shartlari va yutuqli promocodelar</h6>
                     </div>
@@ -997,30 +999,29 @@ $existingMessages = collect($prize['message'] ?? [])->keyBy(
                         @endforeach
 
                     </div>
+                    <div class="border rounded mt-4 p-3">
+                        <div class="page-header-content d-flex justify-content-between align-items-center">
+                            <h4 class="page-title mb-0">Smart shartga to'gri keladigan promocodelar jadvali</h4>
+                        </div>
+                        <table id="promocode-table" class="table datatable-button-init-basic">
+                            <thead>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Promocode</th>
+                                    <th>Foydalanilgan</th>
+                                    <th>Foydalanilgan vaqti</th>
+                                    <th>Generation</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                        </table>
 
-                </div>
-                <div class="border rounded mt-4 p-3">
-                    <div class="page-header-content d-flex justify-content-between align-items-center">
-                        <h4 class="page-title mb-0">Smart shartga to'gri keladigan promocodelar jadvali</h4>
                     </div>
-                    <table id="promocode-table" class="table datatable-button-init-basic">
-                        <thead>
-                            <tr>
-                                <th>#ID</th>
-                                <th>Promocode</th>
-                                <th>Foydalanilgan</th>
-                                <th>Foydalanilgan vaqti</th>
-                                <th>Generation</th>
-                                <th>Platforma</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                    </table>
-
                 </div>
+
             @endif
             @if ($hasAutoBind)
-                <div class="border rounded mt-4 p-3" id="collapse-auto">
+                <div class="border rounded mt-4 p-3 collapse" id="collapse-auto">
                     <div class="page-header-content d-flex justify-content-between align-items-center mb-3">
                         <h4 class="page-title mb-0">Yutuqga promocode bog'lash</h4>
                     </div>
@@ -1079,7 +1080,6 @@ $existingMessages = collect($prize['message'] ?? [])->keyBy(
                                 <th>Foydalanilgan</th>
                                 <th>Foydalanilgan vaqti</th>
                                 <th>Generation</th>
-                                <th>Platforma</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -1093,8 +1093,6 @@ $existingMessages = collect($prize['message'] ?? [])->keyBy(
                     <p class="text-muted">Bu bo‘limda receipt orqali ishtirok etish parametrlari ko‘rsatiladi.</p>
                 </div>
             </div>
-
-
         </div>
     </div>
 @endsection

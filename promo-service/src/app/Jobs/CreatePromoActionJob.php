@@ -13,13 +13,26 @@ use Illuminate\Support\Facades\Log;
 class CreatePromoActionJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected array $data;
+
+    protected array $payload;
+
     /**
      * Create a new job instance.
      */
-    public function __construct(array $data)
+    public function __construct(array $payload)
     {
-        $this->data = $data;
+        // 🔒 Filter faqat kerakli maydonlar
+        $this->payload = array_intersect_key($payload, array_flip([
+            'promotion_id',
+            'promo_code_id',
+            'platform_id',
+            'user_id',
+            'prize_id',
+            'action',
+            'status',
+            'attempt_time',
+            'message',
+        ]));
     }
 
     /**
@@ -28,26 +41,14 @@ class CreatePromoActionJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            PromoAction::create([
-                'promotion_id'   => $this->data['promotion_id'] ?? null,
-                'promo_code_id'  => $this->data['promo_code_id'] ?? null,
-                'user_id'        => $this->data['user_id'] ?? null,
-                'prize_id'       => $this->data['prize_id'] ?? null,
-                'action'         => $this->data['action'] ?? null,
-                'status'         => $this->data['status'] ?? null,
-                'attempt_time'   => $this->data['attempt_time'] ?? now(),
-                'message'        => $this->data['message'] ?? null,
-            ]);
-
-            Log::info('PromoAction created successfully.', ['data' => $this->data]);
+            Log::info("Actions data", ['data' => $this->payload]);
+            PromoAction::create($this->payload);
         } catch (\Throwable $e) {
-            Log::error('Failed to create PromoAction.', [
-                'data' => $this->data,
+            Log::channel('daily')->error('PromoAction yaratishda xatolik', [
+                'payload' => $this->payload,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
-
-            throw $e; // bu xatolik queue loglarida ham ko‘rinadi
+            throw $e;
         }
     }
 }

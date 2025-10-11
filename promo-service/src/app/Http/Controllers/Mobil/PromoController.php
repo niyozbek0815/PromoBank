@@ -10,24 +10,19 @@ use App\Repositories\PromotionRepository;
 use App\Services\ViaPromocodeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 class PromoController extends Controller
 {
     public function __construct(
         private ViaPromocodeService $viaPromocodeService,
         private PromotionRepository $promotionRepository,
-    ) {
-        $this->viaPromocodeService = $viaPromocodeService;
-        $this->promotionRepository = $promotionRepository;
-    }
+    ) {}
 
     public function index()
     {
         $cacheKey = 'promotions:platform:mobile:page:' . request('page', 1);
         $ttl      = now()->addMinutes(5); // 5 daqiqa kesh
         Cache::store('redis')->forget($cacheKey);
-
         $promotions = Cache::store('redis')->remember($cacheKey, $ttl, function () {
             return $this->promotionRepository->getAllPromotionsForMobile();
         });
@@ -36,21 +31,27 @@ class PromoController extends Controller
     public function viaPromocode(SendPromocodeRequest $request, $id)
     {
         $user = $request['auth_user'];
-        $ids       = $user['id'];
-        Log::info("User ID: $ids");
         $req  = $request->validated();
-
-        $data = $this->viaPromocodeService->proccess($req, $user, $id);
-
+        $data = $this->viaPromocodeService->proccess($req, $user, $id,'mobile');
         if (! empty($data['promotion'])) {
             return $this->errorResponse('Promotion not found.', ['token' => ['Promotion not found.']], 404);
         }
-        if (! empty($data['promocode'])) {
-            return $this->errorResponse('Promocode not found.', ['token' => ['Promocode not found.']], 404);
+        // Log::info('Log data', ['data' => $data]);
+        $status = $data['status'] ?? null;
+        $message = $data['message'] ?? null;
+
+        if (in_array($status, ['claim', 'invalid'], true)) {
+            return $this->errorResponse(
+                $message ,
+                ['promocode' => [$message ]],
+                422
+            );
         }
-        return $data['action'] === "claim"
-        ? $this->errorResponse($data['message'] ?? "Kechirasiz promocodedan avval foydalanilgan", ['token' => [$data['message'] ?? "Kechirasiz promocodedan avval foydalanilgan"]], 422)
-        : $this->successResponse($data, $data['message'] ?? "Promocode movaffaqiyatli ro'yhatga olindi");
+
+        return $this->successResponse(
+            $data,
+            $message
+        );
     }
 
     public function listParticipationHistory(Request $request, $promotionId)

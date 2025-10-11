@@ -22,7 +22,6 @@ class Prize extends Model
     ];
 
     protected $casts = [
-        'prize_message' => 'array',
         'valid_from' => 'datetime',
         'valid_until' => 'datetime',
         'is_active' => 'boolean',
@@ -71,10 +70,10 @@ class Prize extends Model
     {
         return $this->hasMany(SubPrize::class);
     }
-    public function message()
-    {
-        return $this->hasMany(PrizeMessage::class);
-    }
+    // public function message()
+    // {
+    //     return $this->hasMany(PrizeMessage::class);
+    // }
     public function prizePromos()
     {
         return $this->hasMany(PrizePromo::class);

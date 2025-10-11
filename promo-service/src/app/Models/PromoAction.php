@@ -15,6 +15,7 @@ class PromoAction extends Model
         'status',
         'attempt_time',
         'message',
+        'platform_id',
     ];
 
     public function promotion()
@@ -31,5 +32,13 @@ class PromoAction extends Model
     public function prize()
     {
         return $this->belongsTo(Prize::class);
+    }
+    public function userCache()
+    {
+        return $this->belongsTo(UsersCache::class, 'user_id', 'user_id');
+    }
+    public function platform()
+    {
+        return $this->belongsTo(Platform::class, 'platform_id');
     }
 }

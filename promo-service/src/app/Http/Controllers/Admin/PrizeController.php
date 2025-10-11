@@ -5,7 +5,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Messages;
 use App\Models\Prize;
 use App\Models\PrizeCategory;
-use App\Models\PrizeMessage;
 use App\Models\PrizePromo;
 use App\Models\PromoCode;
 use App\Models\SmartRandomRule;
@@ -16,15 +15,7 @@ use Yajra\DataTables\Facades\DataTables;
 
 class PrizeController extends Controller
 {
-    // public function index(Request $request)
-    // {
-    //     $query = Prize::query();
-    //     return DataTables::of($query)
-    //         ->addColumn('action', function ($row) {
-    //             return view('admin.prizes.partials.actions', compact('row'));
-    //         })
-    //         ->make(true);
-    // }
+
     public function prizeData(Request $request)  {
         $query = Prize::with([
             'category:id,name,display_name',
@@ -77,7 +68,6 @@ class PrizeController extends Controller
             'promotion:id,name',
             'promotion.platforms:id,name',
             'promotion.participationTypes:id,name,slug',
-            'message',
             'promoActions',
             'smartRandomValues',
         ])
@@ -165,43 +155,7 @@ class PrizeController extends Controller
         }
     }
 
-    public function storeMessage(Request $request, $prizeId)
-    {
-        $validated = $request->validate([
-            'message_type'     => 'required|in:success,fail,info,etc',
-            'platform'         => 'required|in:telegram,web,mobile,sms',
-            'participant_type' => 'nullable|in:qr_code,text_code,receipt_scan,smart_random',
-            'message'          => 'required|array',
-            'message.uz'       => 'required|string',
-            'message.ru'       => 'nullable|string',
-            'message.kr'       => 'nullable|string',
-            'message.en' => 'nullable|string',
 
-        ]);
-
-        $existing = PrizeMessage::where('prize_id', $prizeId)
-            ->where('platform', $validated['platform'])
-            ->where('participant_type', $validated['participant_type'] ?? null)
-            ->where('message_type', $validated['message_type'])
-            ->first();
-
-        if ($existing) {
-            $existing->message = $validated['message'];
-            $existing->save();
-        } else {
-            PrizeMessage::create([
-                'prize_id'         => $prizeId,
-                'platform'         => $validated['platform'],
-                'participant_type' => $validated['participant_type'],
-                'message_type'     => $validated['message_type'],
-                'message'          => $validated['message'],
-            ]);
-        }
-
-        return response()->json([
-            'message' => 'Xabar muvaffaqiyatli saqlandi.',
-        ]);
-    }
     public function storeRules(Request $request, $prizeId)
     {
         $validated = $request->validate([

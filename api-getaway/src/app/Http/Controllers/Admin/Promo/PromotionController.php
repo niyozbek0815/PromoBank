@@ -134,7 +134,7 @@ class PromotionController extends Controller
             $request,
             []// bu yerda file yo‘q, faqat is_enabled + additional_rules keladi
         );
-        dd($response->json());
+        // dd($response->json());
         if ($response->status() === 422) {
             return redirect()->back()
                 ->withErrors($response->json('errors'))

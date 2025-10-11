@@ -25,51 +25,46 @@ class PromoCodeController extends Controller
             'settings' => $settings,
         ]);
     }
-public function data()
-{
-    $query = PromoCode::query()
-        ->leftJoin('platforms', 'promo_codes.platform_id', '=', 'platforms.id')
-        ->leftJoin('promotions', 'promo_codes.promotion_id', '=', 'promotions.id')
-        ->leftJoin('promo_generations', 'promo_codes.generation_id', '=', 'promo_generations.id')
-        ->select(
-            'promo_codes.*',
-            'platforms.name as platform_name',
-            'promo_generations.type as generation_type',
-DB::raw("promotions.name ->> 'uz' as promotion_name")
-        );
+    public function data()
+    {
+        $query = PromoCode::query()
+            ->leftJoin('promotions', 'promo_codes.promotion_id', '=', 'promotions.id')
+            ->leftJoin('promo_generations', 'promo_codes.generation_id', '=', 'promo_generations.id')
+            ->select(
+                'promo_codes.*',
+                'promo_generations.type as generation_type',
+                DB::raw("promotions.name ->> 'uz' as promotion_name")
+            );
 
-    return DataTables::of($query)
-        ->filterColumn('platform_name', function ($query, $keyword) {
-            $query->whereRaw('LOWER(platforms.name) LIKE ?', ["%" . strtolower($keyword) . "%"]);
-        })
-        ->addColumn('promocode', fn($item) => $item->promocode)
-        ->addColumn('is_used', function ($item) {
-            return $item->is_used
-                ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
-                : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
-        })
-        ->editColumn('promotion_name', fn($item) => $item->promotion_name ?? '-')
-        ->addColumn('used_at', fn($item) => $item->used_at?->format('d.m.Y H:i') ?? '-')
-        ->addColumn('generation_name', function ($item) {
-            if (! $item->generation_id) {
-                return '-';
-            }
-            $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
-            return "{$item->generation_id}-idli {$label}";
-        })
-        ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
-        ->addColumn('actions', function ($item) {
-            return view('admin.actions', [
-                'row'    => $item,
-                'routes' => [
-                    'show' => "/admin/promocode/{$item->id}/show",
-                ],
-            ])->render();
-        })
-        ->addColumn('created_at', fn($item) => $item->created_at?->format('d.m.Y H:i') ?? '-')
-        ->rawColumns(['is_used', 'actions'])
-        ->make(true);
-}
+        return DataTables::of($query)
+            ->addColumn('promocode', fn($item) => $item->promocode)
+            ->addColumn('is_used', function ($item) {
+                return $item->is_used
+                    ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
+                    : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
+            })
+            ->editColumn('promotion_name', fn($item) => $item->promotion_name ?? '-')
+            ->addColumn('used_at', fn($item) => $item->used_at?->format('d.m.Y H:i') ?? '-')
+            ->addColumn('generation_name', function ($item) {
+                if (!$item->generation_id) {
+                    return '-';
+                }
+                $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
+                return "{$item->generation_id}-idli {$label}";
+            })
+            ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
+            ->addColumn('actions', function ($item) {
+                return view('admin.actions', [
+                    'row' => $item,
+                    'routes' => [
+                        'show' => "/admin/promocode/{$item->id}/show",
+                    ],
+                ])->render();
+            })
+            ->addColumn('created_at', fn($item) => $item->created_at?->format('d.m.Y H:i') ?? '-')
+            ->rawColumns(['is_used', 'actions'])
+            ->make(true);
+    }
     public function updatePromocodeSettings(Request $request, int $promotionId)
     {
         $validated = $request->validate([
@@ -114,11 +109,95 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
             'message' => "{$validated['count']} ta promo kod generatsiyasi queue orqali ishga tushdi.",
         ]);
     }
+    public function storePromoCodes(Request $request, $promotionId)
+    {
+        $validated = $request->validate([
+            'promocode' => ['required', 'string', 'max:255'],
+            'created_by_user_id' => ['required', 'integer'],
+        ]);
+
+        $code = strtoupper(trim($validated['promocode'])); // normalize
+        $userId = $validated['created_by_user_id'];
+
+        // 1️⃣ Sozlamalarni topamiz
+        $settings = PromotionSetting::where('promotion_id', $promotionId)->first();
+
+        // 1️⃣ Sozlamalarni topamiz
+        if (!$settings) {
+            return response()->json([
+                'success' => false,
+                'errors' => ['settings' => "Promotion uchun sozlamalar topilmadi."],
+            ], 422);
+        }
+        $validationResult = $this->isCodeValidBySettings($code, $settings);
+
+        if ($validationResult !== true) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validationResult,
+            ], 422);
+        }
+        $exists = PromoCode::query()
+            ->when(!$settings->unique_across_all_promotions, fn($q) => $q->where('promotion_id', $promotionId))
+            ->where('promocode', $code)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'errors' => ['promocode' => "Ushbu promokod allaqachon mavjud."],
+            ], 422);
+        }
+        DB::beginTransaction();
+        try {
+            $generation = PromoGeneration::firstOrCreate(
+                [
+                    'promotion_id' => $promotionId,
+                    'type' => 'generated',
+                    'created_by_user_id' => $userId,
+                ]
+            );
+            $promo = PromoCode::create([
+                'generation_id' => $generation->id,
+                'promotion_id' => $promotionId,
+                'promocode' => $code,
+                'is_used' => false,
+            ]);
+
+            DB::commit();
+
+            Log::info("✅ Manual promocode created", [
+                'promotion_id' => $promotionId,
+                'promocode' => $code,
+                'user_id' => $userId,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Promocode muvaffaqiyatli yaratildi",
+                'data' => $promo,
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            Log::error("❌ Manual promocode creation failed: " . $e->getMessage(), [
+                'promotion_id' => $promotionId,
+                'promocode' => $code,
+                'user_id' => $userId,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => "Promocode yaratishda xatolik yuz berdi: " . $e->getMessage(),
+            ], 500);
+        }
+    }
     public function importPromoCodes(Request $request, $promotionId)
     {
         $validated = $request->validate([
             'file' => 'required|file|mimes:xlsx,xls|max:5120',
-            'settings_rules'     => 'nullable|boolean',
+            'settings_rules' => 'nullable|boolean',
             'created_by_user_id' => 'required|integer',
         ]);
         $validated['settings_rules'] = $request->boolean('settings_rules');
@@ -130,7 +209,7 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
             Log::error("❌ Excel faylni o'qishda xatolik: " . $e->getMessage());
             return response()->json([
                 'message' => 'Validation Error',
-                'errors'  => [
+                'errors' => [
                     'file' => ['Excel faylni o‘qib bo‘lmadi. Iltimos, formatni tekshiring.'],
                 ],
             ], 422);
@@ -139,17 +218,17 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
         if (empty($sheets) || empty($sheets[0])) {
             return response()->json([
                 'message' => 'Validation Error',
-                'errors'  => [
+                'errors' => [
                     'file' => ['Excel fayl bo‘sh yoki noto‘g‘ri formatda.'],
                 ],
             ], 422);
         }
         $rows = $sheets[0];
         $header = $sheets[0][0] ?? [];
-        if (! in_array('promocode', array_map('strtolower', $header))) {
+        if (!in_array('promocode', array_map('strtolower', $header))) {
             return response()->json([
                 'message' => 'Validation Error',
-                'errors'  => [
+                'errors' => [
                     'file' => ["Excel faylda 'promocode' ustuni topilmadi. Birinchi qatorda ustun nomlari bo‘lishi va 'promocode' degan ustun mavjud bo‘lishi shart."],
                 ],
             ], 422);
@@ -164,7 +243,10 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
             ], 422);
         }
         Queue::connection('rabbitmq')->push(new ImportPromoCodesJob(
-            $promotionId, $validated['created_by_user_id'], $path, $validated['settings_rules']
+            $promotionId,
+            $validated['created_by_user_id'],
+            $path,
+            $validated['settings_rules']
         ));
 
         return response()->json([
@@ -187,7 +269,7 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
             ->addColumn('used_count', fn($item) => $item->used_promo_codes_count)
             ->addColumn('actions', function ($row) {
                 return view('admin.actions', [
-                    'row'    => $row,
+                    'row' => $row,
                     'routes' => [
                         'show' => "/admin/promocode/{$row->id}/showgenerate",
                     ],
@@ -199,31 +281,27 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
             ->make(true);
     }
 
+
     public function generatePromocodeData(Request $request, $generateId)
     {
         $query = PromoCode::query()
-            ->leftJoin('platforms', 'promo_codes.platform_id', '=', 'platforms.id')
             ->leftJoin('promo_generations', 'promo_codes.generation_id', '=', 'promo_generations.id')
             ->where('promo_codes.generation_id', $generateId)
             ->select(
                 'promo_codes.*',
-                'platforms.name as platform_name',
                 'promo_generations.type as generation_type'
             );
 
         return DataTables::of($query)
-            ->filterColumn('platform_name', function ($query, $keyword) {
-                $query->whereRaw('LOWER(platforms.name) LIKE ?', ["%" . strtolower($keyword) . "%"]);
-            })
             ->addColumn('promocode', fn($item) => $item->promocode)
             ->addColumn('is_used', function ($item) {
                 return $item->is_used
-                ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
-                : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
+                    ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
+                    : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
             })
             ->addColumn('used_at', fn($item) => $item->used_at?->format('d.m.Y H:i') ?? '-')
             ->addColumn('generation_name', function ($item) {
-                if (! $item->generation_id) {
+                if (!$item->generation_id) {
                     return '-';
                 }
                 $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
@@ -232,7 +310,7 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
             ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
             ->addColumn('actions', function ($item) {
                 return view('admin.actions', [
-                    'row'    => $item,
+                    'row' => $item,
                     'routes' => [
                         'show' => "/admin/promocode/{$item->id}/show",
                     ],
@@ -245,27 +323,22 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
     public function promocodeData(Request $request, $promotionId)
     {
         $query = PromoCode::query()
-            ->leftJoin('platforms', 'promo_codes.platform_id', '=', 'platforms.id')
             ->leftJoin('promo_generations', 'promo_codes.generation_id', '=', 'promo_generations.id')
             ->where('promo_codes.promotion_id', $promotionId)->select(
-            'promo_codes.*',
-            'platforms.name as platform_name',
-            'promo_generations.type as generation_type'
-        );
+                'promo_codes.*',
+                'promo_generations.type as generation_type'
+            );
 
         return DataTables::of($query)
-            ->filterColumn('platform_name', function ($query, $keyword) {
-                $query->whereRaw('LOWER(platforms.name) LIKE ?', ["%" . strtolower($keyword) . "%"]);
-            })
             ->addColumn('promocode', fn($item) => $item->promocode)
             ->addColumn('is_used', function ($item) {
                 return $item->is_used
-                ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
-                : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
+                    ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
+                    : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
             })
             ->addColumn('used_at', fn($item) => $item->used_at?->format('d.m.Y H:i') ?? '-')
             ->addColumn('generation_name', function ($item) {
-                if (! $item->generation_id) {
+                if (!$item->generation_id) {
                     return '-';
                 }
                 $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
@@ -274,7 +347,7 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
             ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
             ->addColumn('actions', function ($item) {
                 return view('admin.actions', [
-                    'row'    => $item,
+                    'row' => $item,
                     'routes' => [
                         'show' => "/admin/promocode/{$item->id}/show",
                     ],
@@ -290,7 +363,7 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
         $prize = Prize::with(['smartRandomValues.rule', 'category'])->findOrFail($prizeId);
 
         // Null-check qo‘shdik
-        if (! $prize || ! $prize->category || $prize->category->name !== 'smart_random') {
+        if (!$prize || !$prize->category || $prize->category->name !== 'smart_random') {
             return DataTables::of(collect())->make(true); // Bo‘sh datatable
         }
 
@@ -298,18 +371,16 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
 
         $query = PromoCode::query()
             ->where('promo_codes.promotion_id', $prize->promotion_id)
-            ->leftJoin('platforms', 'promo_codes.platform_id', '=', 'platforms.id')
             ->leftJoin('promo_generations', 'promo_codes.generation_id', '=', 'promo_generations.id')
             ->select(
                 'promo_codes.*',
-                'platforms.name as platform_name',
                 'promo_generations.type as generation_type'
             );
 
         foreach ($rules as $ruleValue) {
-            $key      = $ruleValue->rule->key;
+            $key = $ruleValue->rule->key;
             $operator = $ruleValue->operator;
-            $values   = $ruleValue->values;
+            $values = $ruleValue->values;
 
             $query->where(function ($q) use ($key, $operator, $values) {
                 switch ($key) {
@@ -380,22 +451,19 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
         }
 
         return DataTables::of($query)
-            ->filterColumn('platform_name', function ($query, $keyword) {
-                $query->whereRaw('LOWER(platforms.name) LIKE ?', ["%" . strtolower($keyword) . "%"]);
-            })
             ->addColumn('promocode', fn($item) => $item->promocode)
             ->addColumn('is_used', function ($item) {
                 return $item->is_used
-                ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
-                : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
+                    ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
+                    : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
             })
             ->addColumn('used_at', function ($item) {
                 return $item->used_at
-                ? date('d.m.Y H:i', strtotime($item->used_at))
-                : '-';
+                    ? date('d.m.Y H:i', strtotime($item->used_at))
+                    : '-';
             })
             ->addColumn('generation_name', function ($item) {
-                if (! $item->generation_id) {
+                if (!$item->generation_id) {
                     return '-';
                 }
                 $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
@@ -404,7 +472,7 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
             ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
             ->addColumn('actions', function ($item) {
                 return view('admin.actions', [
-                    'row'    => $item,
+                    'row' => $item,
                     'routes' => [
                         'show' => "/admin/promocode/{$item->id}/show",
                     ],
@@ -412,8 +480,8 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
             })
             ->addColumn('created_at', function ($item) {
                 return $item->created_at
-                ? date('d.m.Y H:i', strtotime($item->created_at))
-                : '-';
+                    ? date('d.m.Y H:i', strtotime($item->created_at))
+                    : '-';
             })
             ->rawColumns(['is_used', 'actions'])
             ->make(true);
@@ -429,14 +497,14 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
         }
         $promocodes = $query->latest('id')->paginate($perPage);
         return response()->json([
-            'data'          => $promocodes->map(function ($item) {
+            'data' => $promocodes->map(function ($item) {
                 return [
-                    'id'   => $item->id,
+                    'id' => $item->id,
                     'code' => $item->promocode, // Frontda text sifatida ishlatiladi
                 ];
             }),
-            'current_page'  => $promocodes->currentPage(),
-            'last_page'     => $promocodes->lastPage(),
+            'current_page' => $promocodes->currentPage(),
+            'last_page' => $promocodes->lastPage(),
             'next_page_url' => $promocodes->nextPageUrl(),
             'prev_page_url' => $promocodes->previousPageUrl(),
         ]);
@@ -445,13 +513,12 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
     {
         $prize = Prize::with('category')->findOrFail($prizeId);
 
-        if (! $prize || $prize->category->name !== 'auto_bind') {
+        if (!$prize || $prize->category->name !== 'auto_bind') {
             return DataTables::of(collect())->make(true); // Bo‘sh datatable
         }
 
         $query = PromoCode::query()
             ->join('prize_promos', 'promo_codes.id', '=', 'prize_promos.promo_code_id')
-            ->leftJoin('platforms', 'promo_codes.platform_id', '=', 'platforms.id')
             ->leftJoin('promo_generations', 'promo_codes.generation_id', '=', 'promo_generations.id')
             ->where('prize_promos.prize_id', $prize->id)
             ->select(
@@ -466,12 +533,12 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
             ->addColumn('is_used', function ($item) {
                 $isUsed = $item->bind_is_used ?? $item->is_used; // PrizePromo ustuniga ustunlik beramiz
                 return $isUsed
-                ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
-                : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
+                    ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
+                    : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
             })
             ->addColumn('used_at', fn($item) => optional($item->used_at)?->format('d.m.Y H:i') ?? '-')
             ->addColumn('generation_name', function ($item) {
-                if (! $item->generation_id) {
+                if (!$item->generation_id) {
                     return '-';
                 }
                 $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
@@ -482,11 +549,11 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
                 $routes = [
                     'show' => "/admin/promocode/{$item->id}/show",
                 ];
-                if (! $isUsed) {
+                if (!$isUsed) {
                     $routes['delete_bind'] = "/admin/prize/{$prize->id}/autobind/{$item->id}";
                 }
                 return view('admin.actions', [
-                    'row'    => $item,
+                    'row' => $item,
                     'routes' => $routes,
                 ])->render();
             })
@@ -494,5 +561,117 @@ DB::raw("promotions.name ->> 'uz' as promotion_name")
             ->addColumn('created_at', fn($item) => optional($item->created_at)?->format('d.m.Y H:i') ?? '-')
             ->rawColumns(['is_used', 'actions'])
             ->make(true);
+    }
+
+    public function show(Request $request, int $id)
+    {
+        $promocode = PromoCode::query()
+            ->with([
+                'generation:id,type',
+                'promotion:id,name',
+                'actions' => function ($q) {
+                    $q->select(
+                        'id',
+                        'promotion_id',
+                        'promo_code_id',
+                        'user_id',
+                        'prize_id',
+                        'platform_id',
+                        'action',
+                        'status',
+                        'attempt_time',
+                        'message'
+                    )
+                        ->with([
+                            'userCache:id,user_id,name,phone,status',
+                            'prize:id,name',
+                            'platform:id,name' // ✅ Platform ma’lumotini olib keladi
+                        ])
+                        ->orderByDesc('attempt_time');
+                },
+                // 🔹 PromoCodeUser (foydalanuvchilar)
+                'codeUsers' => function ($q) {
+                    $q->select(
+                        'id',
+                        'promo_code_id',
+                        'user_id',
+                        'platform_id',
+                        'promotion_id',
+                        'prize_id',
+                        'sub_prize_id',
+                        'created_at'
+                    )
+                        ->with([
+                            'userCache:id,user_id,name,phone,status',
+                            'platform:id,name',
+                            'promotion:id,name',
+                            'prize:id,name',
+                        ]);
+                }
+            ])
+            ->leftJoin('promotions', 'promo_codes.promotion_id', '=', 'promotions.id')
+            ->leftJoin('promo_generations', 'promo_codes.generation_id', '=', 'promo_generations.id')
+            ->select(
+                'promo_codes.*',
+                'promo_generations.type as generation_type',
+                DB::raw("promotions.name ->> 'uz' as promotion_name")
+            )
+            ->findOrFail($id);
+
+        return response()->json([
+            'promocode' => $promocode,
+            'actions' => $promocode->actions,
+            'users' => $promocode->codeUsers,
+        ]);
+    }
+
+    private function isCodeValidBySettings(string $code, PromotionSetting $settings): bool|array
+    {
+        $prefix = $settings->prefix ?? '';
+        $suffix = $settings->suffix ?? '';
+        $charset = $settings->charset ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $exclude = str_split($settings->exclude_chars ?? '');
+        $length = $settings->length ?? strlen($code);
+
+
+        if (strlen($code) !== $length) {
+            return [
+                'promocode' => "Promokod uzunligi {$length} ta belgi bo‘lishi kerak."
+            ];
+        }
+
+        // ❌ 2️⃣ Prefiks tekshiruvi
+        if ($prefix && !str_starts_with($code, $prefix)) {
+            return [
+                'promocode' => "Promokod '{$prefix}' prefiksi bilan boshlanishi kerak."
+            ];
+        }
+
+        // ❌ 3️⃣ Suffiks tekshiruvi
+        if ($suffix && !str_ends_with($code, $suffix)) {
+            return [
+                'promocode' => "Promokod '{$suffix}' suffiksi bilan tugashi kerak."
+            ];
+        }
+
+        // 4️⃣ Asosiy qismni ajratamiz
+        $core = substr($code, strlen($prefix), strlen($code) - strlen($prefix) - strlen($suffix));
+
+        // 5️⃣ Ruxsat etilgan belgilarni tayyorlaymiz
+        $allowed = str_split($charset);
+        foreach ($exclude as $char) {
+            $allowed = array_diff($allowed, [$char]);
+        }
+
+        // ❌ 6️⃣ Belgilarni tekshiramiz
+        foreach (str_split($core) as $ch) {
+            if (!in_array($ch, $allowed, true)) {
+                return [
+                    'promocode' => "Promokod ichida ruxsat etilmagan belgi '{$ch}' mavjud."
+                ];
+            }
+        }
+
+        return true;
     }
 }

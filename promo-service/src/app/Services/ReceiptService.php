@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
-use Termwind\Components\BreakLine;
 
 class ReceiptService
 {
@@ -29,7 +28,7 @@ class ReceiptService
         $this->prizeMessageRepository = $prizeMessageRepository;
     }
 
-    public function proccess($req, $user)
+    public function proccess($req, $user, $platform_name)
     {
         $lang = $req['lang'];
         $entries = collect();
@@ -40,7 +39,8 @@ class ReceiptService
         $selectedPrizes = [];
         $menualPrizeCount = 0;
         $today = Carbon::today();
-        $platformId = $this->getPlatforms();
+        $platformId = $this->getPlatformId($platform_name);
+        Log::info($req['name']);
         $shop = PromotionShop::with('products:id,name')
             ->where('name', $req['name'])
             ->with(['products', 'promotion'])
@@ -195,11 +195,13 @@ class ReceiptService
     {
         $menualPrizeCount++;
     }
-    private function getPlatforms()
+    private function getPlatformId(string $platformCode = 'mobile'): ?int
     {
-        return Cache::store('redis')->remember('platform:mobile:id', now()->addMinutes(60), function () {
-            return $this->platformRepository->getPlatformGetId('mobile');
-        });
+        return Cache::store('redis')->remember(
+            "platform:{$platformCode}:id",
+            now()->addMinutes(60),
+            fn() => $this->platformRepository->getPlatformGetId($platformCode)
+        );
     }
     private function getPrizeMessage($prize, $lang)
     {

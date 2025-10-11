@@ -55,9 +55,6 @@ class CreateReceiptAndProductJob implements ShouldQueue
     public function handle(): void
     {
         $user = $this->user;
-        // PromoCodeUser::query()->delete();
-        // SalesReceipt::query()->delete();
-        // SalesProduct::query()->delete();
         try {
             $receipt_id = DB::transaction(function () use ($user) {
                 $receipt = SalesReceipt::create([

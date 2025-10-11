@@ -151,7 +151,9 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
         Route::get('/', 'index')->name('index');                         // GET /promocode
         Route::get('/data', 'data')->name('data');                       // GET /promocode/data
         Route::get('/create/{promotion_id?}', 'create')->name('create'); // GET /promocode/create
+        Route::get('/{promotion}/show', 'show')->name('show');
         Route::post('/{promotion}/generate', 'generatePromoCodes')->name('generate');
+        Route::post('/{promotion}/store', 'storePromoCodes')->name('store');
         Route::post('/{promotion}/import', 'importPromoCodes')->name('import');
         Route::get('/{promotion}/promocode-settings', 'showPromocodeSettingsForm')->name('settings.form');
         Route::post('/{promotion}/promocode-settings', "updatePromocodeSettings")->name('settings.update');
@@ -220,7 +222,6 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::get('/{prize}/edit', 'edit')->name('edit');
             Route::put('/{prize}', 'update')->name('update');
             Route::get('/{prize}/delete', 'delete')->name('delete');
-            Route::post('/{prize}/message', 'storeMessage')->name('message.store');
             Route::post('/{prize}/smartrules', 'storeRules')->name('smartrules.updateOrCreate');
             Route::post('/{prize}/smartrules/{rule}/delete', 'deleteRule')->name('smartrules.delete');
             Route::post('/{prize}/autobind', 'autobind')->name('attachPromocodes');

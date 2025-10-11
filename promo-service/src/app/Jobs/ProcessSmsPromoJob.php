@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Services\NotificationSender;
+use App\Models\PromoCode;
 use App\Services\ViaPromocodeFromSms;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,49 +15,63 @@ class ProcessSmsPromoJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $phone;
-    public $promocode;
-    public $shortphone;
-    public $correlationId, $created_at;
+    public int $tries = 3;
+    public int $timeout = 90;
 
-
-    public function __construct(string $phone, $promocode, $shortphone, $correlationId, $created_at)
-    {
-        $this->phone = $phone;
-        $this->promocode = $promocode;
-        $this->shortphone = $shortphone;
-        $this->correlationId = $correlationId;
-        $this->created_at = $created_at;
+    public function __construct(
+        public readonly string $phone,
+        public readonly string $promocode,
+        public readonly string $shortPhone,
+        public readonly string $correlationId,
+        public readonly string $createdAt,
+    ) {
+        // ✅ Laravelning ichki traitini ishlatamiz
+        $this->onQueue('promo_queue');
     }
 
-    public function handle(ViaPromocodeFromSms $viaPromocodeFromSms)
+    public function handle(ViaPromocodeFromSms $viaPromocodeFromSms): void
     {
-        Log::info('ProcessSmsPromoJob started in promo-service', ['phone' => $this->phone]);
-
-        $data = [
-            'phone' => $this->phone,
-            'promo_code' => $this->promocode,
-            'short_phone' => $this->shortphone,
-        ];
-
         try {
-            $response = $viaPromocodeFromSms->viaPromocode($data);
+            $platformId = $viaPromocodeFromSms->getPlatforms();
+            $baseUrl = config('services.urls.auth_service');
 
-            if (!empty($response['message'])) {
-                SendSmsNotification::dispatch($this->phone, $response['message'])
-                    ->onQueue('notification_queue');
-                Log::info('SendSmsNotification dispatched from promo-service', [
-                    'phone' => $this->phone,
-                    'message' => $response['message'],
-                ]);
+            $promo = PromoCode::with(['promotion.participationTypesSms'])
+                ->where('promocode', $this->promocode)
+                ->first();
+
+            if (!$promo) {
+                $message = $viaPromocodeFromSms->getMessage(0, null, 'invalid', $this->promocode);
+            } else {
+                $promotion = $promo->promotion;
+                $expectedShortPhone = optional($promotion->participationTypesSms->first())->additional_rules
+                    ? json_decode($promotion->participationTypesSms->first()->additional_rules, true)['phone'] ?? null
+                    : null;
+
+                if ($expectedShortPhone && $expectedShortPhone !== $this->shortPhone) {
+                    return;
+                }
+
+                $result = $viaPromocodeFromSms->proccess($baseUrl, $this->shortPhone, $promo, $promotion, $platformId);
+                $message = $result['message'] ?? null;
+            }
+
+            if (!empty($message)) {
+                Log::info('[SMS_PROMO] Message sent', ['phone' => $this->phone, 'message' => $message]);
+
+                SendSmsNotification::dispatch(
+                    $this->phone,
+                    $message,
+                    $this->correlationId
+                )->onQueue('notification_queue');
             }
         } catch (\Throwable $e) {
-            Log::error('Error in ProcessSmsPromoJob', [
-                'error' => $e->getMessage(),
+            Log::error('❌ [SMS_PROMO] Job failed', [
+                'correlation_id' => $this->correlationId,
                 'phone' => $this->phone,
-                'promo_code' => $this->promocode,
+                'promocode' => $this->promocode,
+                'error' => $e->getMessage(),
             ]);
-            throw $e;
+            $this->fail($e);
         }
     }
 }
