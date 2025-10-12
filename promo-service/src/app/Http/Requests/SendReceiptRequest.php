@@ -23,7 +23,7 @@ class SendReceiptRequest extends FormRequest
     {
         return [
             'name'        => 'required|string|max:255',
-            'chek_id'     => 'required|string|max:255|unique:sales_receipts,chek_id',
+            'chek_id'     => 'required|string|max:255',
             'nkm_number'  => 'required|string|max:255',
             'sn'          => 'required|string|max:255',
             'check_date'  => 'required|date',

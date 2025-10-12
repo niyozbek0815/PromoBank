@@ -36,14 +36,6 @@ class CreateReceiptAndProductJob implements ShouldQueue
         protected  $manualPrizeCount = 0,
         protected   $promotionId,
     ) {
-        $this->data = $data;
-        $this->user = $user;
-        $this->promoCodeId = $promoCodeId;
-        $this->platformId = $platformId;
-        $this->selectedPrizes = $selectedPrizes;
-        $this->subPrizeId = $subPrizeId;
-        $this->manualPrizeCount = $manualPrizeCount;
-        $this->promotionId = $promotionId;
     }
     public function middleware()
     {

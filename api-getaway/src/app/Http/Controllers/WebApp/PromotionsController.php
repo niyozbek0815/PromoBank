@@ -97,6 +97,7 @@ class PromotionsController extends Controller
         $locale = app()->getLocale();
         $request->merge(['lang' => $locale]);
         $response = $this->forwardRequest("POST", $this->promo, "frontend/promotion/{$id}/receipt", $request);
+        Log::info("Response",[$response->json()]);
         return response()->json($response->json());
     }
 }

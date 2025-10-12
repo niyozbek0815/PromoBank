@@ -51,7 +51,7 @@ Route::controller(SupportController::class)->middleware(['guestCheck'])->group(f
 Route::controller(PromoController::class)->prefix('promotions')->group(function () {
     Route::get('/', 'index')->middleware(['guestCheck']);
     Route::post('/{promotion}/participate/promocode', 'viaPromocode')->middleware(['guestCheck:false']);
-    Route::post('/{promotion}/participate/receipt', 'viaReceipt')->middleware(['guestCheck:false']);
+    // Route::post('/{promotion}/participate/receipt', 'viaReceipt')->middleware(['guestCheck:false']);
     Route::get('/{promotion}/participations', 'listParticipationHistory')->middleware(['guestCheck:false']);
 });
 Route::controller(BannerController::class)->prefix('banners')->middleware(['guestCheck'])->group(function () {

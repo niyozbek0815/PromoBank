@@ -35,8 +35,8 @@ class ViaPromocodeService
         $promocodeInput = $req['promocode'];
         $lang = $req['lang'] ?? 'uz';
         $today = Carbon::today();
-        $action = "vote";
-        $status = "pending";
+        $action = "invalid";
+        $status = "fail";
         $message = null;
         $platformId = $this->getPlatformId($platform_name);
         $promotion = $this->getPromotionById($id);
@@ -54,22 +54,24 @@ class ViaPromocodeService
                 $message = $this->getMessage($promotion->id, null, $lang, $status, $promocodeInput, $platform_name);
             } else {
                 if (in_array($promotion->winning_strategy, ['immediate', 'hybrid'])) {
-                    $wonPrize = $this->handlePrizeEvaluation($promocode, $promotion, $today, $lang,$platform_name, $status, $message, $action);
+                    $wonPrize = $this->handlePrizeEvaluation($promocode, $promotion, $today, $lang, $platform_name, $status, $message, $action);
                 }
-                if ($status !== "win") {
-                    $hasManualPrize = Prize::where('promotion_id', $promotion->id)
-                        ->whereHas('category', fn($q) => $q->where('name', 'manual'))
-                        ->exists();
-                    if ($hasManualPrize || in_array($promotion->winning_strategy, ['delayed', 'hybrid'])) {
-                        $action = "manual_win";
-                        $status = "pending";
-                        $message = $this->getMessage($promotion->id, null, $lang, $status, $promocodeInput, $platform_name);
+                if ($status !== 'win') {
+                    if (in_array($promotion->winning_strategy, ['delayed', 'hybrid'])) {
+                        $action = 'manual_win';
+                        $status = 'pending';
                     } else {
-                        // 3️⃣ Hech qanday yutuq va delayed strategiya yo‘q bo‘lsa → "no_win" holati
-                        $action = "no_win";
-                        $status = "lose";
-                        $message = $this->getMessage($promotion->id, null, $lang, $status, $promocodeInput, $platform_name);
+                        $action = 'no_win';
+                        $status = 'lose';
                     }
+                    $message = $this->getMessage(
+                        $promotion->id,
+                        null,
+                        $lang,
+                        $status,
+                        $promocodeInput,
+                        $platform_name
+                    );
                 }
                 Queue::connection('rabbitmq')->push(new PromoCodeConsumeJob(
                     promoCodeId: $promocode->id,
@@ -117,7 +119,7 @@ class ViaPromocodeService
             fn() => $this->platformRepository->getPlatformGetId($platformCode)
         );
     }
-    private function handlePrizeEvaluation($promocode, $promotion, $today, $lang,$platform_name, &$status, &$message, &$action)
+    private function handlePrizeEvaluation($promocode, $promotion, $today, $lang, $platform_name, &$status, &$message, &$action)
     {
         // 1. Auto prize
         $prizePromo = PrizePromo::with(['prize', 'prize.prizeUsers'])
@@ -135,7 +137,14 @@ class ViaPromocodeService
         }
         $smartPrizes = Prize::where('promotion_id', $promotion->id)
             ->whereHas('category', fn($q) => $q->where('name', 'smart_random'))
-            ->with(['smartRandomValues.rule'])->orderBy('index', 'asc')->get();
+            ->withCount([
+                'prizeUsers as today_prize_users_count' => function ($query) use ($today) {
+                    $query->whereDate('created_at', $today);
+                }
+            ])
+            ->where('is_active', true)
+            ->whereColumn('awarded_quantity', '<', 'quantity')
+            ->with(['smartRandomValues.rule'])->orderBy('index', 'asc')->get()->filter(fn($prize) => $prize->today_prize_users_count < $prize->daily_limit);
         foreach ($smartPrizes as $prize) {
             if ($this->smartPrizeValidator->validate($prize, $promocode->promocode)) {
                 $action = "smart_win";
@@ -148,8 +157,8 @@ class ViaPromocodeService
         return isset($wonPrize) ? $wonPrize : null;
 
     }
-    private function getMessage(int $promotionId, ?array $prize, string $lang, string $status, string $promocode, ?string $channel = null) {
-        $channel = $channel ?? 'mobile';
+    private function getMessage(int $promotionId, ?array $prize, string $lang, string $status, string $promocode, ?string $channel = 'mobile')
+    {
         $message = Messages::resolveLocalizedMessage('promo', [
             'status' => $status,
             'prize_id' => $prize['id'] ?? null,

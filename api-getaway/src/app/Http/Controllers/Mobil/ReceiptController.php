@@ -17,6 +17,7 @@ class ReceiptController extends Controller
     public function index(Request $request)
     {
        $response=  $this->forwardRequest("POST", $this->url, '/receipt', $request);
+        // dd($response->json());
         Log::info("data1",['data'=>$response->json()]);
               if ($response instanceof \Illuminate\Http\Client\Response) {
                    return response()->json($response->json());

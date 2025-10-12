@@ -26,10 +26,10 @@ services:
   #     MYSQL_DATABASE: blog
   #     MYSQL_ROOT_PASSWORD: password
   telegram_db:
-    image: postgres
+    image: postgres:18
     container_name: telegram_db
     volumes:
-      - ./postgresql/data:/var/lib/postgresql/data
+      - ./postgresql/data:/var/lib/postgresql/18/data
     ports:
       - "5441:5432"
     environment:

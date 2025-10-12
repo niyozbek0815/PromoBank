@@ -28,6 +28,7 @@ class HomeController extends Controller
             $mergedData = array_merge($mainData, [
                 'promos' => $promoData['data'] ?? $promoData
             ]);
+            // dd($mergedData);
             return view('frontend.home', $mergedData);
         }
         return response()->json(['message' => 'Service error'], 500);

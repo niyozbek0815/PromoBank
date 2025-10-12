@@ -27,10 +27,10 @@ services:
   #     MYSQL_DATABASE: blog
   #     MYSQL_ROOT_PASSWORD: password
   web_db:
-    image: postgres
+    image: postgres:18
     container_name: web_db
     volumes:
-      - ./postgresql/data:/var/lib/postgresql/data
+      - ./postgresql/data:/var/lib/postgresql/18/data
     ports:
       - "5438:5432"
     environment:  

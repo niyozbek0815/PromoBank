@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SendPromocodeRequest;
 use App\Repositories\PromotionRepository;
 use App\Services\ReceiptScraperService;
-use App\Services\ReceiptWebAppService;
+use App\Services\ReceiptService;
 use App\Services\ViaPromocodeService;
 use Illuminate\Support\Facades\Log;
 
@@ -14,9 +14,8 @@ class PromotionsController extends Controller
 {
     public function __construct(
         private ViaPromocodeService $viaPromocodeService,
-
         private PromotionRepository $promotionRepository,
-        private ReceiptWebAppService $receiptWebAppService,
+        private ReceiptService $receiptService,
         private ReceiptScraperService $scraper,
     ) {
 
@@ -46,11 +45,12 @@ class PromotionsController extends Controller
             ], 422);
         }
 
-
-        return $this->successResponse(
-            $data,
-            $message
-        );
+        return response()->json([
+            'success' => true,
+            'status' => $status,
+            'message' => $message,
+            'errors' => null,
+        ]);
     }
     public function viaReceipt(SendPromocodeRequest $request, $id)
     {
@@ -58,20 +58,22 @@ class PromotionsController extends Controller
         Log::info("user", ['user' => $user]);
         $req = $request->validated();
         $data = $this->scraper->scrapeReceipt($req);
-
-        $result = $this->receiptWebAppService->proccess($data, $user);
-        return $result['status'] === 'failed'
+        Log::info("ScrapperData", [$data]);
+        $result = $this->receiptService->proccess($data, $user,'telegram');
+        Log::info("returnData", [$result]);
+        return $result['status'] === 'fail'
             ? response()->json([
                 'success' => false,
-                'status' => 'failed',
-                'message' => $result['message'] ?? 'Xatolik, birozdan so‘ng qayta urinib ko‘ring',
-                'errors' => $result['errors'] ?? [],
+                'status' => 'fail',
+                'message' => $result['messages'] ?? 'Xatolik, birozdan so‘ng qayta urinib ko‘ring',
+                'errors' => ['promocode' => [$result['messages']]],
             ], $data['code'] ?? 422)
             : response()->json([
                 'success' => true,
-                'status' => 'success',
+                'status' => $result['status'],
                 'data' => $data,
-                'message' => $result['message'] ?? 'Xatolik, birozdan so‘ng qayta urinib ko‘ring',
+                'message' => $result['messages'],
+                'errors'=>null
             ]);
     }
 }

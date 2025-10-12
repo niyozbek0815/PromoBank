@@ -30,6 +30,8 @@ return new class extends Migration
                 'auto_win',     // avtomatik prize bog'langan promo yutuq (auto_bind)
                 'smart_win', // smart yutuq (smart_random)
                 'manual_win', // Qo'lda topshiladigan sovga uchun imkoniyat (manual_win)
+                'weighted_win',
+                'points_win',
                 'no_win' //Yuruq yutilmadi
             ]);
 
@@ -44,6 +46,12 @@ return new class extends Migration
                 'promocode_win',     // foydalanuvchi yutgan holat
                 'promocode_fail',    // tizim xatosi yoki ro‘yxatdan o‘tolmadi
                 'promocode_lose',    // yutolmadi, urinish muvaffaqiyatsiz tugadi
+                'sms_claim',   // allaqachon foydalanilgan (kod yoki chek avval ishlatilgan)
+                'sms_pending', // qabul qilingan, natija kutilmoqda
+                'sms_invalid', // noto‘g‘ri yoki mavjud bo‘lmagan kod/chek
+                'sms_win',     // foydalanuvchi yutgan holat
+                'sms_fail',    // tizim xatosi yoki ro‘yxatdan o‘tolmadi
+                'sms_lose',    // yutolmadi, urinish muvaffaqiyatsiz tugadi
             ])->nullable();
 
             $table->timestamp('attempt_time')->nullable();

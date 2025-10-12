@@ -26,10 +26,10 @@ services:
   #     MYSQL_DATABASE: blog
   #     MYSQL_ROOT_PASSWORD: password
   promo_db:
-    image: postgres
+    image: postgres:18
     container_name: promo_db
     volumes:
-      - ./postgresql/data:/var/lib/postgresql/data
+      - ./postgresql/data:/var/lib/postgresql/18/data
     ports:
       - "5434:5432"
     environment:

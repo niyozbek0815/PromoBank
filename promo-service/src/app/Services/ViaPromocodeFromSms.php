@@ -24,8 +24,8 @@ class ViaPromocodeFromSms
 
     public function proccess($baseUrl, $phone, $promo, $promotion, $platformId)
     {
-        $action = 'vote';
-        $status = 'pending';
+        $action = "invalid";
+        $status = "fail";
         $message = null;
         $response = $this->forwarder->forward(
             'POST',
@@ -56,6 +56,20 @@ class ViaPromocodeFromSms
                 if (in_array($promotion->winning_strategy, ['immediate', 'hybrid'])) {
                     $prize = $this->handlePrizeEvaluation($promo, $promotion, $action, $status, $message);
                 }
+                if ($status !== 'win') {
+                    // Holat va action ni aniqlaymiz
+                    [$action, $status] = in_array($promotion->winning_strategy, ['delayed', 'hybrid'])
+                        ? ['manual_win', 'pending']
+                        : ['no_win', 'lose'];
+
+                    // Xabarni bitta chaqiruv bilan olamiz
+                    $message = $this->getMessage(
+                        $promotion->id,
+                        null,
+                        $status,
+                        $promo['promocode']
+                    );
+                }
                 Queue::connection('rabbitmq')->push(new PromoCodeConsumeJob(
                     promoCodeId: $promo->id,
                     userId: $user['id'],
@@ -75,7 +89,7 @@ class ViaPromocodeFromSms
                 'user_id' => $user['id'],
                 'prize_id' => $prize['id'] ?? null,
                 'action' => $action,
-                'status' => "promocode_" . $status,
+                'status' => "sms_" . $status,
                 'attempt_time' => now(),
                 'message' => null,
             ]));
@@ -112,7 +126,7 @@ class ViaPromocodeFromSms
             $action = "auto_win";
             $status = "win";
             $wonPrize = $prizePromo->prize;
-            $message = $this->getMessage($promotion->id, ['id' => $wonPrize['id'], 'name' => $wonPrize['name']], $status, promocode: $promocode['promocode']);
+            $message = $this->getMessage($promotion->id, ['id' => $wonPrize['id'], 'name' => $wonPrize['name']], $status, $promocode['promocode']);
             Queue::connection('rabbitmq')->push(new PrizePromoUpdateJob($prizePromo->id));
         }
 
@@ -125,7 +139,7 @@ class ViaPromocodeFromSms
                 $action = "smart_win";
                 $status = "win";
                 $wonPrize = $smartprize;
-                $message = $this->getMessage($promotion->id, ['id' => $wonPrize['id'], 'name' => $wonPrize['name']], $status, promocode: $promocode['promocode']);
+                $message = $this->getMessage($promotion->id, ['id' => $wonPrize['id'], 'name' => $wonPrize['name']], $status, $promocode['promocode']);
                 break;
             }
         }

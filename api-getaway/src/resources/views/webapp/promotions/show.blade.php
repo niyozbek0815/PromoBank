@@ -306,7 +306,7 @@
 async function sendToServer(url, qrValue, type = "code") {
     const token = window.__ACCESS_TOKEN__;
     if (!token) {
-        Swal.fire("❌ Ro‘yxatdan o‘tish xatoligi", "Token mavjud emas yoki muddati tugagan", "error");
+        Swal.fire("❌ Ro‘yxatdan o‘tish xatoligi", "Token mavjud emas yoki muddati tugagan.", "error");
         return;
     }
 
@@ -359,14 +359,13 @@ async function sendToServer(url, qrValue, type = "code") {
         }
 
         // --- ❌ Boshqa muvaffaqiyatsiz statuslar ---
-        if (!resp.ok || serverData.status === "failed" || serverData.status === "error") {
-            await showMessagesSequential(
-                serverData.message || "Xatolik, birozdan so‘ng qayta urinib ko‘ring",
-                "error",
-                "❌ Xatolik"
-            );
-            return;
-        }
+const isSuccess = resp.ok && serverData.status && ["success", "win"].includes(serverData.status);
+
+if (!isSuccess) {
+    const errMsg = serverData.message || "Xatolik, birozdan so‘ng qayta urinib ko‘ring";
+    await showMessagesSequential(errMsg, "error", "❌ Xatolik");
+    return;
+}
 
         // --- ✅ Muvaffaqiyatli holat ---
         if (serverData.message) {

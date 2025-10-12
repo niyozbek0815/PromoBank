@@ -102,22 +102,38 @@ up:
 	fi
 
 # Migrate Laravel projects
+# Migrate + Seed Laravel projects
 .PHONY: migrate
 migrate:
 	@if [ -z "$(s)" ]; then \
 		for service in $(SERVICES); do \
 			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
-			echo "📦 Migrating $$service (container: $$app_container)..."; \
-			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan migrate; \
+			echo "📦 Migrating & Seeding $$service (container: $$app_container)..."; \
+			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan migrate --seed || { echo "❌ Migration failed for $$service"; exit 1; }; \
 		done; \
 	else \
 		for service in $(s); do \
 			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
-			echo "📦 Migrating $$service (container: $$app_container)..."; \
-			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan migrate; \
+			echo "📦 Migrating & Seeding $$service (container: $$app_container)..."; \
+			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan migrate --seed || { echo "❌ Migration failed for $$service"; exit 1; }; \
 		done; \
 	fi
 
+.PHONY: fresh
+fresh:
+	@if [ -z "$(s)" ]; then \
+		for service in $(SERVICES); do \
+			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
+			echo "🧹 Fresh migrating & seeding $$service (container: $$app_container)..."; \
+			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan migrate:fresh --seed || { echo "❌ Fresh migration failed for $$service"; exit 1; }; \
+		done; \
+	else \
+		for service in $(s); do \
+			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
+			echo "🧹 Fresh migrating & seeding $$service (container: $$app_container)..."; \
+			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan migrate:fresh --seed || { echo "❌ Fresh migration failed for $$service"; exit 1; }; \
+		done; \
+	fi
 # Down services
 .PHONY: down
 down:
