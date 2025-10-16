@@ -6,11 +6,13 @@ use App\Models\Messages;
 use App\Models\Prize;
 use App\Models\PrizeCategory;
 use App\Models\PrizePromo;
+use App\Models\PromoAction;
 use App\Models\PromoCode;
 use App\Models\SmartRandomRule;
 use App\Models\SmartRandomValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 
 class PrizeController extends Controller
@@ -430,6 +432,43 @@ class PrizeController extends Controller
             'message' => 'Promo kod muvaffaqiyatli o‘chirildi.',
         ]);
 
+    }
+
+
+    public function actionsData(Request $request, Prize $prize)
+    {
+        $query = PromoAction::with([
+            'promoCode:id,promocode,is_used,used_at',
+            'promotion:id,name',
+            'platform:id,name',
+            'user:id,phone',
+            'prize:id,name'
+        ])
+            ->where('prize_id', $prize->id)
+            ->orderByDesc('id');
+
+        return DataTables::of($query)
+            ->addColumn('id', fn($item) => $item->id)
+            ->addColumn('promotion_name', fn($item) => $item->promotion?->name ?? '—')
+            ->addColumn('promocode', fn($item) => $item->promoCode?->promocode ?? '—')
+            ->addColumn('is_used', fn($item) => $item->promoCode?->is_used
+                ? '<span class="badge bg-danger">Foydalanilgan</span>'
+                : '<span class="badge bg-success">Yangi</span>')
+            ->addColumn('used_at', fn($item) =>
+                optional($item->promoCode?->used_at)->format('d.m.Y H:i') ?? '—')
+            ->addColumn('platform', fn($item) => $item->platform?->name ?? '—')
+            ->addColumn('user', fn($item) => $item->user?->phone ?? $item->user_id)
+            ->addColumn('prize_name', fn($item) => $item->prize?->name ?? '—')
+
+            ->addColumn('action', fn($item) => $item->action ?? '—')
+
+            ->addColumn('status', fn($item) => $item->status ?? '—')
+            ->addColumn('attempt_time', fn($item) =>
+                optional($item->attempt_time)->format('d.m.Y H:i') ?? '—')
+
+            ->addColumn('message', fn($item) => e(Str::limit($item->message, 120)) ?? '—')
+            ->rawColumns(['is_used', 'status', 'actions'])
+            ->make(true);
     }
 
 }

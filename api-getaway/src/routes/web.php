@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ForSponsorsController;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\MessagesController;
 use App\Http\Controllers\Admin\NotificationsController;
+use App\Http\Controllers\Admin\PlatformPromoSettingsController;
 use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\PrizeCategoryController;
 use App\Http\Controllers\Admin\PrizeController;
@@ -226,6 +227,7 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::post('/{prize}/smartrules/{rule}/delete', 'deleteRule')->name('smartrules.delete');
             Route::post('/{prize}/autobind', 'autobind')->name('attachPromocodes');
             Route::post('/{prize}/autobind/{promocodeId}', 'autobindDelete')->name('detachPromocodes');
+            Route::get('/{prize}/actions-data', 'actionsData')->name('actionsData');
         });
     Route::prefix('prize_messages')
         ->name('prize_messages.')
@@ -391,7 +393,15 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
                     Route::get('/{id}/edit', 'edit')->name('edit');
                     Route::put('/{id}', 'update')->name('update');
                 });
+            Route::controller(PlatformPromoSettingsController::class)
+                ->prefix('platform-promoball')
+                ->name('platform-promoball.')
+                ->group(function () {
+                    Route::get('edit', 'edit')->name('edit');
+                    Route::put('{id}', 'update')->name('update');
+                });
         });
+
 });
 Route::get('/fcm-test', function () {
     return view('fcm-test');

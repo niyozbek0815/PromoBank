@@ -3,6 +3,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
 class PromoCodeController extends Controller
 {
     protected $url;
@@ -190,6 +192,7 @@ class PromoCodeController extends Controller
     public function autobindData(Request $request, $prizeId)
     {
         $response = $this->forwardRequest("GET", $this->url, "front/promocode/{$prizeId}/autobinddata", $request);
+        Log::info('ResponsData', ['data' => $response->json()]);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());
         }

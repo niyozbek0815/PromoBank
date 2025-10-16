@@ -236,6 +236,11 @@
                              <i class="ph ph-chat-dots"></i> Default xabarlar
                             </a>
                         </li>
+                            <li class="nav-item">
+                            <a href="{{ route('admin.settings.platform-promoball.edit') }}"
+                                class="nav-link {{ request()->routeIs('admin.settings.platform-promoball*') ? 'active' : '' }}">
+<i class="ph ph-coins"></i> Promoball sozlamalari                            </a>
+                        </li>
                     </ul>
                 </li>
             </ul>

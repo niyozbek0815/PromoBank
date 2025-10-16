@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Jobs\CreateReceiptAndProductJob;
 use App\Models\Messages;
+use App\Models\PlatformPromoSetting;
 use App\Models\Prize;
 use App\Models\PromotionShop;
 use App\Models\UserPointBalance;
@@ -30,7 +31,7 @@ class ReceiptService
         $manualPrizeCount = 0;
 
         $platformId = $this->getPlatformId($platformName);
-        Log::info("Start");
+        Log::info("Start",['name'=>$req]);
         $shop = PromotionShop::
             where('name', $req['name'])
             ->with(['products', 'promotion'])
@@ -67,6 +68,7 @@ class ReceiptService
     private function handlePrizeEvaluation(PromotionShop $shop, array $req, string $platformName, string $lang): array
     {
         $promotion = $shop->promotion;
+        Log::info("Promotion data", ['promotion' => $promotion]);
         $entries = $this->getEntries($shop, $req);
         Log::info("Entries", [$entries]);
         $selectedPrizes = [];
@@ -88,7 +90,6 @@ class ReceiptService
                 ->get()
                 ->filter(fn($p) => $p->today_prize_users_count < $p->daily_limit);
         }
-        Log::info("weightedPrizes", [$weightedPrizes]);
 
         foreach ($entries as $entry) {
             $selected = false;
@@ -151,13 +152,16 @@ class ReceiptService
         return $entries;
     }
 
+
     private function giveEncouragementPoints(string $lang): array
     {
         $action = 'points_win';
         $status = 'win';
-        $points = config('services.constants.encouragement_points');
-        $messages = ["Siz {$points} promobal oldingiz. yana Skanerlang va promobalarni yig'ishda davom eting!"];
-        return [$action, $status, $messages];
+        $settings = Cache::remember('platform_promo_settings', now()->addHours(1), function () {
+            return PlatformPromoSetting::default();
+        });
+        $message = $settings->getWinMessage($lang);
+        return [$action, $status, [$message]];
     }
 
     private function getMessage(int $promotionId, ?array $prize, string $lang, string $status, string $checkId, string $channel): string

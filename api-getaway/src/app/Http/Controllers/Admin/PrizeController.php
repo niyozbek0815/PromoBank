@@ -156,4 +156,17 @@ class PrizeController extends Controller
             }
         }
     }
+    public function actionsData(Request $request, $prizeId)
+    {
+        $response = $this->forwardRequest(
+            "GET",
+            $this->url,
+            "front/prize/{$prizeId}/actions-data",
+            $request
+        );
+        Log::info("datatables", ['data' => $response->json()]);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json());
+        }
+    }
 }

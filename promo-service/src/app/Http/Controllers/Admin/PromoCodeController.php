@@ -52,7 +52,6 @@ class PromoCodeController extends Controller
                 $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
                 return "{$item->generation_id}-idli {$label}";
             })
-            ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
             ->addColumn('actions', function ($item) {
                 return view('admin.actions', [
                     'row' => $item,
@@ -205,6 +204,7 @@ class PromoCodeController extends Controller
         $fullPath = storage_path('app/public/' . $path);
         try {
             $sheets = Excel::toArray(null, $fullPath);
+            // $sheets = Excel::toArray(new \stdClass, $fullPath);
         } catch (\Throwable $e) {
             Log::error("❌ Excel faylni o'qishda xatolik: " . $e->getMessage());
             return response()->json([
@@ -307,7 +307,6 @@ class PromoCodeController extends Controller
                 $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
                 return "{$item->generation_id}-idli {$label}";
             })
-            ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
             ->addColumn('actions', function ($item) {
                 return view('admin.actions', [
                     'row' => $item,
@@ -344,7 +343,6 @@ class PromoCodeController extends Controller
                 $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
                 return "{$item->generation_id}-idli {$label}";
             })
-            ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
             ->addColumn('actions', function ($item) {
                 return view('admin.actions', [
                     'row' => $item,
@@ -469,7 +467,6 @@ class PromoCodeController extends Controller
                 $label = $item->generation_type === 'import' ? 'import' : 'generatsiya';
                 return "{$item->generation_id}-idli {$label}";
             })
-            ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
             ->addColumn('actions', function ($item) {
                 return view('admin.actions', [
                     'row' => $item,
@@ -523,15 +520,13 @@ class PromoCodeController extends Controller
             ->where('prize_promos.prize_id', $prize->id)
             ->select(
                 'promo_codes.*',
-                'platforms.name as platform_name',
                 'promo_generations.type as generation_type',
-                'prize_promos.is_used as bind_is_used' // PrizePromo dagi is_used
             );
 
         return DataTables::of($query)
             ->addColumn('promocode', fn($item) => $item->promocode)
             ->addColumn('is_used', function ($item) {
-                $isUsed = $item->bind_is_used ?? $item->is_used; // PrizePromo ustuniga ustunlik beramiz
+                $isUsed =  $item->is_used; // PrizePromo ustuniga ustunlik beramiz
                 return $isUsed
                     ? '<span class="badge bg-success bg-opacity-10 text-success">Foydalangan</span>'
                     : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Foydalanilmagan</span>';
@@ -557,7 +552,6 @@ class PromoCodeController extends Controller
                     'routes' => $routes,
                 ])->render();
             })
-            ->addColumn('platform', fn($item) => $item->platform_name ?? '-')
             ->addColumn('created_at', fn($item) => optional($item->created_at)?->format('d.m.Y H:i') ?? '-')
             ->rawColumns(['is_used', 'actions'])
             ->make(true);
@@ -619,9 +613,7 @@ class PromoCodeController extends Controller
             ->findOrFail($id);
 
         return response()->json([
-            'promocode' => $promocode,
-            'actions' => $promocode->actions,
-            'users' => $promocode->codeUsers,
+            'promocode' => $promocode
         ]);
     }
 

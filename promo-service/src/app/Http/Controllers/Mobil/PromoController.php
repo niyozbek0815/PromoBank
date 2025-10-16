@@ -64,8 +64,8 @@ class PromoController extends Controller
             'promotionProduct:id,name',
             'prize:id,name',
         ])
-        ->where('promotion_id', $promotionId)
-            ->where('user_id', $user['id'])
+        // ->where('promotion_id', $promotionId)
+        //     ->where('user_id', $user['id'])
             ->orderByDesc('id')
             ->get();
         return $this->successResponse(PromoHistoryRecource::collection($promo_user), "success");

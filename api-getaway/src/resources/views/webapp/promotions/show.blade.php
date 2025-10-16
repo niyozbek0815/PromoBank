@@ -359,8 +359,7 @@ async function sendToServer(url, qrValue, type = "code") {
         }
 
         // --- ❌ Boshqa muvaffaqiyatsiz statuslar ---
-const isSuccess = resp.ok && serverData.status && ["success", "win"].includes(serverData.status);
-
+const isSuccess = resp.ok && serverData.status && ["success", "win", "pending"].includes(serverData.status);
 if (!isSuccess) {
     const errMsg = serverData.message || "Xatolik, birozdan so‘ng qayta urinib ko‘ring";
     await showMessagesSequential(errMsg, "error", "❌ Xatolik");
@@ -372,7 +371,7 @@ if (!isSuccess) {
             await showMessagesSequential(serverData.message, "success", "✅ Muvaffaqiyatli");
         }
 
-if (type === "receipt" && serverData.data) {
+if (type === "code" && serverData.data) {
             const receipt = serverData.data;
    const receiptHtml = `
     <div style="font-family: monospace; max-width: 360px; margin: 0 auto; border: 1px dashed #999; padding: 15px; background: #fafafa; color: #000;">

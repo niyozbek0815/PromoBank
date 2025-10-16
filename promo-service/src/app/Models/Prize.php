@@ -70,10 +70,6 @@ class Prize extends Model
     {
         return $this->hasMany(SubPrize::class);
     }
-    // public function message()
-    // {
-    //     return $this->hasMany(PrizeMessage::class);
-    // }
     public function prizePromos()
     {
         return $this->hasMany(PrizePromo::class);

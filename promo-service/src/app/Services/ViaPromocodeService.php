@@ -9,11 +9,9 @@ use App\Models\Prize;
 use App\Models\PrizePromo;
 use App\Repositories\PlatformRepository;
 use App\Repositories\PromoCodeRepository;
-use App\Repositories\PromotionMessageRepository;
 use App\Repositories\PromotionRepository;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 
 class ViaPromocodeService
@@ -23,7 +21,6 @@ class ViaPromocodeService
         private PromotionRepository $promotionRepository,
         private PromoCodeRepository $promoCodeRepository,
         private PlatformRepository $platformRepository,
-        private PromotionMessageRepository $promotionMessageRepository,
         private SmartPrizeValidatorService $smartPrizeValidator,
     ) {
     }
@@ -88,6 +85,8 @@ class ViaPromocodeService
                 'promotion_id' => $promotion->id,
                 'promo_code_id' => $promocode->id,
                 'platform_id' => $platformId,
+                'receipt_id'=>null,
+                'shop_id'=>null,
                 'user_id' => $user['id'],
                 'prize_id' => $wonPrize['id'] ?? null,
                 'action' => $action,
@@ -122,12 +121,22 @@ class ViaPromocodeService
     private function handlePrizeEvaluation($promocode, $promotion, $today, $lang, $platform_name, &$status, &$message, &$action)
     {
         // 1. Auto prize
-        $prizePromo = PrizePromo::with(['prize', 'prize.prizeUsers'])
-            ->where('promo_code_id', $promocode->id)
-            ->whereHas('prize', function ($q) use ($today) {
-                $q->where('is_active', true)
-                    ->whereHas('prizeUsers', fn($query) => $query->whereDate('created_at', $today), '<', DB::raw('daily_limit'));
-            })->with('prize')->first();
+
+
+
+        $prizePromo = PrizePromo::whereHas('prize', function ($q) use ($today) {
+            $q->where('is_active', true)
+                ->whereRaw('
+          (
+              SELECT COUNT(*)
+              FROM promo_code_users AS pu
+              WHERE pu.prize_id = prizes.id
+              AND DATE(pu.created_at) = ?
+          ) < prizes.daily_limit
+      ', [$today]);
+        })
+            ->with(['prize', 'prize.prizeUsers'])
+            ->first();
         if ($prizePromo) {
             $action = "auto_win";
             $status = "win";

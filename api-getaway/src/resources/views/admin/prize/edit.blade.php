@@ -172,8 +172,6 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                 }
             });
         });
-    </script>
-    <script>
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -265,8 +263,52 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                 ]
             });
         });
-    </script>
-    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const allPanels = document.querySelectorAll('.table-panel');
+            let currentlyOpen = document.querySelector('#collapse-message');
+            if (currentlyOpen) {
+                const defaultInstance = bootstrap.Collapse.getOrCreateInstance(currentlyOpen);
+                defaultInstance.show();
+
+                // Default aktiv tugma topiladi va unga active qo‘yiladi
+                document.querySelectorAll('.collapse-toggler').forEach(btn => {
+                    const targetId = btn.getAttribute('data-target');
+                    if (targetId === '#collapse-message') {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+            document.querySelectorAll('.collapse-toggler').forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const target = document.querySelector(targetId);
+
+                    // Boshqa panel ochiq bo‘lsa, yopiladi
+                    if (currentlyOpen && currentlyOpen !== target) {
+                        const currentInstance = bootstrap.Collapse.getOrCreateInstance(
+                            currentlyOpen);
+                        currentInstance.hide();
+                    }
+
+                    const targetInstance = bootstrap.Collapse.getOrCreateInstance(target);
+
+                    if (!target.classList.contains('show')) {
+                        targetInstance.show();
+                        currentlyOpen = target;
+                        document.querySelectorAll('.collapse-toggler').forEach(btn => btn.classList
+                            .remove('active'));
+                        this.classList.add('active');
+                    } else {
+                        targetInstance.hide();
+                        currentlyOpen = null;
+                        this.classList.remove('active');
+                    }
+                });
+            });
+        });
+
         function confirmDelete(ruleId) {
             Swal.fire({
                 title: 'Ishonchingiz komilmi?',
@@ -285,68 +327,7 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                 }
             });
         }
-        document.addEventListener('DOMContentLoaded', function() {
-            const toggles = document.querySelectorAll('.collapse-toggler');
-            const panels = document.querySelectorAll('.table-panel');
-            const defaultCollapseId = '#collapse-message'; // ✅ Default ochiq bo‘lishi kerak bo‘lgan collapse
-            let currentOpen = null;
 
-            // Bootstrap collapse instance olish
-            const getCollapseInstance = (el) => bootstrap.Collapse.getOrCreateInstance(el);
-
-            // Boshqa collapse'larni yopish
-            const closeAllExcept = (targetId) => {
-                panels.forEach(panel => {
-                    if ('#' + panel.id !== targetId && panel.classList.contains('show')) {
-                        getCollapseInstance(panel).hide();
-                    }
-                });
-            };
-
-            // Collapse ochish
-            const openCollapse = (targetId) => {
-                const target = document.querySelector(targetId);
-                if (!target) return;
-
-                closeAllExcept(targetId);
-
-                getCollapseInstance(target).show();
-                currentOpen = target;
-
-                // tugmalarni holatini yangilash
-                toggles.forEach(btn => {
-                    const isActive = btn.getAttribute('data-target') === targetId;
-                    btn.classList.toggle('active', isActive);
-                });
-            };
-            const closeCollapse = (targetId) => {
-                const target = document.querySelector(targetId);
-                if (!target) return;
-
-                getCollapseInstance(target).hide();
-                currentOpen = null;
-
-                toggles.forEach(btn => {
-                    if (btn.getAttribute('data-target') === targetId) {
-                        btn.classList.remove('active');
-                    }
-                });
-            };
-            toggles.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const targetId = this.getAttribute('data-target');
-                    const target = document.querySelector(targetId);
-                    const isOpen = target.classList.contains('show');
-
-                    if (isOpen) {
-                        closeCollapse(targetId);
-                    } else {
-                        openCollapse(targetId);
-                    }
-                });
-            });
-            openCollapse(defaultCollapseId);
-        });
         document.addEventListener('DOMContentLoaded', function() {
             const tabs = document.querySelectorAll('.rule-tab');
             const forms = document.querySelectorAll('.rule-form');
@@ -393,18 +374,9 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                 });
             });
         });
-    </script>
-    <script>
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
         $(document).ready(function() {
             const promotionId = "{{ $prize['id'] ?? ($prize->id ?? 'unknown') }}";
             const url = "{{ route('admin.promocode.prizedata', $prize['id'], false) }}";
-            // const promotionId = "3";
-            // const url = "{{ route('admin.promocode.promocodedata', 3, false) }}";
             if ($.fn.DataTable.isDataTable('#promocode-table')) {
                 $('#promocode-table').DataTable().destroy();
             }
@@ -594,7 +566,90 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             });
         });
     </script>
+
+
+
+    <script></script>
+    <script>
+        $(document).ready(function() {
+            const url = "{{ secure_url(route('admin.prize.actionsData', $prize['id'], false)) }}";
+            // Agar oldingi jadval mavjud bo‘lsa — tozalaymiz
+            if ($.fn.DataTable.isDataTable('#actions-table')) {
+                $('#actions-table').DataTable().clear().destroy();
+            }
+
+            const table = $('#actions-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: url,
+                    dataSrc: function(json) {
+                        return json.data || [];
+                    },
+                },
+                responsive: true,
+
+                columns: [{
+                        data: 'id',
+                    },
+                    {
+                        data: 'promocode',
+                    },
+                    {
+                        data: 'platform',
+                    },
+
+                    {
+                        data: 'prize_name',
+                    },
+                    {
+                        data: 'promotion_name',
+                    },
+
+                    {
+                        data: 'user',
+                        render: function(val) {
+                            return val ? `#${val}` : '—';
+                        }
+                    },
+                    {
+                        data: 'action',
+                    },
+                    {
+                        data: 'status',
+
+                    },
+                    {
+                        data: 'message',
+                    },
+
+                    {
+                        data: 'used_at',
+                    },
+                ],
+
+
+
+                buttons: [{
+                        extend: 'copy',
+                    },
+                    {
+                        extend: 'excel',
+                        filename: 'prize_actions'
+                    },
+                    {
+                        extend: 'csv',
+                        filename: 'prize_actions'
+                    },
+                    {
+                        extend: 'print',
+                    }
+                ]
+            });
+        });
+    </script>
 @endpush
+
 @section('content')
     <div class="card">
         <div class="card-header">
@@ -826,15 +881,19 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="page-title mb-0">Xarakatlar jadvali jadvali</h4>
                     </div>
-                    <table class="table">
+                    <table id="actions-table" class="table datatable-button-init-basic">
                         <thead>
                             <tr>
                                 <th>#ID</th>
                                 <th>Promocode</th>
-                                <th>Foydalanilgan</th>
-                                <th>Foydalanilgan vaqti</th>
-                                <th>Generation</th>
-                                <th>Actions</th>
+                                <th>Platforma</th>
+                                <th>Sovg‘a</th>
+                                <th>Promoaksiya</th>
+                                <th>Foydalanuvchi</th>
+                                <th>Harakat turi</th>
+                                <th>Status</th>
+                                <th>Xabar</th>
+                                <th>Foydalangan vaqti</th>
                             </tr>
                         </thead>
                     </table>
@@ -842,7 +901,7 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             </div>
             @if ($hasSmartRandom)
 
-                <div class="card-body p-0 collapse" id="collapse-smart">
+                <div class="card-body p-0 collapse table-panel" id="collapse-smart">
                     <div class="mb-3">
                         <h6 class="fw-semibold text-muted mb-0">Smart Random shartlari va yutuqli promocodelar</h6>
                     </div>
@@ -1066,9 +1125,7 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                             <button type="submit" class="btn btn-primary w-100">Saqlash</button>
                         </div>
                     </form>
-                </div>
-
-                <div class="border rounded mt-4 p-3" id="collapse-auto">
+                        <div class="border rounded mt-4 p-3" >
                     <div class="page-header-content d-flex justify-content-between align-items-center">
                         <h4 class="page-title mb-0">Shu yutuqqa bog'langan promocodelar</h4>
                     </div>
@@ -1085,8 +1142,8 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                         </thead>
                     </table>
                 </div>
+                </div>
             @endif
-            <!-- Receipt -->
             <div class="collapse table-panel" id="collapse-receipt">
                 <div class="border rounded p-3">
                     <h4 class="page-title mb-3">Receipt scan ma'lumotlari</h4>

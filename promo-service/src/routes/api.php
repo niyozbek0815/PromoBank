@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\BannersController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\MessagesController;
+use App\Http\Controllers\Admin\PlatformPromoSettingsController;
 use App\Http\Controllers\Admin\PrizeCategoryController;
 use App\Http\Controllers\Admin\PrizeController;
 use App\Http\Controllers\Admin\PromoCodeController;
@@ -130,6 +131,7 @@ Route::prefix('front')->group(function () {
             Route::post('/{prize}/smartrules', 'storeRules')->name('smartrules.updateOrCreate');
             Route::post('/{prize}/autobind', 'autobind')->name('attachPromocodes');
             Route::post('/{prize}/autobind/{promocodeId}', 'autobindDelete')->name('detachPromocodes');
+            Route::get('/{prize}/actions-data', 'actionsData')->name('actionsData');
         });
     Route::prefix('prize_messages')
         ->name('prize_messages.')
@@ -199,6 +201,15 @@ Route::prefix('front')->group(function () {
                 ->group(function () {
                     Route::get('/data', 'data')->name('data');
                     Route::get('/{id}/edit', 'edit')->name('edit');
-                    Route::match(['put', 'patch'], '/{id}', 'update')->name('update');                });
+                    Route::match(['put', 'patch'], '/{id}', 'update')->name('update');
+                });
+
+            Route::controller(PlatformPromoSettingsController::class)
+                ->prefix('platform-promoball')
+                ->name('platform-promoball.')
+                ->group(function () {
+                    Route::get('edit', 'edit')->name('edit');
+                    Route::put('{id}', 'update')->name('update');
+                });
         });
 });

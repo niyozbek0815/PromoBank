@@ -89,6 +89,8 @@ class ViaPromocodeFromSms
                 'user_id' => $user['id'],
                 'prize_id' => $prize['id'] ?? null,
                 'action' => $action,
+                'receipt_id' => null,
+                'shop_id' => null,
                 'status' => "sms_" . $status,
                 'attempt_time' => now(),
                 'message' => null,
@@ -115,13 +117,20 @@ class ViaPromocodeFromSms
     }
     private function handlePrizeEvaluation($promocode, $promotion, &$action, &$status, &$message)
     {
-        $prizePromo = PrizePromo::with(['prize.prizeUsers'])
-            ->where('promo_code_id', $promocode->id)
-            ->whereHas('prize', function ($q) {
-                $q->where('is_active', true)
-                    ->whereHas('prizeUsers', fn($query) => $query->whereDate('created_at', Carbon::today()), '<', DB::raw('daily_limit'));
-            })->with('prize')->first();
 
+        $prizePromo = PrizePromo::whereHas('prize', function ($q) use ($today) {
+            $q->where('is_active', true)
+                ->whereRaw('
+          (
+              SELECT COUNT(*)
+              FROM promo_code_users AS pu
+              WHERE pu.prize_id = prizes.id
+              AND DATE(pu.created_at) = ?
+          ) < prizes.daily_limit
+      ', [Carbon::today()]);
+        })
+            ->with(['prize', 'prize.prizeUsers'])
+            ->first();
         if ($prizePromo) {
             $action = "auto_win";
             $status = "win";

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Mobil;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SendReceiptRequest;
+use App\Models\SalesReceipt;
 use App\Services\ReceiptService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ReceiptController extends Controller
 {
@@ -17,10 +19,10 @@ class ReceiptController extends Controller
     {
         $user = $request['auth_user'];
         $req = $request->validated();
-        // PromoCodeUser::query()->delete();
-        // SalesReceipt::query()->delete();
-        $data = $this->receiptService->proccess($req, $user,'mobile');
-        if($data['status']=="failed"){
+        Log::info("Request", ['data' => $req]);
+        SalesReceipt::query()->delete();
+          $data = $this->receiptService->proccess($req, $user,'mobile');
+        if($data['status']=="fail"){
             return $this->errorResponse($data, "failed");
         }else{
             return $this->successResponse($data, "success");

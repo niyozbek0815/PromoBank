@@ -21,8 +21,8 @@ return new class extends Migration
             $table->timestamp('check_date'); // Check vaqti
             $table->decimal('qqs_summa', 12, 2); // QQS summasi
             $table->decimal('summa', 12, 2); // Umumiy summa
-            $table->decimal('lat', 10, 7); // GPS latitude
-            $table->decimal('long', 10, 7); // GPS longitude
+            $table->decimal('lat', 10, 7)->nullable();
+            $table->decimal('long', 10, 7)->nullable();
             $table->string('payment_type')->nullable();
             $table->foreignId('user_id'); // Kim yuklagan
             $table->timestamps(); // created_at va updated_at
