@@ -32,6 +32,7 @@ class SponsorsSeeder extends Seeder
                         'uz' => $data['alt'],
                         'ru' => $data['alt'],
                         'kr' => $data['alt'],
+                        'en' => $data['alt'],
                     ],
                     'url'    => $data['url'],
                     'weight' => $index + 1,

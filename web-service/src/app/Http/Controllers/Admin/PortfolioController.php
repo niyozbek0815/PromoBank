@@ -82,12 +82,15 @@ class PortfolioController extends Controller
             'title.uz'    => 'required|string|max:255',
             'title.ru'    => 'required|string|max:255',
             'title.kr'    => 'required|string|max:255',
+            'title.en' => 'required|string|max:255',
             'subtitle.uz' => 'required|string|max:255',
             'subtitle.ru' => 'required|string|max:255',
             'subtitle.kr' => 'required|string|max:255',
+            'subtitle.en' => 'required|string|max:255',
             'body.uz'     => 'nullable|string',
             'body.ru'     => 'nullable|string',
             'body.kr'     => 'nullable|string',
+            'body.en' => 'nullable|string',
             'position'    => 'required|integer|min:0',
             'is_featured' => 'nullable|boolean',
             'status'      => 'nullable|boolean',
@@ -116,9 +119,7 @@ class PortfolioController extends Controller
         ]);
     }
 
-    /**
-     * Edit
-     *
+
     public function edit($id)
     {
         $portfolio = Portfolio::findOrFail($id);
@@ -145,15 +146,18 @@ class PortfolioController extends Controller
         $portfolio = Portfolio::findOrFail($id);
 
         $validated = $request->validate([
-            'title.uz'    => 'required|string|max:255',
-            'title.ru'    => 'required|string|max:255',
-            'title.kr'    => 'required|string|max:255',
+            'title.uz' => 'required|string|max:255',
+            'title.ru' => 'required|string|max:255',
+            'title.kr' => 'required|string|max:255',
+            'title.en' => 'required|string|max:255',
             'subtitle.uz' => 'required|string|max:255',
             'subtitle.ru' => 'required|string|max:255',
             'subtitle.kr' => 'required|string|max:255',
-            'body.uz'     => 'nullable|string',
-            'body.ru'     => 'nullable|string',
-            'body.kr'     => 'nullable|string',
+            'subtitle.en' => 'required|string|max:255',
+            'body.uz' => 'nullable|string',
+            'body.ru' => 'nullable|string',
+            'body.kr' => 'nullable|string',
+            'body.en' => 'nullable|string',
             'position'    => 'required|integer|min:0',
             'is_featured' => 'nullable|boolean',
             'status'      => 'required|boolean',
@@ -174,6 +178,12 @@ class PortfolioController extends Controller
             $tempPath = $file->store('tmp', 'public');
             Log::info("📎 portfolio image yangilandi... " . $tempPath);
             Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'portfolio', $portfolio->id));
+        }else{
+            return response()->json([
+                'success' => true,
+                'message' => '✅',
+                'data' => $portfolio->fresh(),
+            ]);
         }
 
         return response()->json([

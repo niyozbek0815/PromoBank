@@ -6,17 +6,19 @@
     <div class="card shadow-sm border-0">
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
             <h5 class="mb-0 fw-bold">Umumiy sozlamalar</h5>
-            <a href="{{ route('admin.settings.edit') }}" class="btn btn-primary ">
-                </i>Tahrirlash
+            <a href="{{ route('admin.settings.edit') }}" class="btn btn-primary">
+                Tahrirlash
             </a>
         </div>
+
         <div class="card-body">
 
+            {{-- Logotiplar --}}
             <div class="row">
                 {{-- Navbar Logo --}}
                 <div class="col-6 mb-4">
                     <h6 class="fw-bold text-secondary">Navbar logotipi</h6>
-                    <div class="border rounded p-3 bg-light">
+                    <div class="border rounded p-3 bg-light text-center">
                         @if(!empty($settings['navbar_logo']))
                             <img src="{{ asset($settings['navbar_logo']) }}" alt="Navbar logotipi" class="img-thumbnail" height="60">
                         @else
@@ -28,7 +30,7 @@
                 {{-- Footer Logo --}}
                 <div class="col-6 mb-4">
                     <h6 class="fw-bold text-secondary">Footer logotipi</h6>
-                    <div class="border rounded p-3 bg-light">
+                    <div class="border rounded p-3 bg-light text-center">
                         @if(!empty($settings['footer_logo']))
                             <img src="{{ asset($settings['footer_logo']) }}" alt="Footer logotipi" class="img-thumbnail" height="60">
                         @else
@@ -38,6 +40,7 @@
                 </div>
             </div>
 
+            {{-- Hero va Footer maʼlumotlar --}}
             <div class="row">
                 {{-- Hero Title --}}
                 <div class="col-6 mb-4">
@@ -45,7 +48,8 @@
                     <div class="border rounded p-3 bg-light">
                         <p class="mb-1">🇺🇿 {{ $settings['hero_title']['uz'] ?? 'O‘zbekcha matn kiritilmagan' }}</p>
                         <p class="mb-1">🇷🇺 {{ $settings['hero_title']['ru'] ?? 'Ruscha matn kiritilmagan' }}</p>
-                        <p class="mb-0">🇺🇿 {{ $settings['hero_title']['kr'] ?? 'Krillcha matn kiritilmagan' }}</p>
+                        <p class="mb-1">🇺🇿 {{ $settings['hero_title']['kr'] ?? 'Krillcha matn kiritilmagan' }}</p>
+                        <p class="mb-0">🇬🇧 {{ $settings['hero_title']['en'] ?? 'Inglizcha matn kiritilmagan' }}</p>
                     </div>
                 </div>
 
@@ -55,11 +59,13 @@
                     <div class="border rounded p-3 bg-light">
                         <p class="mb-1">🇺🇿 {{ $settings['footer_description']['uz'] ?? 'O‘zbekcha tavsif kiritilmagan' }}</p>
                         <p class="mb-1">🇷🇺 {{ $settings['footer_description']['ru'] ?? 'Ruscha tavsif kiritilmagan' }}</p>
-                        <p class="mb-0">🇺🇿 {{ $settings['footer_description']['kr'] ?? 'Krillcha tavsif kiritilmagan' }}</p>
+                        <p class="mb-1">🇺🇿 {{ $settings['footer_description']['kr'] ?? 'Krillcha tavsif kiritilmagan' }}</p>
+                        <p class="mb-0">🇬🇧 {{ $settings['footer_description']['en'] ?? 'Inglizcha tavsif kiritilmagan' }}</p>
                     </div>
                 </div>
             </div>
 
+            {{-- Footer pastki qismi va tillar --}}
             <div class="row">
                 {{-- Footer Bottom --}}
                 <div class="col-6 mb-4">
@@ -68,7 +74,8 @@
                         <p class="mb-0">
                             🇺🇿 {{ $settings['footer_bottom']['uz'] ?? 'Matn kiritilmagan' }} <br>
                             🇷🇺 {{ $settings['footer_bottom']['ru'] ?? 'Текст не задан' }} <br>
-                            🇺🇿 {{ $settings['footer_bottom']['kr'] ?? 'Матн киритилмаган' }}
+                            🇺🇿 {{ $settings['footer_bottom']['kr'] ?? 'Матн киритилмаган' }} <br>
+                            🇬🇧 {{ $settings['footer_bottom']['en'] ?? 'Text not provided' }}
                         </p>
                     </div>
                 </div>

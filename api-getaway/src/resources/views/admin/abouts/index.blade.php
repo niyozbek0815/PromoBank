@@ -27,14 +27,17 @@
             <div class="col-lg-7">
                 {{-- Subtitle --}}
                 <div class="row">
-                    <h4 class="text-secondary col-4 mb-3">
+                    <h4 class="text-secondary col-3 mb-3">
                         🇺🇿 {{ $about['subtitle']['uz'] ?? '' }}
                     </h4>
-                    <h4 class="text-secondary col-4 mb-3">
+                    <h4 class="text-secondary col-3 mb-3">
                         🇷🇺 {{ $about['subtitle']['ru'] ?? '' }}
                     </h4>
-                    <h4 class="text-secondary col-4 mb-3">
-                        🇺🇿 {{ $about['subtitle']['kr'] ?? '' }}
+                    <h4 class="text-secondary col-3 mb-3">
+                        🇰🇷 {{ $about['subtitle']['kr'] ?? '' }}
+                    </h4>
+                    <h4 class="text-secondary col-3 mb-3">
+                        🇬🇧 {{ $about['subtitle']['en'] ?? '' }}
                     </h4>
                 </div>
 
@@ -42,30 +45,31 @@
                 <h2 class="fw-bold mb-3">
                     🇺🇿 {{ $about['title']['uz'] ?? '' }} <br>
                     🇷🇺 {{ $about['title']['ru'] ?? '' }} <br>
-                    🇺🇿 {{ $about['title']['kr'] ?? '' }}
+                    🇰🇷 {{ $about['title']['kr'] ?? '' }} <br>
+                    🇬🇧 {{ $about['title']['en'] ?? '' }}
                 </h2>
 
                 {{-- Description --}}
                 <p class="mb-4">
                     🇺🇿 {{ $about['description']['uz'] ?? '' }} <br>
                     🇷🇺 {{ $about['description']['ru'] ?? '' }} <br>
-                    🇺🇿 {{ $about['description']['kr'] ?? '' }}
+                    🇰🇷 {{ $about['description']['kr'] ?? '' }} <br>
+                    🇬🇧 {{ $about['description']['en'] ?? '' }}
                 </p>
-
-             <div class="row">
-    @if (!empty($about['list']))
-        @foreach (['uz' => '🇺🇿', 'ru' => '🇷🇺', 'kr' => '🇰🇷'] as $lang => $flag)
-            <div class="col-md-4 mb-3">
-                <h6 class="fw-bold mb-2">{{ $flag }}</h6>
-                <ul class="list-unstyled ms-2">
-                    @foreach ($about['list'][$lang] ?? [] as $item)
-                        <li>- {{ $item }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endforeach
-    @endif
-</div>
+                <div class="row">
+                    @if (!empty($about['list']))
+                        @foreach (['uz' => '🇺🇿', 'ru' => '🇷🇺', 'kr' => '🇰🇷', 'en' => '🇬🇧'] as $lang => $flag)
+                            <div class="col-md-3 mb-3">
+                                <h6 class="fw-bold mb-2">{{ $flag }}</h6>
+                                <ul class="list-unstyled ms-2">
+                                    @foreach ($about['list'][$lang] ?? [] as $item)
+                                        <li>- {{ $item }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
 
             </div>
         </div>

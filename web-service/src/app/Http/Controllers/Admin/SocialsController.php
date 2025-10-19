@@ -59,6 +59,7 @@ class SocialsController extends Controller
             'label.uz'     => 'nullable|string|max:255',
             'label.ru'     => 'nullable|string|max:255',
             'label.kr'     => 'nullable|string|max:255',
+            'label.en' => 'nullable|string|max:255',
             'position'     => 'required|integer|min:0',
             'status'       => 'nullable|boolean',
         ]);
@@ -109,6 +110,7 @@ class SocialsController extends Controller
             'label.uz'     => 'nullable|string|max:255',
             'label.ru'     => 'nullable|string|max:255',
             'label.kr'     => 'nullable|string|max:255',
+            'label.en' => 'nullable|string|max:255',
             'position'     => 'required|integer|min:0',
             'status'       => 'required|boolean',
         ]);

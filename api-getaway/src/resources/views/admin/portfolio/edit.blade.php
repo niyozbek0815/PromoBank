@@ -92,8 +92,8 @@
 
                 {{-- Title fields --}}
                 <div class="row">
-                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча'] as $lang => $label)
-                        <div class="col-lg-4 mb-3">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча','en'=>"English"] as $lang => $label)
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label">Sarlavha ({{ $label }})</label>
                             <input type="text" class="form-control" name="title[{{ $lang }}]"
                                    value="{{ old('title.' . $lang, $portfolio['title'][$lang] ?? '') }}" required>
@@ -104,8 +104,8 @@
 
                 {{-- Subtitle fields --}}
                 <div class="row">
-                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча'] as $lang => $label)
-                        <div class="col-lg-4 mb-3">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча','en'=>"English"] as $lang => $label)
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label">Sub-sarlavha ({{ $label }})</label>
                             <input type="text" class="form-control" name="subtitle[{{ $lang }}]" required
                                    value="{{ old('subtitle.' . $lang, $portfolio['subtitle'][$lang] ?? '') }}">
@@ -116,8 +116,8 @@
 
                 {{-- Body fields --}}
                 <div class="row">
-                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча'] as $lang => $label)
-                        <div class="col-lg-4 mb-3">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча','en'=>"English"] as $lang => $label)
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label">Matn ({{ $label }})</label>
                             <textarea class="form-control" name="body[{{ $lang }}]" rows="3">{{ old('body.' . $lang, $portfolio['body'][$lang] ?? '') }}</textarea>
                             <small class="text-muted">Portfolio haqida ma’lumot (ixtiyoriy)</small>

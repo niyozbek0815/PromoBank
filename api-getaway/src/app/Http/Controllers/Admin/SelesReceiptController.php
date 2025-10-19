@@ -32,15 +32,23 @@ Log::info('Fetching sales receipts data', $response->json());
         return response()->json(['message' => 'Promo service error'], 500);
     }
 
-    public function wonPromotionSelesReceipts(Request $request, $promotion_id)
+    public function winningByPromotion(Request $request, $promotion_id)
     {
-        $endpoint = "front/seles_receipts/{$promotion_id}/promotion_receipt";
+        // ✅ to‘g‘rilangan — underscore emas, hyphen ishlatilgan
+        $endpoint = "front/sales-receipts/{$promotion_id}/winning";
+
         $response = $this->forwardRequest("GET", $this->url, $endpoint, $request);
+
+        Log::info('Fetching winning sales receipts', [
+            'promotion_id' => $promotion_id,
+            'endpoint' => $endpoint,
+            'response' => $response instanceof \Illuminate\Http\Client\Response ? $response->json() : 'invalid'
+        ]);
+
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());
         }
 
         return response()->json(['message' => 'Promo service error'], 500);
-
     }
 }

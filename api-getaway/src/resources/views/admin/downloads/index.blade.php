@@ -26,37 +26,39 @@
             {{-- Right: Text content --}}
             <div class="col-lg-6">
                          {{-- Subtitle --}}
-                <h4 class="text-secondary mb-3">
-                    🇺🇿 {{ $download['subtitle']['uz'] ?? '' }} <br>
-                    🇷🇺 {{ $download['subtitle']['ru'] ?? '' }} <br>
-                    🇺🇿 {{ $download['subtitle']['kr'] ?? '' }}
-                </h4>
-                {{-- Title --}}
-                <h1 class="fw-bold mb-3">
-                    🇺🇿 {{ $download['title']['uz'] ?? '' }} <br>
-                    🇷🇺 {{ $download['title']['ru'] ?? '' }} <br>
-                    🇺🇿 {{ $download['title']['kr'] ?? '' }}
-                </h1>
+         <h4 class="text-secondary mb-3">
+    🇺🇿 {{ $download['subtitle']['uz'] ?? '' }} <br>
+    🇷🇺 {{ $download['subtitle']['ru'] ?? '' }} <br>
+    🇺🇿 {{ $download['subtitle']['kr'] ?? '' }} <br>
+    🇬🇧 {{ $download['subtitle']['en'] ?? '' }}
+</h4>
 
+{{-- Title --}}
+<h1 class="fw-bold mb-3">
+    🇺🇿 {{ $download['title']['uz'] ?? '' }} <br>
+    🇷🇺 {{ $download['title']['ru'] ?? '' }} <br>
+    🇺🇿 {{ $download['title']['kr'] ?? '' }} <br>
+    🇬🇧 {{ $download['title']['en'] ?? '' }}
+</h1>
 
+{{-- Description --}}
+<p class="mb-4">
+    🇺🇿 {{ $download['description']['uz'] ?? '' }} <br>
+    🇷🇺 {{ $download['description']['ru'] ?? '' }} <br>
+    🇺🇿 {{ $download['description']['kr'] ?? '' }} <br>
+    🇬🇧 {{ $download['description']['en'] ?? '' }}
+</p>
 
-                {{-- Description --}}
-                <p class="mb-4">
-                    🇺🇿 {{ $download['description']['uz'] ?? '' }} <br>
-                    🇷🇺 {{ $download['description']['ru'] ?? '' }} <br>
-                    🇺🇿 {{ $download['description']['kr'] ?? '' }}
-                </p>
-
-                {{-- Links --}}
-                <div class="d-flex flex-wrap gap-2">
-                    @foreach ($download['links'] ?? [] as $link)
-                        @if (!empty($link['url']))
-                            <a href="{{ $link['url'] }}" target="_blank" class="btn btn-outline-primary">
-                                {{ $link['label']['uz'] ?? ucfirst($link['type']) }}
-                            </a>
-                        @endif
-                    @endforeach
-                </div>
+{{-- Links --}}
+<div class="d-flex flex-wrap gap-2">
+    @foreach ($download['links'] ?? [] as $link)
+        @if (!empty($link['url']))
+            <a href="{{ $link['url'] }}" target="_blank" class="btn btn-outline-primary">
+                {{ $link['label']['uz'] ?? $link['label']['en'] ?? ucfirst($link['type']) }}
+            </a>
+        @endif
+    @endforeach
+</div>
             </div>
         </div>
     </div>

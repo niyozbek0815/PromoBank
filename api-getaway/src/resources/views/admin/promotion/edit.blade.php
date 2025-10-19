@@ -337,7 +337,7 @@
             });
         });
         $(document).ready(function() {
-            const url = "{{ route('admin.seles_receipts.won_seles_receipts', $promotion['id'], false) }}";
+            const url = "{{ route('admin.sales_receipts.winning_by_promotion', $promotion['id'], false) }}";
 
             if ($.fn.DataTable.isDataTable('#promotion-receipts-table')) {
                 $('#promotion-receipts-table').DataTable().destroy();

@@ -47,7 +47,7 @@ class SelesReceiptController extends Controller
             ->rawColumns(['actions', 'user_info']) // HTML chiqishi uchun
             ->make(true);
     }
-    public function wonPromotionSelesReceipts($promotionId)
+    public function winningByPromotion($promotionId)
     {
         $query = SalesReceipt::query()
             ->select(

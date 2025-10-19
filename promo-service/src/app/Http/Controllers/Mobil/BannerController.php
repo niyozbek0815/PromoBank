@@ -11,12 +11,14 @@ class BannerController extends Controller
 
         public function index()
     {
-        $banners = Banner::active()->get()->map(function ($banner) {
+        $banners = Banner::where('status',true)->get()->map(function ($banner) {
             return [
                 'title'       => [
                     'uz' => $banner->getTranslation('title', 'uz') ?? null,
                     'ru' => $banner->getTranslation('title', 'ru') ?? null,
                     'kr' => $banner->getTranslation('title', 'kr') ?? null,
+                    'en' => $banner->getTranslation('title', 'kr') ?? null,
+
                 ],
                 'media'       => [
                     'uz' => $banner->banners_uz ? [
@@ -29,6 +31,10 @@ class BannerController extends Controller
                     ] : null,
                     'kr' => $banner->banners_kr ? [
                         'url'       => $banner->banners_kr['full_url'] ?? $banner->banners_kr['url'],
+                        'mime_type' => $banner->banners_kr['mime_type'] ?? null,
+                    ] : null,
+                    'en' => $banner->banners_en ? [
+                        'url' => $banner->banners_kr['full_url'] ?? $banner->banners_kr['url'],
                         'mime_type' => $banner->banners_kr['mime_type'] ?? null,
                     ] : null,
                 ],

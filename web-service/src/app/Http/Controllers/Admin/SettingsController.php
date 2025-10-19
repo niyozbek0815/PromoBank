@@ -72,7 +72,7 @@ class SettingsController extends Controller
             if (isset($data[$field])) {
                 if ($field === 'languages') {
                     $encoded = json_encode([
-                        'available' => $data['languages']['available'] ?? ['uz', 'ru', 'kr'],
+                        'available' => $data['languages']['available'] ?? ['uz', 'ru', 'kr','en'],
                         'default'   => $data['languages']['default'] ?? 'uz',
                     ], JSON_UNESCAPED_UNICODE);
                 } else {

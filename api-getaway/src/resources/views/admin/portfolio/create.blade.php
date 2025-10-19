@@ -51,8 +51,8 @@
 
                         {{-- Title fields --}}
                         <div class="row">
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
+                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча','en'=>"English"] as $lang => $label)
+                                <div class="col-lg-3 mb-3">
                                     <label class="form-label">Sarlavha ({{ $label }}) <span class="text-danger">*</span></label>
                                     <input type="text" name="title[{{ $lang }}]"
                                            class="form-control @error("title.$lang") is-invalid @enderror"
@@ -67,8 +67,8 @@
 
                         {{-- Subtitle fields --}}
                         <div class="row">
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
+                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча','en'=>"English"] as $lang => $label)
+                                <div class="col-lg-3 mb-3">
                                     <label class="form-label">Sub-sarlavha ({{ $label }})</label>
                                     <input type="text" name="subtitle[{{ $lang }}]" required
                                            class="form-control @error("subtitle.$lang") is-invalid @enderror"
@@ -83,8 +83,8 @@
 
                         {{-- Body fields --}}
                         <div class="row">
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
+                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча','en'=>"English"] as $lang => $label)
+                                <div class="col-lg-3 mb-3">
                                     <label class="form-label">Matn ({{ $label }})</label>
                                     <textarea name="body[{{ $lang }}]" rows="4"
                                               class="form-control @error("body.$lang") is-invalid @enderror">{{ old("body.$lang") }}</textarea>

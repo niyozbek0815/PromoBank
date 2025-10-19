@@ -169,12 +169,19 @@ Route::prefix('front')->group(function () {
             Route::get("/{shop_id}/promotion_data", 'promotiondata')->name('promotion_data');
             Route::post('/{id}/change_status', 'changeStatus')->name('change_status');
         });
-    Route::prefix('seles_receipts')
-        ->name('admin.seles_receipts.')
+    Route::prefix('sales-receipts')
+        ->name('admin.sales_receipts.')
         ->controller(SelesReceiptController::class)
         ->group(function () {
+            // 🔹 Barcha sales receipts ro'yxati
+            Route::get('/', 'index')->name('index');
+
+            // 🔹 AJAX uchun datatable API
             Route::get('/data', 'data')->name('data');
-            Route::get('/{promotion_id}/promotion_receipt', 'wonPromotionSelesReceipts')->name('won_seles_receipts');
+
+            // 🔹 Muayyan promotion uchun yutgan sales receipts
+            Route::get('/{promotion_id}/winning', 'winningByPromotion')
+                ->name('winning_by_promotion');
         });
     Route::prefix('banners')->name('admin.banners.')
         ->controller(BannersController::class)

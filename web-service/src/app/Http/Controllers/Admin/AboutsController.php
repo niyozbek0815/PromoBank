@@ -45,24 +45,29 @@ class AboutsController extends Controller
             'title.uz'       => 'required|string|max:255',
             'title.ru'       => 'required|string|max:255',
             'title.kr'       => 'required|string|max:255',
+            'title.en' => 'required|string|max:255',
 
             'subtitle.uz'    => 'nullable|string|max:255',
             'subtitle.ru'    => 'nullable|string|max:255',
             'subtitle.kr'    => 'nullable|string|max:255',
+            'subtitle.en' => 'nullable|string|max:255',
 
             'description.uz' => 'nullable|string',
             'description.ru' => 'nullable|string',
             'description.kr' => 'nullable|string',
+            'description.en' => 'nullable|string',
 
             'list_uz'        => 'required|array',
             'list_ru'        => 'required|array',
             'list_kr'        => 'required|array',
+            'list_en' => 'required|array',
 
             'list_uz.*'      => 'string|max:255',
             'list_ru.*'      => 'string|max:255',
             'list_kr.*'      => 'string|max:255',
+            'list_en.*' => 'string|max:255',
 
-            'about_image'    => 'required|image|max:512', // FilePond input nomi
+            'about_image'    => 'nullable|image|max:512', // FilePond input nomi
         ]);
 
         // 2️⃣ Modelni olish yoki yaratish
@@ -77,6 +82,8 @@ class AboutsController extends Controller
                 'uz' => $validated['list_uz'],
                 'ru' => $validated['list_ru'],
                 'kr' => $validated['list_kr'],
+                'en' => $validated['list_en'],
+
             ],
         ]);
 

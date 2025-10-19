@@ -24,8 +24,8 @@ class BannersController extends Controller
             'title.uz'    => 'required|string|max:255',
             'title.ru'    => 'nullable|string|max:255',
             'title.kr'    => 'nullable|string|max:255',
-            'banner_type' => 'required|string|in:game,promotion,url',
-            'url'         => 'required|string',
+   'banner_type' => 'required|string|in:game,promotion,url,news', // kerakli type’larni belgilab ol
+            'url' => 'required_unless:banner_type,news|string|max:500',
             'status'      => 'required|boolean',
             // media endi majburiy emas
             'media'       => 'nullable|array',
@@ -73,12 +73,14 @@ class BannersController extends Controller
             'title.uz'    => 'required|string|max:255',
             'title.ru'    => 'nullable|string|max:255',
             'title.kr'    => 'nullable|string|max:255',
-
-            'banner_type' => 'required|string|in:game,promotion,url', // kerakli type’larni belgilab ol
-            'url'         => 'required|string',
-
+            'title.en' => 'nullable|string|max:255',
+            'banner_type' => 'required|string|in:game,promotion,url,news', // kerakli type’larni belgilab ol
+            'url' => 'required_unless:banner_type,news|string|max:500',
             'media'       => 'required|array',
-            'media.*'     => 'file|mimes:jpg,jpeg,png,gif,webp,mp4,webm|max:10240',
+            'media.uz'     => 'file|mimes:jpg,jpeg,png,gif,webp,mp4,webm|max:10240',
+            'media.ru' => 'file|mimes:jpg,jpeg,png,gif,webp,mp4,webm|max:10240',
+            'media.en' => 'file|mimes:jpg,jpeg,png,gif,webp,mp4,webm|max:10240',
+            'media.kr' => 'file|mimes:jpg,jpeg,png,gif,webp,mp4,webm|max:10240',
         ]);
 
         // 🔹 1. Banner yaratamiz
@@ -120,7 +122,7 @@ class BannersController extends Controller
             ->addColumn('banner_type', fn($item) => ucfirst($item->banner_type))
             ->addColumn('url', fn($item) => Str::limit($item->url ?? '-', 30))
             ->addColumn('media', function ($item) {
-                $uzMedia = $item->media['uz']['url'] ?? null;
+                $uzMedia = $item->banners_uz['url'] ?? null;
                 return $uzMedia
                 ? "<img src='{$uzMedia}' alt='banner' style='max-height:40px'>"
                 : '-';

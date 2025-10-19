@@ -202,13 +202,19 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::post('/{id}/change_status', 'changeStatus')->name('change_status');
         });
 
-        
-    Route::prefix('seles_receipts')->name('seles_receipts.')
+    Route::prefix('sales-receipts')
+        ->name('sales_receipts.')
         ->controller(SelesReceiptController::class)
         ->group(function () {
+            // 🔹 Barcha sales receipts ro'yxati
             Route::get('/', 'index')->name('index');
+
+            // 🔹 AJAX uchun datatable API
             Route::get('/data', 'data')->name('data');
-            Route::get('/{promotion_id}/promotion_receipt', 'wonPromotionSelesReceipts')->name('won_seles_receipts');
+
+            // 🔹 Muayyan promotion uchun yutgan sales receipts
+            Route::get('/{promotion_id}/winning', 'winningByPromotion')
+                ->name('winning_by_promotion');
         });
 
 
@@ -282,6 +288,21 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
 
 
     // web sayt routes
+    Route::prefix('portfolio')
+        ->name('portfolio.')
+        ->controller(PortfolioController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/data', 'data')->name('data');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{id}/edit', 'edit')->name('edit');
+            Route::put('/{id}', 'update')->name('update');
+            Route::post('/{id}/delete', 'destroy')->name('delete');
+            Route::post('/{id}/status', 'changeStatus')->name('status');
+        });
+
+
 
     Route::prefix('sponsors')
         ->name('sponsors.')
@@ -309,19 +330,7 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::post('/{benefit}/delete', 'destroy')->name('delete');
             Route::post('/{benefit}/status', 'changeStatus')->name('status');
         });
-    Route::prefix('portfolio')
-        ->name('portfolio.')
-        ->controller(PortfolioController::class)
-        ->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::get('/data', 'data')->name('data');
-            Route::get('/create', 'create')->name('create');
-            Route::post('/store', 'store')->name('store');
-            Route::get('/{id}/edit', 'edit')->name('edit');
-            Route::put('/{id}', 'update')->name('update');
-            Route::post('/{id}/delete', 'destroy')->name('delete');
-            Route::post('/{id}/status', 'changeStatus')->name('status');
-        });
+
     Route::prefix('forsponsor')
         ->name('forsponsor.')
         ->controller(ForSponsorsController::class)

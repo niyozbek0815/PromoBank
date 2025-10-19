@@ -80,8 +80,8 @@
 
                 {{-- Title fields --}}
                 <div class="row">
-                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill'] as $lang => $label)
-                        <div class="col-lg-4 mb-3">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill','en'=>"English"] as $lang => $label)
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label fw-bold">Sarlavha ({{ $label }})</label>
                             <input type="text" class="form-control" name="title[{{ $lang }}]"
                                 value="{{ old('title.' . $lang, $download['title'][$lang] ?? '') }}" required>
@@ -91,8 +91,8 @@
 
                 {{-- Subtitle fields --}}
                 <div class="row">
-                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill'] as $lang => $label)
-                        <div class="col-lg-4 mb-3">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill','en'=>"English"] as $lang => $label)
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label fw-bold">Subtitle ({{ $label }})</label>
                             <input type="text" class="form-control" name="subtitle[{{ $lang }}]" required
                                 value="{{ old('subtitle.' . $lang, $download['subtitle'][$lang] ?? '') }}">
@@ -102,8 +102,8 @@
 
                 {{-- Description fields --}}
                 <div class="row">
-                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill'] as $lang => $label)
-                        <div class="col-lg-4 mb-3">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill','en'=>"English"] as $lang => $label)
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label fw-bold">Description ({{ $label }})</label>
                             <textarea class="form-control" name="description[{{ $lang }}]" rows="3">{{ old('description.' . $lang, $download['description'][$lang] ?? '') }}</textarea>
                         </div>

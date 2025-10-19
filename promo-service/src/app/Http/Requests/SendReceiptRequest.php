@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Requests;
+use Illuminate\Validation\Rule;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,7 +24,11 @@ class SendReceiptRequest extends FormRequest
     {
         return [
             'name'        => 'required|string|max:255',
-            'chek_id' => 'required|string|max:255',            'nkm_number'  => 'required|string|max:255',
+            'chek_id' => [
+                'required',
+                'string',
+                Rule::unique('sales_receipts', 'chek_id')
+            ],            'nkm_number'  => 'required|string|max:255',
             'sn'          => 'required|string|max:255',
             'check_date'  => 'required|date',
             'qqs_summa'   => 'required|numeric|min:0',

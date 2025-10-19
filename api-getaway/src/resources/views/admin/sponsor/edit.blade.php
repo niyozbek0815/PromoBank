@@ -92,8 +92,8 @@
                 @method('PUT')
 
                 <div class="row">
-                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                        <div class="col-lg-4 mb-3">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha','en'=>"English"] as $lang => $label)
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label">Nomi ({{ $label }})</label>
                             <input type="text" class="form-control" name="name[{{ $lang }}]"
                                 value="{{ old('name.' . $lang, $sponsor['name'][$lang] ?? '') }}" >

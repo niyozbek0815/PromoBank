@@ -120,7 +120,7 @@ class BannersController extends Controller
             $request,
             ['media']// Fayl nomlari (formdagi `name=""`)
         );
-        dd($response->json());
+        // dd($request->all());
 
         if ($response->status() === 422) {
             return redirect()

@@ -84,8 +84,8 @@
 
                 {{-- Title --}}
                 <div class="row">
-                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill'] as $lang => $label)
-                        <div class="col-lg-4 mb-3">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill','en'=>"English"] as $lang => $label)
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label fw-bold">Title ({{ $label }})</label>
                             <input type="text" class="form-control" name="title[{{ $lang }}]"
                                 value="{{ old('title.' . $lang, $about['title'][$lang] ?? '') }}" required>
@@ -95,8 +95,8 @@
 
                 {{-- Subtitle --}}
                 <div class="row">
-                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill'] as $lang => $label)
-                        <div class="col-lg-4 mb-3">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill','en'=>"English"] as $lang => $label)
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label fw-bold">Subtitle ({{ $label }})</label>
                             <input type="text" class="form-control" name="subtitle[{{ $lang }}]"
                                 value="{{ old('subtitle.' . $lang, $about['subtitle'][$lang] ?? '') }}" required>
@@ -106,8 +106,8 @@
 
                 {{-- Description --}}
                 <div class="row">
-                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill'] as $lang => $label)
-                        <div class="col-lg-4 mb-3">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill','en'=>"English"] as $lang => $label)
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label fw-bold">Description ({{ $label }})</label>
                             <textarea class="form-control" name="description[{{ $lang }}]" rows="3">{{ old('description.' . $lang, $about['description'][$lang] ?? '') }}</textarea>
                         </div>
@@ -116,8 +116,8 @@
 
                 {{-- List --}}
                 <div class="row">
-                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill'] as $lang => $label)
-                        <div class="col-lg-4 mb-3">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krill','en'=>"English"] as $lang => $label)
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label fw-bold">List Items ({{ $label }})</label>
                             @php
                                 $list = $about['list'][$lang] ?? [];

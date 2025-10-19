@@ -92,8 +92,8 @@
 
                 {{-- Title fields --}}
                 <div class="row">
-                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча'] as $lang => $label)
-                        <div class="col-lg-4 mb-3">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча','en'=>"English"] as $lang => $label)
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label">Sarlavha ({{ $label }})</label>
                             <input type="text" class="form-control" name="title[{{ $lang }}]"
                                    value="{{ old('title.' . $lang, $forSponsor['title'][$lang] ?? '') }}" required>
@@ -104,8 +104,8 @@
 
                 {{-- Description fields --}}
                 <div class="row">
-                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча'] as $lang => $label)
-                        <div class="col-lg-4 mb-3">
+                    @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча','en'=>"English"] as $lang => $label)
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label">Tavsif ({{ $label }})</label>
                             <textarea class="form-control" name="description[{{ $lang }}]" rows="3" required>{{ old('description.' . $lang, $forSponsor['description'][$lang] ?? '') }}</textarea>
                             <small class="text-muted">ForSponsor tavsifini {{ $label }} tilida kiriting.</small>

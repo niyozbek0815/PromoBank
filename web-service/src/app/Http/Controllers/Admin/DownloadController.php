@@ -43,14 +43,18 @@ class DownloadController extends Controller
             'title.uz'       => 'required|string|max:255',
             'title.ru'       => 'required|string|max:255',
             'title.kr'       => 'required|string|max:255',
+            'title.en' => 'required|string|max:255',
 
             'subtitle.uz'    => 'nullable|string|max:255',
             'subtitle.ru'    => 'nullable|string|max:255',
             'subtitle.kr'    => 'nullable|string|max:255',
+            'subtitle.en' => 'nullable|string|max:255',
+
 
             'description.uz' => 'nullable|string',
             'description.ru' => 'nullable|string',
             'description.kr' => 'nullable|string',
+            'description.en' => 'nullable|string',
 
             'image'          => 'nullable|image|max:512',
 

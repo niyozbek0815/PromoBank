@@ -71,9 +71,11 @@ class BenefitController extends Controller
             'title.uz'       => 'required|string|max:255',
             'title.ru'       => 'required|string|max:255',
             'title.kr'       => 'required|string|max:255',
+            'title.en' => 'required|string|max:255',
             'description.uz' => 'required|string',
             'description.ru' => 'required|string',
             'description.kr' => 'required|string',
+            'description.en' => 'required|string',
             'position'       => 'required|integer|min:0',
             'status'         => 'nullable|boolean',
             'image'          => 'required|image|mimes:jpg,jpeg,png,svg|max:1024', // 1 MB
@@ -84,6 +86,8 @@ class BenefitController extends Controller
             'description' => $validated['description'] ?? [],
             'position'    => $validated['position'],
             'status'      => $validated['status'] ?? 1,
+            'image' => '', // default bo‘sh string, keyin Queue orqali to‘ldiriladi
+
         ]);
 
         if ($request->hasFile('image')) {
@@ -124,12 +128,14 @@ class BenefitController extends Controller
     {
         $benefit = Benefit::findOrFail($id);
         $validated = $request->validate([
-            'title.uz'       => 'required|string|max:255',
-            'title.ru'       => 'required|string|max:255',
-            'title.kr'       => 'required|string|max:255',
+            'title.uz' => 'required|string|max:255',
+            'title.ru' => 'required|string|max:255',
+            'title.kr' => 'required|string|max:255',
+            'title.en' => 'required|string|max:255',
             'description.uz' => 'required|string',
             'description.ru' => 'required|string',
             'description.kr' => 'required|string',
+            'description.en' => 'required|string',
             'position'       => 'required|integer|min:0',
             'status'         => 'required|boolean',
             'image'          => 'nullable|image|mimes:jpg,jpeg,png,svg|max:1024',

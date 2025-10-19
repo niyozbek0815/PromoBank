@@ -103,7 +103,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('admin.seles_receipts.index') }}"
+                            <a href="{{ route('admin.sales_receipts.index') }}"
                                 class="nav-link {{ request()->routeIs('admin.seles_receipts.*') ? 'active' : '' }}">
                                 <i class="ph-receipt"></i> Cheklar
                             </a>

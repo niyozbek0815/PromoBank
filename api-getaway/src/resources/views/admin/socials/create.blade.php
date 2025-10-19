@@ -57,8 +57,8 @@
 
                         {{-- Label fields --}}
                         <div class="row">
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
+                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча','en'=>"English"] as $lang => $label)
+                                <div class="col-lg-3 mb-3">
                                     <label class="form-label">Label ({{ $label }})</label>
                                     <input type="text" name="label[{{ $lang }}]"
                                            class="form-control @error("label.$lang") is-invalid @enderror"

@@ -7,6 +7,7 @@ use App\Models\Messages;
 use App\Models\PlatformPromoSetting;
 use App\Models\Prize;
 use App\Models\PromotionShop;
+use App\Models\SalesReceipt;
 use App\Models\UserPointBalance;
 use App\Repositories\PlatformRepository;
 use Illuminate\Support\Carbon;
@@ -29,8 +30,8 @@ class ReceiptService
         $messages = [];
         $selectedPrizes = [];
         $manualPrizeCount = 0;
-
-        $platformId = $this->getPlatformId($platformName);
+        // SalesReceipt::truncate();
+          $platformId = $this->getPlatformId($platformName);
         Log::info("Start",['name'=>$req]);
         $shop = PromotionShop::
             where('name', $req['name'])

@@ -102,13 +102,14 @@
 
                 options.forEach(opt => {
                     const option = document.createElement('option');
-                    option.value = String(opt.value);
-                    let label = opt.label;
+                    option.value = String(opt.value ?? opt.id ?? "");
+                    let label = opt.label ?? '';
                     try {
-                        label = JSON.parse(opt.label).uz ?? opt.label;
+                        const parsed = JSON.parse(opt.label ?? '');
+                        label = parsed.uz ?? parsed.en ?? parsed.kr ?? opt.label;
                     } catch (e) {}
                     option.textContent = label;
-                    if (String(opt.value) === String(selectedValue)) option.selected = true;
+                    if (String(opt.value ?? opt.id ?? "") === String(selectedValue)) option.selected = true;
                     select.appendChild(option);
                 });
             }
@@ -160,33 +161,32 @@
 
                         {{-- TITLE --}}
                         <div class="row">
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
+                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Krillcha', 'en' => 'English'] as $lang => $label)
+                                <div class="col-lg-3 mb-3">
                                     <label class="form-label">Sarlavha ({{ $label }})</label>
                                     <input type="text" name="title[{{ $lang }}]" class="form-control"
-                                        value="{{ old("title.$lang", $bannerData['title'][$lang] ?? '') }}" required>
+                                        value="{{ old("title.$lang", $bannerData['title'][$lang] ?? '') }}" {{ $lang === 'uz' ? 'required' : '' }}>
                                 </div>
                             @endforeach
                         </div>
 
                         {{-- MEDIA --}}
                         <div class="row">
-                            @foreach (['uz' => 'banners_uz', 'ru' => 'banners_ru', 'kr' => 'banners_kr'] as $lang => $key)
-                                <div class="col-lg-4 mb-3">
+                            @foreach (['uz' => 'banners_uz', 'ru' => 'banners_ru', 'kr' => 'banners_kr', 'en' => 'banners_en'] as $lang => $key)
+                                <div class="col-lg-3 mb-3">
                                     <label class="form-label">Media ({{ strtoupper($lang) }})</label>
 
                                     {{-- qo‘l preview --}}
-                                    @if (!empty($bannerData[$key]['full_url'] ?? ($bannerData[$key]['url'] ?? '')))
+                                    @php
+                                        $mediaUrl = $bannerData[$key]['full_url'] ?? $bannerData[$key]['url'] ?? null;
+                                    @endphp
+
+                                    @if (!empty($mediaUrl))
                                         <div class="manual-preview mb-2" id="preview-{{ $lang }}">
-                                            @php
-                                                $url = $bannerData[$key]['full_url'] ?? $bannerData[$key]['url'];
-                                            @endphp
-                                            @if (preg_match('/\.(mp4|webm)$/i', $url))
-                                                <video src="{{ $url }}" class="w-100 rounded border"
-                                                    controls></video>
+                                            @if (preg_match('/\.(mp4|webm)$/i', $mediaUrl))
+                                                <video src="{{ $mediaUrl }}" class="w-100 rounded border" controls></video>
                                             @else
-                                                <img src="{{ $url }}" class="img-fluid rounded border"
-                                                    alt="preview">
+                                                <img src="{{ $mediaUrl }}" class="img-fluid rounded border" alt="preview">
                                             @endif
                                         </div>
                                     @endif
@@ -202,16 +202,13 @@
                             <label class="form-label">Banner turi</label>
                             <select name="banner_type" id="banner_type" class="form-select" required>
                                 <option value="">Tanlang...</option>
-                                <option value="promotion"
-                                    {{ $bannerData['banner_type'] == 'promotion' ? 'selected' : '' }}>
-                                    Promo
-                                    Aksiya</option>
-                                <option value="url" {{ $bannerData['banner_type'] == 'url' ? 'selected' : '' }}>Tashqi
-                                    link
+                                <option value="promotion" {{ $bannerData['banner_type'] == 'promotion' ? 'selected' : '' }}>
+                                    Promo Aksiya</option>
+                                <option value="url" {{ $bannerData['banner_type'] == 'url' ? 'selected' : '' }}>Tashqi link
                                 </option>
                                 <option value="game" {{ $bannerData['banner_type'] == 'game' ? 'selected' : '' }}>O'yin
                                 </option>
-                                <option value="news" disabled>News</option>
+                                <option value="news" {{ $bannerData['banner_type'] == 'news' ? 'selected' : '' }}>News</option>
                             </select>
                         </div>
 
@@ -223,7 +220,7 @@
                         <div class="mb-3 d-none" id="url_input_wrapper">
                             <label class="form-label">URL</label>
                             <input type="text" id="url_input" class="form-control"
-                                value="{{ old('url', $bannerData['url']) }}">
+                                value="{{ old('url', $bannerData['url'] ?? '') }}">
                         </div>
 
                         {{-- STATUS --}}

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->json('description')->nullable();
             $table->integer('position')->default(0)->index();
             $table->tinyInteger('status')->default(1)->index();
-            $table->string('image');
+            $table->string('image')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

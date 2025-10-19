@@ -23,7 +23,7 @@ class Banner extends Model
 
     // 🔹 Casting
     protected $casts = [
-        'title'  => 'array',
+        'title' => 'array',
         'status' => 'boolean',
     ];
 
@@ -31,13 +31,14 @@ class Banner extends Model
         'banners_uz',
         'banners_ru',
         'banners_kr',
+        'banners_en'
     ];
 
     // 🔹 Banner active scope
-    public function scopeActive($query)
-    {
-        return $query->where('status', true);
-    }
+    // public function scopeActive($query)
+    // {
+    //     return $query->where('status', true);
+    // }
 
     public function getBannersUzAttribute()
     {
@@ -52,6 +53,10 @@ class Banner extends Model
     public function getBannersKrAttribute()
     {
         return $this->getMedia('banners_kr');
+    }
+    public function getBannersEnAttribute()
+    {
+        return $this->getMedia('banners_en');
     }
 
     // 🔹 Banner kim tomonidan yaratilgan (agar users jadvali bo‘lsa)

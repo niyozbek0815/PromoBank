@@ -60,13 +60,13 @@ class PromotionsController extends Controller
         Log::info("user", ['user' => $user]);
         $req = $request->validated();
         $data = $this->scraper->scrapeReceipt($req);
-
-        DB::table('sales_receipts')->truncate();
+        Log::info("Sccreppoing data", ['data' => $data]);
+        // DB::table('sales_receipts')->truncate();
 
         $existing = SalesReceipt::where('chek_id', $data['chek_id'])->first();
 
         if ($existing) {
-            Log::warning("❗ Receipt already exists", ['chek_id' => $req['chek_id']]);
+            Log::warning("❗ Receipt already exists", ['chek_id' => $data['chek_id']]);
             $lang = $req['lang'] ?? 'uz';
             $messages = [
                 'uz' => [

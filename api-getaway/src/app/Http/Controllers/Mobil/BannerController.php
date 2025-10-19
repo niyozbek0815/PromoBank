@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Mobil;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class BannerController extends Controller
 {
@@ -17,76 +18,76 @@ class BannerController extends Controller
     {
         // 🔹 Promo-service’dan ma’lumot olish
         $response = $this->forwardRequest("GET", $this->url, '/banners', $request);
-
+        Log::info("data", ['responseData' => $response->json()]);
         // 🔹 Default mock data
         $defaultBanners = [
             [
-                'title'       => [
+                'title' => [
                     'uz' => 'Yozgi aksiya boshlandi!',
                     'ru' => 'Летняя акция началась!',
                     'kr' => 'Йозги акция бошланди!',
                 ],
-                'media'       => [
+                'media' => [
                     'uz' => ['url' => 'https://qadarun.com/namuna/1.gif', 'mime_type' => 'image/gif'],
                     'ru' => ['url' => 'https://qadarun.com/namuna/1.gif', 'mime_type' => 'image/gif'],
                     'kr' => ['url' => 'https://qadarun.com/namuna/1.gif', 'mime_type' => 'image/gif'],
                 ],
-                'url'         => '12',
+                'url' => '12',
                 'banner_type' => 'promotion',
             ],
             [
-                'title'       => [
+                'title' => [
                     'uz' => 'Yangiliklar bilan tanishing',
                     'ru' => 'Узнайте последние новости',
                     'kr' => 'Янгиликлар билан танишинг',
                 ],
-                'media'       => [
+                'media' => [
                     'uz' => ['url' => 'https://qadarun.com/namuna/6.jpeg', 'mime_type' => 'image/jpeg'],
                     'ru' => ['url' => 'https://qadarun.com/namuna/6.jpeg', 'mime_type' => 'image/jpeg'],
                     'kr' => ['url' => 'https://qadarun.com/namuna/6.jpeg', 'mime_type' => 'image/jpeg'],
                 ],
-                'url'         => '7',
+                'url' => '7',
                 'banner_type' => 'news',
             ],
             [
-                'title'       => [
+                'title' => [
                     'uz' => 'Bizning rasmiy saytimiz',
                     'ru' => 'Наш официальный сайт',
                     'kr' => 'Бизнинг расмий сайтимиз',
                 ],
-                'media'       => [
+                'media' => [
                     'uz' => ['url' => 'https://qadarun.com/namuna/8.jpeg', 'mime_type' => 'image/jpeg'],
                     'ru' => ['url' => 'https://qadarun.com/namuna/8.jpeg', 'mime_type' => 'image/jpeg'],
                     'kr' => ['url' => 'https://qadarun.com/namuna/8.jpeg', 'mime_type' => 'image/jpeg'],
                 ],
-                'url'         => 'https://officialsite.uz',
+                'url' => 'https://officialsite.uz',
                 'banner_type' => 'url',
             ],
             [
-                'title'       => [
+                'title' => [
                     'uz' => 'Qishgi chegirmalar!',
                     'ru' => 'Зимние скидки!',
                     'kr' => 'Қишги чегирмалар!',
                 ],
-                'media'       => [
+                'media' => [
                     'uz' => ['url' => 'https://qadarun.com/namuna/7.jpeg', 'mime_type' => 'image/jpeg'],
                     'ru' => ['url' => 'https://qadarun.com/namuna/7.jpeg', 'mime_type' => 'image/jpeg'],
                     'kr' => ['url' => 'https://qadarun.com/namuna/7.jpeg', 'mime_type' => 'image/jpeg'],
                 ],
-                'url'         => '4',
+                'url' => '4',
                 'banner_type' => 'game',
             ],
         ];
 
         // 🔹 Agar promo-service’dan ma’lumot kelmasa yoki bo‘sh bo‘lsa → default qaytar
         if (
-            ! $response instanceof \Illuminate\Http\Client\Response  ||
-            ! $response->ok() ||
+            !$response instanceof \Illuminate\Http\Client\Response ||
+            !$response->ok() ||
             empty($response->json())
         ) {
             return $this->successResponse($defaultBanners);
         }
-return $this->successResponse($response->json());
+        return $this->successResponse($response->json());
 
         // 🔹 Aks holda real datani qaytar
     }

@@ -51,8 +51,8 @@
 
                         {{-- Title fields --}}
                         <div class="row">
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
+                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча','en'=>"English"] as $lang => $label)
+                                <div class="col-lg-3 mb-3">
                                     <label class="form-label">
                                         Sarlavha ({{ $label }}) <span class="text-danger">*</span>
                                     </label>
@@ -69,8 +69,8 @@
 
                         {{-- Description fields --}}
                         <div class="row">
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
+                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча','en'=>"English"] as $lang => $label)
+                                <div class="col-lg-3 mb-3">
                                     <label class="form-label">
                                         Tavsif ({{ $label }}) <span class="text-danger">*</span>
                                     </label>

@@ -52,8 +52,8 @@
                         @csrf
                         <div class="row">
                             {{-- Translatable fields --}}
-                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча'] as $lang => $label)
-                                <div class="col-lg-4 mb-3">
+                            @foreach (['uz' => 'O‘zbekcha', 'ru' => 'Русский', 'kr' => 'Кириллча','en'=>"English"] as $lang => $label)
+                                <div class="col-lg-3 mb-3">
                                     <label class="form-label">
                                         Homiy nomi ({{ $label }})
                                     </label>

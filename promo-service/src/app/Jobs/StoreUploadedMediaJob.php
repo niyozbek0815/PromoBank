@@ -120,6 +120,11 @@ class StoreUploadedMediaJob implements ShouldQueue
             'promotion-offer' => \App\Models\Promotions::class,
             'promotion-banner' => \App\Models\Promotions::class,
             'company_logo' => \App\Models\Company::class,
+            'banners_uz'=>\App\Models\Banner::class,
+            'banners_ru' => \App\Models\Banner::class,
+            'banners_en' => \App\Models\Banner::class,
+            'banners_kr' => \App\Models\Banner::class,
+
             default => throw new \InvalidArgumentException("Unknown context: {$context}"),
         };
     }
