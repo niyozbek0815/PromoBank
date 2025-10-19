@@ -11,29 +11,38 @@ class PromotionShopController extends Controller
 {
     public function promotiondata(Request $request, $promotionId)
     {
+        // Faqat bitta joyda query tuziladi — reusable bo‘ladi
+        return $this->buildDataTable($promotionId);
+    }
+
+    public function data(Request $request)
+    {
+        // Barcha do‘konlar uchun — promotion_id yo‘q
+        return $this->buildDataTable(null);
+    }
+
+    /**
+     * 🔧 Universal DataTable quruvchi
+     * DRY (Don't Repeat Yourself) prinsipiga asoslangan
+     */
+    private function buildDataTable(?int $promotionId = null)
+    {
         $query = PromotionShop::query()
-            ->where('promotion_id', $promotionId)
-            ->with(['promotion'])   // promotion modelini olish
-            ->withCount('products') // products_count qo‘shish
+            ->when($promotionId, fn($q) => $q->where('promotion_id', $promotionId))
+            ->with(['promotion'])
+            ->withCount('products')
             ->select('promotion_shops.*');
+
         return DataTables::of($query)
-            ->addColumn('promotion_name', function ($shop) {
-                return $shop->promotion?->getTranslation('name', 'uz') ?? '-';
-            })
-            ->addColumn('products_count', function ($shop) {
-                return $shop->products_count ?? 0;
-            })
-            ->addColumn('created_at', function ($shop) {
-                return optional($shop->created_at)?->format('d.m.Y H:i') ?? '-';
-            })
-            ->addColumn('actions', function ($item) {
-                return view('admin.actions', [
-                    'row' => $item,
-                    'routes' => [
-                        'edit' => "/admin/promotion_shops/{$item->id}/edit",
-                    ],
-                ])->render();
-            })
+            ->addColumn('promotion_name', fn($shop) => $shop->promotion?->getTranslation('name', 'uz') ?? '-')
+            ->addColumn('products_count', fn($shop) => $shop->products_count ?? 0)
+            ->addColumn('created_at', fn($shop) => optional($shop->created_at)?->format('d.m.Y H:i') ?? '-')
+            ->addColumn('actions', fn($item) => view('admin.actions', [
+                'row' => $item,
+                'routes' => [
+                    'edit' => "/admin/promotion_shops/{$item->id}/edit",
+                ],
+            ])->render())
             ->rawColumns(['promotion_name', 'actions'])
             ->make(true);
     }

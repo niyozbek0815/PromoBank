@@ -20,7 +20,7 @@ class ReceiptController extends Controller
         $user = $request['auth_user'];
         $req = $request->validated();
         Log::info("Request", ['data' => $req]);
-        SalesReceipt::query()->delete();
+        // SalesReceipt::query()->delete();
           $data = $this->receiptService->proccess($req, $user,'mobile');
         if($data['status']=="fail"){
             return $this->errorResponse($data, "failed");

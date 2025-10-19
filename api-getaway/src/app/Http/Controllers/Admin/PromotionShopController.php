@@ -56,6 +56,14 @@ class PromotionShopController extends Controller
         }
         return response()->json(['message' => 'Promo service error'], 500);
     }
+    public function data(Request $request)
+    {
+        $response = $this->forwardRequest("GET", $this->url, "front/promotion_shops/data", $request);
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return response()->json($response->json(), $response->status());
+        }
+        return response()->json(['message' => 'Promo service error'], 500);
+    }
     public function edit(Request $request, $id)
     {
         $response = $this->forwardRequest("GET", $this->url, "front/promotion_shops/{$id}/edit", $request);

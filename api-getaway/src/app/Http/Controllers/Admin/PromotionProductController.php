@@ -47,7 +47,7 @@ class PromotionProductController extends Controller
         abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
     }
 
-    public function data(Request $request, $promotionId)
+    public function data(Request $request)
     {
         $endpoint = "front/promotion_products/data";
         $response = $this->forwardRequest("GET", $this->url, $endpoint, $request);

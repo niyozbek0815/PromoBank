@@ -1,62 +1,56 @@
 @extends('admin.layouts.app')
-@section('title', 'Promoacode')
+@section('title', "Do'konlar")
 @push('scripts')
     <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
 
     <script>
-        $.ajaxSetup({
+       $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
         $(document).ready(function() {
-            const url = "{{ secure_url(route('admin.promocode.data', [], false)) }}";
-            if ($.fn.DataTable.isDataTable('#promocode-table')) {
-                $('#promocode-table').DataTable().destroy();
+            const url = "{{ secure_url(route('admin.promotion_shops.data', [], false)) }}";
+            if ($.fn.DataTable.isDataTable('#promotion-shops-table')) {
+                $('#promotion-shops-table').DataTable().destroy();
             }
 
-            $('#promocode-table').DataTable({
+            $('#promotion-shops-table').DataTable({
                 processing: true,
-                serverSide: false,
+                serverSide: false, // chunki biz to'liq malumotni olishimiz mumkin
                 ajax: {
                     url: url,
                     type: "GET",
                 },
                 columns: [{
                         data: 'id',
-                        name: 'promo_codes.id'
+                        name: 'id'
+                    },
+
+                    {
+                        data: 'name',
+                        name: 'name'
                     },
                     {
-                        data: 'promocode',
-                        name: 'promo_codes.promocode'
+                        data: 'adress',
+                        name: 'adress'
                     },
                     {
-                        data: 'is_used',
-                        name: 'promo_codes.is_used'
-                    },
-                    {
-                        data: 'used_at',
-                        name: 'promo_codes.used_at',
+                        data: 'products_count',
+                        name: 'products_count',
                         searchable: false
                     },
                     {
                         data: 'promotion_name',
-                        name: 'promotion_name',
-                        searchable: true
+                        name: 'promotion_name'
                     },
                     {
-                        data: 'generation_name',
-                        name: 'promo_codes.generation_id',
+                        data: 'created_at',
+                        name: 'created_at',
                         searchable: false
                     },
-                    {
-                        data: 'platform_name',
-                        name: 'platform_name',
-                        searchable: false
-
-                    }, // ✅ ALIAS nomi
                     {
                         data: 'actions',
                         name: 'actions',
@@ -68,22 +62,22 @@
                         extend: 'copy',
                         exportOptions: {
                             modifier: {
-                                page: 'all' // <-- all sahifalarni oladi
+                                page: 'all'
                             }
                         }
                     },
                     {
                         extend: 'excel',
-                        filename: 'promocodelari', // dinamik nom
+                        filename: 'promotion_shops_list',
                         exportOptions: {
                             modifier: {
-                                page: 'all' // <-- faqat ko‘rinayotgan emas, hammasini oladi
+                                page: 'all'
                             }
                         }
                     },
                     {
                         extend: 'csv',
-                        filename: 'promocodelari',
+                        filename: 'promotion_shops_list',
                         exportOptions: {
                             modifier: {
                                 page: 'all'
@@ -100,32 +94,29 @@
                     }
                 ]
             });
-
-        });
-    </script>
+        });  </script>
 @endpush
 @section('content')
     <div class="tab-content flex-1 order-2 order-lg-1">
         <div class="tab-pane fade show active" id="settings">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">Promocodelar jadvali</h5>
+                    <h5 class="mb-0">Do'konlarlar jadvali</h5>
                 </div>
                 <div class="card-body">
-                    <table id="promocode-table" class="table datatable-button-init-basic">
-                        <thead>
-                            <tr>
-                                <th>#ID</th>
-                                <th>Promocode</th>
-                                <th>Foydalanilgan</th>
-                                <th>Foydalanilgan vaqti</th>
-                                <th>Promotion</th>
-                                <th>Generation</th>
-                                <th>Platforma</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                    </table>
+                            <table id="promotion-shops-table" class="table datatable-button-init-basic">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Do‘kon nomi</th>
+                                        <th>Manzil</th>
+                                        <th>Mahsulotlar soni</th>
+                                        <th>Aksiya nomi</th>
+                                        <th>Yaratilgan vaqti</th>
+                                        <th>Amallar</th>
+                                    </tr>
+                                </thead>
+                            </table>
                 </div>
             </div>
         </div>

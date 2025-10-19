@@ -8,10 +8,12 @@ use App\Models\PrizeCategory;
 use App\Models\PrizePromo;
 use App\Models\PromoAction;
 use App\Models\PromoCode;
+use App\Models\Promotions;
 use App\Models\SmartRandomRule;
 use App\Models\SmartRandomValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -470,5 +472,247 @@ class PrizeController extends Controller
             ->rawColumns(['is_used', 'status', 'actions'])
             ->make(true);
     }
+    public function createByCategory(Request $request, $category, $promotionId)
+    {
 
+        $promotion = Promotions::findOrFail($promotionId);
+        $categoryData = PrizeCategory::where('name', $category)->firstOrFail();
+
+        return response()->json([
+            'promotion' => $promotion->toArray(),
+            'category' => $categoryData->toArray(),
+        ]);
+    }
+    public function storeByCategory(Request $request, $category, $promotionId)
+    {
+        try {
+            // 1️⃣ Validatsiya
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'description' => ['nullable', 'string', 'max:2000'],
+                'index' => ['nullable', 'integer', 'min:0'],
+                'quantity' => ['required', 'integer', 'min:1'],
+                'daily_limit' => ['nullable', 'integer', 'min:0'],
+                'probability_weight' => ['nullable', 'integer', 'min:0', 'max:100'],
+                'is_active' => ['nullable', 'boolean'],
+                'valid_from' => ['nullable', 'date'],
+                'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],
+            ]);
+
+            // 2️⃣ Qo‘shimcha maydonlar
+            $validated['promotion_id'] = $promotionId;
+            $validated['category_id'] = $request->input('category_id');
+            $validated['created_by_user_id'] = $request->input('created_by_user_id');
+            $validated['is_active'] = $request->boolean('is_active', true);
+            $validated['awarded_quantity'] = 0;
+
+            // 3️⃣ Default qiymatlar
+            if (empty($validated['index'])) {
+                $validated['index'] = \App\Models\Prize::where('promotion_id', $promotionId)->max('index') + 1;
+            }
+
+            // 4️⃣ Amal qilish sanalari
+            $validated['valid_from'] = $validated['valid_from'] ?? null;
+            $validated['valid_until'] = $validated['valid_until'] ?? null;
+
+            // 5️⃣ Yaratish
+            $prize =Prize::create($validated);
+
+            Log::info('Prize created', [
+                'promotion_id' => $promotionId,
+                'category' => $category,
+                'prize_id' => $prize->id,
+                'created_by' => $validated['created_by_user_id'],
+            ]);
+
+            return redirect()
+                ->route('admin.prize-category.show', [
+                    'promotion' => $promotionId,
+                    'type' => $category,
+                ])
+                ->with('success', 'Sovgʻa muvaffaqiyatli yaratildi.');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Agar validatsiyada xato bo‘lsa
+            return back()->withErrors($e->validator)->withInput();
+
+        } catch (\Throwable $e) {
+            // Har qanday boshqa xato uchun
+            Log::error('Prize creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->with('error', 'Sovgʻa yaratishda xatolik yuz berdi.')->withInput();
+        }
+    }
+    public function importByCategory(Request $request, $category, $promotionId)
+    {
+        $validated = $request->validate([
+            'prize_file' => 'required|file|mimes:xlsx,xls|max:5120',
+            'created_by_user_id' => 'required|integer',
+        ]);
+        $path = $request->file('prize_file')->store('prize-imports', 'public');
+        $fullPath = storage_path('app/public/' . $path);
+        try {
+            $sheets = \Maatwebsite\Excel\Facades\Excel::toArray(null, $fullPath);
+        } catch (\Throwable $e) {
+            Log::error("❌ Excel faylni o‘qishda xatolik: " . $e->getMessage());
+            return response()->json([
+                'message' => 'Validation Error',
+                'errors' => [
+                    'prize_file' => ['Excel faylni o‘qib bo‘lmadi. Iltimos, formatni tekshiring.'],
+                ],
+            ], 422);
+        }
+        $rows = $sheets[0];
+        $header = array_map('strtolower', $rows[0] ?? []);
+
+        // Jadvaldagi ustunlar ro‘yxati
+        $requiredColumns = [
+            'promotion_id',
+            'category_id',
+            'index',
+            'name',
+            'description',
+            'quantity',
+            'daily_limit',
+            'awarded_quantity',
+            'probability_weight',
+            'is_active',
+            'created_by_user_id',
+            'valid_from',
+            'valid_until',
+        ];
+
+        // 1️⃣ — Excel fayl bo‘sh yoki noto‘g‘ri formatda
+        if (empty($header)) {
+            return response()->json([
+                'message' => 'Validation Error',
+                'errors' => [
+                    'prize_file' => ['Excel fayl bo‘sh yoki noto‘g‘ri formatda. Ustunlar topilmadi.'],
+                ],
+            ], 422);
+        }
+
+        // 2️⃣ — Barcha ustunlar mavjudligini tekshirish
+        $missingColumns = array_diff($requiredColumns, $header);
+        if (!empty($missingColumns)) {
+            return response()->json([
+                'message' => 'Validation Error',
+                'errors' => [
+                    'prize_file' => ['Excel faylda quyidagi ustunlar yo‘q: ' . implode(', ', $missingColumns)],
+                ],
+            ], 422);
+        }
+
+        // 3️⃣ — Ortiqcha ustunlar (jadvalda yo‘q ustunlar)
+        $invalidColumns = array_diff($header, $requiredColumns);
+        if (!empty($invalidColumns)) {
+            return response()->json([
+                'message' => 'Validation Error',
+                'errors' => [
+                    'prize_file' => ['Excel faylda nomaqbul ustun(lar) mavjud: ' . implode(', ', $invalidColumns)],
+                ],
+            ], 422);
+        }
+
+        // 4️⃣ — Ma’lumotlar mavjudligini tekshirish
+        $dataRows = array_slice($rows, 1);
+        if (count($dataRows) === 0) {
+            return response()->json([
+                'message' => 'Validation Error',
+                'errors' => [
+                    'prize_file' => ['Excel faylda ma’lumot topilmadi.'],
+                ],
+            ], 422);
+        }
+
+        if (count($dataRows) > 5000) {
+            return response()->json([
+                'message' => 'Validation Error',
+                'errors' => [
+                    'prize_file' => ["Excel faylda sovg‘alar soni 5,000 tadan oshmasligi kerak. Siz yuborgansiz: " . count($dataRows)],
+                ],
+            ], 422);
+        }
+
+        // 5️⃣ — Har bir qatordagi ustun qiymatlarini validatsiya
+        foreach ($dataRows as $rowIndex => $row) {
+            $mapped = array_combine($header, $row);
+
+            foreach ($requiredColumns as $col) {
+                // name, quantity, created_by_user_id va category_id bo‘sh bo‘lmasin
+                $mustNotBeEmpty = ['name', 'quantity', 'promotion_id', 'category_id', 'created_by_user_id'];
+
+                if (in_array($col, $mustNotBeEmpty) && empty($mapped[$col])) {
+                    return response()->json([
+                        'message' => 'Validation Error',
+                        'errors' => [
+                            'prize_file' => ["{$rowIndex} - qatorda '{$col}' ustuni bo‘sh bo‘lmasligi kerak."],
+                        ],
+                    ], 422);
+                }
+
+                // quantity — musbat son
+                if ($col === 'quantity' && (!is_numeric($mapped[$col]) || $mapped[$col] < 0)) {
+                    return response()->json([
+                        'message' => 'Validation Error',
+                        'errors' => [
+                            'prize_file' => ["{$rowIndex} - qatorda 'quantity' musbat raqam bo‘lishi kerak."],
+                        ],
+                    ], 422);
+                }
+
+                // probability_weight — 0–100 oralig‘ida
+                if ($col === 'probability_weight' && $mapped[$col] !== '') {
+                    if (!is_numeric($mapped[$col]) || $mapped[$col] < 0 || $mapped[$col] > 100) {
+                        return response()->json([
+                            'message' => 'Validation Error',
+                            'errors' => [
+                                'prize_file' => ["{$rowIndex} - qatorda 'probability_weight' 0–100 oralig‘ida bo‘lishi kerak."],
+                            ],
+                        ], 422);
+                    }
+                }
+
+                // is_active — boolean sifatida kiritilishi kerak (1 yoki 0)
+                if ($col === 'is_active' && $mapped[$col] !== '') {
+                    if (!in_array($mapped[$col], [1, 0, '1', '0', true, false], true)) {
+                        return response()->json([
+                            'message' => 'Validation Error',
+                            'errors' => [
+                                'prize_file' => ["{$rowIndex} - qatorda 'is_active' faqat 1 yoki 0 qiymat bo‘lishi kerak."],
+                            ],
+                        ], 422);
+                    }
+                }
+
+                // valid_from / valid_until — datetime formatda bo‘lishi kerak
+                if (in_array($col, ['valid_from', 'valid_until']) && !empty($mapped[$col])) {
+                    try {
+                        \Carbon\Carbon::parse($mapped[$col]);
+                    } catch (\Exception $e) {
+                        return response()->json([
+                            'message' => 'Validation Error',
+                            'errors' => [
+                                'prize_file' => ["{$rowIndex} - qatorda '{$col}' sanasi noto‘g‘ri formatda. (Masalan: 2025-10-15 14:00:00)"],
+                            ],
+                        ], 422);
+                    }
+                }
+            }
+        }
+        // Queue orqali importni ishga tushiramiz
+        // Queue::connection('rabbitmq')->push(new \App\Jobs\ImportPrizesJob(
+        //     $promotionId,
+        //     $category,
+        //     $validated['created_by_user_id'],
+        //     $path
+        // ));
+
+        return response()->json([
+            'message' => "✅ Sovg‘alarni import qilish jarayoni queue orqali boshlandi.",
+        ]);
+       }
 }

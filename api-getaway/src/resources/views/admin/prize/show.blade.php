@@ -90,7 +90,7 @@
             let status = $this.data('status');
 
             $.ajax({
-                url: '/admin/prize/'+Id+'/status',
+                url: '/admin/prize/' + Id + '/status',
                 method: 'GET',
                 data: {
                     status: status
@@ -170,16 +170,10 @@
 
             {{-- O‘ng taraf: zamonaviy va teng o‘lchamdagi tugmalar --}}
             <div class="d-flex flex-wrap justify-content-md-end justify-content-start gap-2">
-                <a href="#" {{-- {{ route('admin.prizes.create', ['promotion' => $promotion['id'], 'category' => $category['name']]) }} --}}
+                <a href="{{ route('admin.prize.createByCategory', ['category' => $category['name'], 'promotion' => $promotion['id']]) }}"
                     class="btn btn-outline-primary d-flex align-items-center gap-1 px-3 py-1">
                     <i class="ph-plus-circle fs-6"></i>
-                    <span class="small">Yangi sovgʻa</span>
-                </a>
-
-                <a href="#" {{-- {{ route('admin.prizes.import.form', ['promotion' => $promotion['id'], 'category' => $category['name']]) }} --}}
-                    class="btn btn-outline-secondary d-flex align-items-center gap-1 px-3 py-1">
-                    <i class="ph-upload-simple fs-6"></i>
-                    <span class="small">Import qilish</span>
+                    <span>Generate va Import</span>
                 </a>
             </div>
 

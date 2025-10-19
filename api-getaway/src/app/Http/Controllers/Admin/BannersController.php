@@ -45,6 +45,7 @@ class BannersController extends Controller
         $response2 = $this->forwardRequest("GET", $serviceUrls['promotion'], $endpoints['banner'], $request);
         if ($response2 instanceof \Illuminate\Http\Client\Response  && $response2->successful()) {
             $bannerData = $response2->json() ?? [];
+            dd($bannerData);
         }
 
         $response3 = $this->forwardRequest("GET", $serviceUrls['game'], $endpoints['game'], $request);
@@ -119,12 +120,7 @@ class BannersController extends Controller
             $request,
             ['media']// Fayl nomlari (formdagi `name=""`)
         );
-        // dd($response->json());
-        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
-            return redirect()
-                ->route('admin.banners.index')
-                ->with('success', "Banners muvaffaqiyatli qo‘shildi.");
-        }
+        dd($response->json());
 
         if ($response->status() === 422) {
             return redirect()
@@ -132,6 +128,13 @@ class BannersController extends Controller
                 ->withErrors($response->json('errors'))
                 ->withInput();
         }
+        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
+            return redirect()
+                ->route('admin.banners.index')
+                ->with('success', "Banners muvaffaqiyatli qo‘shildi.");
+        }
+
+
 
         abort($response->status(), 'Xatolik yuz berdi: ' . $response->body());
 

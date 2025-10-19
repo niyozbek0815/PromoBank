@@ -36,7 +36,7 @@ class PrizeController extends Controller
     {
         $response = $this->forwardRequest("GET", $this->url, "front/prize/{$prize}/edit", $request);
         // dd( $response->json());
-        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
+        if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
             $data = $response->json();
             // dd($data);
             return view('admin.prize.edit', $response->json());
@@ -59,7 +59,7 @@ class PrizeController extends Controller
                 ->withErrors($response->json('errors'))
                 ->withInput();
         }
-        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
+        if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
             return redirect()
                 ->back()
                 ->with('success', 'Sovg‘a ma’lumotlari muvaffaqiyatli yangilandi.');
@@ -77,7 +77,7 @@ class PrizeController extends Controller
             $request
         );
         // dd($response->json());
-        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
+        if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
             return redirect()
                 ->back()
                 ->with('success', 'Smart qoidalar muvaffaqiyatli yangilandi.');
@@ -109,7 +109,7 @@ class PrizeController extends Controller
                 ->withErrors($response->json('errors'))
                 ->withInput();
         }
-        if ($response instanceof \Illuminate\Http\Client\Response  && $response->successful()) {
+        if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
             return redirect()
                 ->back()
                 ->with('success', 'Smart qoida muvaffaqiyatli o‘chirildi.');
@@ -167,6 +167,63 @@ class PrizeController extends Controller
         Log::info("datatables", ['data' => $response->json()]);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json());
+        }
+    }
+    public function createByCategory(Request $request, $category, $promotionId)
+    {
+        $response = $this->forwardRequest(
+            "GET",
+            $this->url,
+            "front/prize/category/{$category}/promotion/{$promotionId}/create",
+            $request
+        );
+        // dd($response->json());
+
+        return view('admin.prize.create', $response->json());
+    }
+    public function storeByCategory(Request $request, $category, $promotionId)
+    {
+        $response = $this->forwardRequest(
+            "POST",
+            $this->url,
+            "front/prize/category/{$category}/promotion/{$promotionId}/store",
+            $request
+        );
+        // dd($response->json());
+
+        if ($response->status() === 422) {
+            return redirect()
+                ->back()
+                ->withErrors($response->json('errors'))
+                ->withInput();
+        }
+        if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
+            return redirect()
+                ->back()
+                ->with('success', 'Sovga muaffaqiyatli yaratildi');
+        }
+    }
+    public function importByCategory(Request $request, $category, $promotionId)
+    {
+        $response = $this->forwardRequestMedias(
+            "POST",
+            $this->url,
+            "front/prize/category/{$category}/promotion/{$promotionId}/import",
+            $request,
+            ['prize_file']
+        );
+        dd($response->json());
+
+        if ($response->status() === 422) {
+            return redirect()
+                ->back()
+                ->withErrors($response->json('errors'))
+                ->withInput();
+        }
+        if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
+            return redirect()
+                ->back()
+                ->with('success', 'Sovga muaffaqiyatli yaratildi');
         }
     }
 }

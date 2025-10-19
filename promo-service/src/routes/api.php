@@ -122,9 +122,7 @@ Route::prefix('front')->group(function () {
             // Route::get('/', 'index')->name('index');
             Route::get('/data', 'prizeData')->name('data');
             Route::get('/{prize}/status', 'changeStatus')->name('status');
-            Route::get('/create', 'create')->name('create');
-            Route::post('/store', 'store')->name('store');
-            Route::get('/{prize}/edit', 'edit')->name('edit');
+         Route::get('/{prize}/edit', 'edit')->name('edit');
             Route::match(['POST', 'PUT'], '/{prize}/update', 'update')->name('update');
             Route::post('/{prize}/delete', 'delete')->name('delete');
             Route::post('/{prize}/message', 'storeMessage')->name('message.store');
@@ -132,6 +130,12 @@ Route::prefix('front')->group(function () {
             Route::post('/{prize}/autobind', 'autobind')->name('attachPromocodes');
             Route::post('/{prize}/autobind/{promocodeId}', 'autobindDelete')->name('detachPromocodes');
             Route::get('/{prize}/actions-data', 'actionsData')->name('actionsData');
+            Route::prefix('category/{category}/promotion/{promotion}')
+                ->group(function () {
+                    Route::get('/create', 'createByCategory')->name('createByCategory');
+                    Route::post('/store', 'storeByCategory')->name('storeByCategory');
+                    Route::post('/import', 'importByCategory')->name('importByCategory');
+                });
         });
     Route::prefix('prize_messages')
         ->name('prize_messages.')
@@ -145,7 +149,7 @@ Route::prefix('front')->group(function () {
         ->controller(PromotionShopController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
-            Route::get('/data', 'data')->name('data');
+            Route::get("/data", 'data')->name('data');
             Route::get('/create/{promotion_id?}', 'create')->name('create');
             Route::post('/store', 'store')->name('store');
             Route::get('/{id}/edit', 'edit')->name('edit');

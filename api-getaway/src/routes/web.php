@@ -185,6 +185,8 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::get('/{id}/edit', 'edit')->name('edit');
             Route::put('/{id}', 'update')->name('update');
             Route::get("/{promotion_id}/promotion_data", 'promotiondata')->name('promotion_data');
+            Route::get("/data", 'data')->name('data');
+
         });
     Route::prefix('promotion_products')
         ->name('promotion_products.')
@@ -199,6 +201,8 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::get("/{shop_id}/promotion_data", 'promotiondata')->name('promotion_data');
             Route::post('/{id}/change_status', 'changeStatus')->name('change_status');
         });
+
+        
     Route::prefix('seles_receipts')->name('seles_receipts.')
         ->controller(SelesReceiptController::class)
         ->group(function () {
@@ -218,8 +222,6 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::get('/', 'index')->name('index');
             Route::get('/data', 'data')->name('data');
             Route::get('/{prize}/status', 'changeStatus')->name('status');
-            Route::get('/create', 'create')->name('create');
-            Route::post('/store', 'store')->name('store');
             Route::get('/{prize}/edit', 'edit')->name('edit');
             Route::put('/{prize}', 'update')->name('update');
             Route::get('/{prize}/delete', 'delete')->name('delete');
@@ -228,7 +230,16 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::post('/{prize}/autobind', 'autobind')->name('attachPromocodes');
             Route::post('/{prize}/autobind/{promocodeId}', 'autobindDelete')->name('detachPromocodes');
             Route::get('/{prize}/actions-data', 'actionsData')->name('actionsData');
+            Route::prefix('category/{category}/promotion/{promotion}')
+                ->group(function () {
+                    Route::get('/create', 'createByCategory')->name('createByCategory');
+                    Route::post('/store', 'storeByCategory')->name('storeByCategory');
+                    Route::post('/import', 'importByCategory')->name('importByCategory');
+                });
         });
+
+
+
     Route::prefix('prize_messages')
         ->name('prize_messages.')
         ->controller(MessagesController::class)
