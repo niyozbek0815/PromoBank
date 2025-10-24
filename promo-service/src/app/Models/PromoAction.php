@@ -132,7 +132,10 @@ class PromoAction extends Model
     {
         return $this->belongsTo(Promotions::class);
     }
-
+    public function shop()
+    {
+        return $this->belongsTo(PromotionShop::class, 'shop_id');
+    }
     public function promoCode()
     {
         return $this->belongsTo(PromoCode::class);
@@ -141,11 +144,6 @@ class PromoAction extends Model
     public function prize()
     {
         return $this->belongsTo(Prize::class);
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(UsersCache::class);
     }
 
     public function userCache()

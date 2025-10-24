@@ -173,15 +173,11 @@ Route::prefix('front')->group(function () {
         ->name('admin.sales_receipts.')
         ->controller(SelesReceiptController::class)
         ->group(function () {
-            // 🔹 Barcha sales receipts ro'yxati
             Route::get('/', 'index')->name('index');
-
-            // 🔹 AJAX uchun datatable API
             Route::get('/data', 'data')->name('data');
-
-            // 🔹 Muayyan promotion uchun yutgan sales receipts
             Route::get('/{promotion_id}/winning', 'winningByPromotion')
                 ->name('winning_by_promotion');
+            Route::get('/show/{id}', 'show')->name('show');
         });
     Route::prefix('banners')->name('admin.banners.')
         ->controller(BannersController::class)

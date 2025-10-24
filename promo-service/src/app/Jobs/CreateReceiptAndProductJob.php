@@ -38,6 +38,7 @@ class CreateReceiptAndProductJob implements ShouldQueue
         protected $subPrizeId = null,
         protected $manualPrizeCount = 0,
         protected $promotionId,
+        protected $shopId = null
     ) {
     }
     public function middleware()
@@ -72,7 +73,8 @@ class CreateReceiptAndProductJob implements ShouldQueue
                     'scaner',
                     $receipt->id,
                     null,
-                    'Receipt created'
+                    'Receipt created',
+                    null
                 );
                 Log::info('Receipts', ['receipts' => $receipt]);
 
@@ -133,7 +135,8 @@ class CreateReceiptAndProductJob implements ShouldQueue
             'scaner_win',
             $receipt_id,
             null,
-            "Encouragement points: {$promoball}"
+            "Encouragement points: {$promoball}",
+            null
         );
         // Log the awarded encouragement points
         EncouragementPoint::create([
@@ -143,108 +146,78 @@ class CreateReceiptAndProductJob implements ShouldQueue
         ]);
 
     }
-    private function dispatchPromoCodeJob($userId, $receiptId, &$actions): void
+    private function dispatchPromoCodeJob(int $userId, int $receiptId, array &$actions): void
     {
+        $now = now();
         $baseData = [
             'promo_code_id' => $this->promoCodeId,
             'user_id' => $userId,
             'platform_id' => $this->platformId,
             'receipt_id' => $receiptId,
-            'promotion_product_id' => null,
             'sub_prize_id' => $this->subPrizeId,
             'promotion_id' => $this->promotionId,
+            'created_at' => $now,
+            'updated_at' => $now,
         ];
-        Log::info("data", ['data' => $baseData]);
 
-        // Transaction boshida oxirgi ID ni saqlab olamiz
         $lastIdBeforeInsert = PromoCodeUser::max('id') ?? 0;
+
+        // 1️⃣ Manual prizes
         if ($this->manualPrizeCount > 0) {
-            $manualRows = [];
-
-            for ($i = 0; $i < $this->manualPrizeCount; $i++) {
-                $manualRows[] = array_merge($baseData, [
-                    'prize_id' => null,
-                ]);
-
-                $actions[] = $this->buildAction(
-                    'manual_win',
-                    'scaner_pending',
-                    $receiptId,
-                    null,
-                    'Manual win recorded'
-                );
-            }
-
+            $manualRows = array_map(fn() => array_merge($baseData, ['prize_id' => null]), range(1, $this->manualPrizeCount));
             PromoCodeUser::insert($manualRows);
-            Log::info("Manual PromoCodeUser rows inserted", ['count' => $this->manualPrizeCount]);
-        }
-        if (!empty($this->selectedPrizes)) {
-            $rows = [];
-            $prizeIds = [];
 
+            foreach ($manualRows as $_) {
+                $actions[] = $this->buildAction('manual_win', 'scaner_pending', $receiptId, null, 'Manual win recorded', $this->shopId);
+            }
+        }
+
+        // 2️⃣ Selected prizes
+        if (!empty($this->selectedPrizes)) {
+            $rows = $prizeIds = [];
             foreach ($this->selectedPrizes as $item) {
                 $prize = $item['prize'] ?? null;
-                $entry = $item['entry'];
-                if (!isset($prize['id'])) {
+                $entry = $item['entry'] ?? [];
+                if (!isset($prize['id']))
                     continue;
-                }
+
                 $rows[] = array_merge($baseData, [
                     'prize_id' => $prize['id'],
-                    'promotion_product_id' => $entry['product_id'] ?? null, // entry asosida update
+                    'promotion_product_id' => $entry['product_id'] ?? null,
                 ]);
                 $prizeIds[] = $prize['id'];
+
                 $actions[] = $this->buildAction(
                     'auto_win',
                     'scaner_win',
                     $receiptId,
                     $prize['id'],
                     "Prize auto-awarded: {$prize['name']}",
-                    $entry['shop_id'] ?? null
+                    $this->shopId ?? null
                 );
             }
-            if (!empty($rows)) {
-                Log::info("Rows (before insert)", ['rows' => $rows]);
 
-                // Insert qilish
+            if ($rows) {
                 PromoCodeUser::insert($rows);
 
-                // Oxirgi insert qilingan ID ni olish
-                $lastId = PromoCodeUser::latest('id')->value('id');
-
-                // Insert qilingan qatorlar soni
-                $count = count($rows);
-
-                // Insert qilingan ID lar diapazoni
-                $insertedIds = range($lastId - $count + 1, $lastId);
-
-                // DB dan yangi qo‘shilganlarni olish
-                $inserted = PromoCodeUser::whereIn('id', $insertedIds)
-                    ->with(['prize:id,name', 'promotionProduct:id,name'])
-                    ->get();
-
-                Log::info("Inserted PromoCodeUsers from DB", $inserted->toArray());
-                if (!empty($actions)) {
-                    try {
-                        PromoAction::insert($actions);
-                        Log::info("✅ All promo actions inserted successfully", [
-                            'count' => count($actions),
-                        ]);
-                    } catch (\Throwable $e) {
-                        Log::error("❌ Failed to insert PromoActions", [
-                            'error' => $e->getMessage(),
-                            'trace' => $e->getTraceAsString(),
-                        ]);
-                    }
-                }
-                // Prize count update
+                // Prize awarded quantity update
                 foreach (array_count_values($prizeIds) as $id => $count) {
                     Prize::where('id', $id)->increment('awarded_quantity', $count);
                 }
             }
         }
-        $inserted = PromoCodeUser::where('id', '>', $lastIdBeforeInsert)->get();
-        Log::info('Inserted PromoCodeUsers from DB', $inserted->toArray());
 
+        // 3️⃣ Actions insert
+        if (!empty($actions)) {
+            try {
+                PromoAction::insert($actions);
+            } catch (\Throwable $e) {
+                Log::error("PromoAction insert failed", ['error' => $e->getMessage()]);
+            }
+        }
+
+        // 4️⃣ Log inserted rows (optional, light logging)
+        Log::info('Inserted PromoCodeUsers', PromoCodeUser::where('id', '>', $lastIdBeforeInsert)->get(['id', 'prize_id', 'promotion_product_id'])->toArray());
     }
     private function buildAction(
         string $action,

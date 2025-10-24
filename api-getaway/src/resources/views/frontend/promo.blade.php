@@ -138,7 +138,7 @@
 
                 <h3>{{ __('messages.extra') }}</h3>
                 <div class="description">
-                    <p>{{ $promotion['description'] ?? '' }}</p>
+    {!! $promotion['description'] ?? '' !!}
                 </div>
             </div>
         </div>

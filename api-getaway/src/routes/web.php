@@ -62,7 +62,7 @@ Route::prefix('webapp')->name('webapp.')->group(function () {
 
 
 Route::get('/lang/{locale}', function ($locale) {
-    $available = ['uz', 'ru', 'kr']; // mavjud tillar
+    $available = ['uz', 'ru', 'kr', 'en']; // mavjud tillar
     if (in_array($locale, $available)) {
         session(['locale' => $locale]);
         app()->setLocale($locale);
@@ -206,15 +206,11 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
         ->name('sales_receipts.')
         ->controller(SelesReceiptController::class)
         ->group(function () {
-            // 🔹 Barcha sales receipts ro'yxati
             Route::get('/', 'index')->name('index');
-
-            // 🔹 AJAX uchun datatable API
             Route::get('/data', 'data')->name('data');
-
-            // 🔹 Muayyan promotion uchun yutgan sales receipts
             Route::get('/{promotion_id}/winning', 'winningByPromotion')
                 ->name('winning_by_promotion');
+            Route::get('/show/{id}', 'show')->name('show');
         });
 
 

@@ -592,27 +592,7 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                 columns: [{
                         data: 'id',
                     },
-                    {
-                        data: 'promocode',
-                    },
-                    {
-                        data: 'platform',
-                    },
-
-                    {
-                        data: 'prize_name',
-                    },
-                    {
-                        data: 'promotion_name',
-                    },
-
-                    {
-                        data: 'user',
-                        render: function(val) {
-                            return val ? `#${val}` : '—';
-                        }
-                    },
-                    {
+                         {
                         data: 'action',
                     },
                     {
@@ -620,11 +600,34 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
 
                     },
                     {
-                        data: 'message',
+                        data: 'promocode',
+                    },
+                    {
+                        data: 'receipt_id',
+                    },
+                      {
+                        data: 'user',
+                        render: function(val) {
+                            return val ? `#${val}` : '—';
+                        }
+                    },
+                    {
+                        data: 'promotion_name',
                     },
 
                     {
-                        data: 'used_at',
+                        data: 'shop',
+                    },
+                      {
+                        data: 'platform',
+                    },
+                    {
+                        data: 'message',
+                    },
+
+
+                    {
+                        data: 'created_at',
                     },
                 ],
 
@@ -885,13 +888,14 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                         <thead>
                             <tr>
                                 <th>#ID</th>
-                                <th>Promocode</th>
-                                <th>Platforma</th>
-                                <th>Sovg‘a</th>
-                                <th>Promoaksiya</th>
-                                <th>Foydalanuvchi</th>
-                                <th>Harakat turi</th>
+                                <th>Harakat</th>
                                 <th>Status</th>
+                                <th>Promocode</th>
+                                <th>Chek ID</th>
+                                <th>Foydalanuvchi</th>
+                                <th>Aksiya nomi</th>
+                                <th>Do‘kon</th>
+                                <th>Platforma</th>
                                 <th>Xabar</th>
                                 <th>Foydalangan vaqti</th>
                             </tr>

@@ -14,7 +14,7 @@
             }
         });
          $(document).ready(function() {
-            const url = "/admin/seles_receipts/data";
+            const url = "/admin/sales-receipts/data";
 
             if ($.fn.DataTable.isDataTable('#receipts-table')) {
                 $('#receipts-table').DataTable().destroy();
@@ -38,6 +38,10 @@
                     {
                         data: 'name',
                         name: 'name'
+                    },
+                     {
+                        data: 'address',
+                        address: 'address'
                     },
                     {
                         data: 'nkm_number',
@@ -157,6 +161,7 @@
                         <th>ID</th>
                         <th>Chek ID</th>
                         <th>Do‘kon nomi</th>
+                        <th>Manzil</th>
                         <th>NKM raqami</th>
                         <th>SN</th>
                         <th>To‘lov turi</th>

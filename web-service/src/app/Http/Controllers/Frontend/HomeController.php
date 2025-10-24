@@ -159,6 +159,7 @@ class HomeController extends Controller
 
         $cacheKey = "frontend:download:{$lang}";
         $ttl      = now()->addMinutes(5);
+        // Cache::store('redis')->forget("promotions_list_{$lang}");
         $data = Cache::store('redis')->remember($cacheKey, $ttl, function () use ($lang) {
 
             $socialLinks = SocialLink::where('status', 1)

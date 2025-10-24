@@ -109,6 +109,7 @@
                     <option value="uz" {{ app()->getLocale() === 'uz' ? 'selected' : '' }}>🇺🇿 O‘zbekcha</option>
                     <option value="ru" {{ app()->getLocale() === 'ru' ? 'selected' : '' }}>🇷🇺 Русский</option>
                     <option value="kr" {{ app()->getLocale() === 'kr' ? 'selected' : '' }}>🇺🇿 Ўзбекча</option>
+                        <option value="en" {{ app()->getLocale() === 'en' ? 'selected' : '' }}>🇬🇧 English</option>
                 </select>
             </div>
         </div>

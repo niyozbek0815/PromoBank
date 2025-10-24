@@ -440,11 +440,12 @@ class PrizeController extends Controller
     public function actionsData(Request $request, Prize $prize)
     {
         $query = PromoAction::with([
-            'promoCode:id,promocode,is_used,used_at',
+            'promoCode:id,promocode',
             'promotion:id,name',
             'platform:id,name',
-            'user:id,phone',
-            'prize:id,name'
+            'userCache:user_id,name,phone',
+            'shop:name'
+
         ])
             ->where('prize_id', $prize->id)
             ->orderByDesc('id');
@@ -453,21 +454,18 @@ class PrizeController extends Controller
             ->addColumn('id', fn($item) => $item->id)
             ->addColumn('promotion_name', fn($item) => $item->promotion?->name ?? '—')
             ->addColumn('promocode', fn($item) => $item->promoCode?->promocode ?? '—')
-            ->addColumn('is_used', fn($item) => $item->promoCode?->is_used
-                ? '<span class="badge bg-danger">Foydalanilgan</span>'
-                : '<span class="badge bg-success">Yangi</span>')
             ->addColumn('used_at', fn($item) =>
                 optional($item->promoCode?->used_at)->format('d.m.Y H:i') ?? '—')
             ->addColumn('platform', fn($item) => $item->platform?->name ?? '—')
-            ->addColumn('user', fn($item) => $item->user?->phone ?? $item->user_id)
-            ->addColumn('prize_name', fn($item) => $item->prize?->name ?? '—')
+            ->addColumn('user', fn($item) => $item->userCache?->phone ?? $item->user_id)
 
             ->addColumn('action', fn($item) => $item->action ?? '—')
 
             ->addColumn('status', fn($item) => $item->status ?? '—')
-            ->addColumn('attempt_time', fn($item) =>
-                optional($item->attempt_time)->format('d.m.Y H:i') ?? '—')
-
+            ->addColumn('created_at', fn($item) =>
+                optional($item->created_at)->format('d.m.Y H:i') ?? '—')
+            ->addColumn('shop', fn($item) => $item->shop?->name ?? '—')
+            ->addColumn('receipt_id', fn($item) => $item->receipt_id ?? '—')
             ->addColumn('message', fn($item) => e(Str::limit($item->message, 120)) ?? '—')
             ->rawColumns(['is_used', 'status', 'actions'])
             ->make(true);

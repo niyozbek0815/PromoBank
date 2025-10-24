@@ -18,6 +18,7 @@ return new class extends Migration {
                 ->onDelete('cascade');
 
             $table->foreignId('user_id');
+            $table->foreignId('promotion_id')->nullable()->constrained()->onDelete('set null');
 
             $table->foreignId('receipt_id')->nullable();
 

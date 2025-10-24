@@ -1,5 +1,5 @@
 @extends('admin.layouts.app')
-@section('title', 'Promoacode')
+@section('title', 'Promocode')
 @push('scripts')
     <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
     <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>

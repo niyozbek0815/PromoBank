@@ -21,9 +21,8 @@ class SelesReceiptController extends Controller
 
     public function data(Request $request)
     {
-        $endpoint = "front/seles_receipts/data";
+        $endpoint = "front/sales-receipts/data";
         $response = $this->forwardRequest("GET", $this->url, $endpoint, $request);
-Log::info('Fetching sales receipts data', $response->json());
 
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());
@@ -50,5 +49,14 @@ Log::info('Fetching sales receipts data', $response->json());
         }
 
         return response()->json(['message' => 'Promo service error'], 500);
+    }
+    public function show(Request $request, $id)
+    {
+        $endpoint = "front/sales-receipts/show/{$id}";
+        $response = $this->forwardRequest("GET", $this->url, $endpoint, $request);
+// dd($response->json());
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            return view('admin.reciepts.show', ['data' => $response->json()]);
+        }
     }
 }

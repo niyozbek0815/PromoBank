@@ -14,6 +14,8 @@
                     </option>
                     <option value="kr" {{ app()->getLocale() === 'kr' ? 'selected' : '' }}>🇺🇿 Ўзбекча
                     </option>
+                        <option value="en" {{ app()->getLocale() === 'en' ? 'selected' : '' }}>🇬🇧 English</option>
+
                 </select>
             </div>
         </div>

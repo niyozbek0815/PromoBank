@@ -60,7 +60,8 @@ class ReceiptService
             $selectedPrizes,
             null,
             $manualPrizeCount,
-            $shop->promotion->id ?? null
+            $shop->promotion->id ?? null,
+            $shop->id ?? null,
         ));
 
         return compact('action', 'status', 'messages');

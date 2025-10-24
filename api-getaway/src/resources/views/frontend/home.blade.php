@@ -28,7 +28,7 @@
 
         <div id="stars">
             <div class="img-wrap star">
-                <img src="{{ asset('assets/image/hero/star-1.png') }}" alt="star" />
+       x         <img src="{{ asset('assets/image/hero/star-1.png') }}" alt="star" />
             </div>
             <div class="img-wrap star">
                 <img src="{{ asset('assets/image/hero/star-2.png') }}" alt="star" />
