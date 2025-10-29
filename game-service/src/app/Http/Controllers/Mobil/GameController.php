@@ -46,26 +46,70 @@ class GameController extends Controller
             200
         );
     }
-    public function rejectStage2(Request $request)
-    {
-        return DB::transaction(function () use ($request) {
-            $user = $request['auth_user'];
-            $req = $request->validate([
-                'session_id' => 'required|integer|exists:game_sessions,id',
-            ]);
-            $session = GameSession::where('game_id', 1)
-                ->where('user_id', $user['id'])
-                ->where('status', '!=', 'finished')
-                ->where('stage1_success_steps', '>=', 5)
-                ->first();
-            $session->fill([
-                'stage2_attempted' => false,
-                'stage2_confirmed' => false,
-                'status' => 'finished',
-            ])->save();
-            return $this->successResponse([], "Stage 2 rejected successfully", 200);
-        });
-    }
+public function rejectStage2(Request $request)
+{
+    return DB::transaction(function () use ($request) {
+        $user = $request['auth_user'];
+        $lang = $user['lang'] ?? 'uz';
+
+        $validated = $request->validate([
+            'session_id' => 'required|integer|exists:game_sessions,id',
+            'lang' => 'required|in:uz,ru,kr,en',
+        ]);
+
+        $session = GameSession::where('id', $validated['session_id'])
+            ->where('user_id', $user['id'])
+            ->where('status', '!=', 'finished')
+            ->first();
+
+        // 🔹 Xabarlar (til bo‘yicha)
+        $messages = [
+            'no_session' => [
+                'uz' => "Faol o'yin sessiyasi topilmadi yoki allaqachon yakunlangan.",
+                'ru' => "Активная игровая сессия не найдена или уже завершена.",
+                'kr' => "Фаол ўйин сессияси топилмади ёки аллақачон якунланган.",
+                'en' => "Active game session not found or already finished.",
+            ],
+            'not_enough_steps' => [
+                'uz' => "Stage 2 ni rad etish uchun 1-bosqichda kamida 5 ta to‘g‘ri qadam bo‘lishi kerak.",
+                'ru' => "Для отказа от 2-го этапа нужно пройти как минимум 5 шагов первого этапа.",
+                'kr' => "2-босқични рад этиш учун 1-босқичда камида 5 та тўғри қадам бўлиши керак.",
+                'en' => "To reject Stage 2, you must complete at least 5 correct steps in Stage 1.",
+            ],
+            'success' => [
+                'uz' => "Stage 2 muvaffaqiyatli rad etildi.",
+                'ru' => "Этап 2 успешно отклонён.",
+                'kr' => "2-босқич муваффақиятли рад этилди.",
+                'en' => "Stage 2 rejected successfully.",
+            ],
+        ];
+
+        // 🔹 Sessiya topilmasa
+        if (!$session) {
+            return $this->errorResponse(
+                $messages['no_session'][$lang] ?? $messages['no_session']['uz'],
+                404
+            );
+        }
+
+        // 🔹 1-bosqich hali yetarli darajada tugamagan bo‘lsa
+        if ($session->stage1_success_steps < 5) {
+            return $this->errorResponse(
+                $messages['not_enough_steps'][$lang] ?? $messages['not_enough_steps']['uz'],
+                400
+            );
+        }
+
+        // 🔹 Sessiyani yakunlash
+        $session->fill([
+            'stage2_attempted' => false,
+            'stage2_confirmed' => false,
+            'status' => 'finished',
+        ])->save();
+
+        return $this->successResponse([], $messages['success'][$lang] ?? $messages['success']['uz'], 200);
+    });
+}
     public function startNext(Request $request)
     {
         $request->validate([

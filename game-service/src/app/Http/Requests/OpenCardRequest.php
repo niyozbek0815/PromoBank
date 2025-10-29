@@ -47,7 +47,7 @@ class OpenCardRequest extends FormRequest
                 'integer',
                 'distinct',
                 Rule::exists('game_session_cards', 'id')->where(fn($q) =>
-                    $q->where('is_revealed', 0)->where('etap', 2)
+                    $q->where('is_revealed', 0)->where('etap', 1)
                       ->whereRaw('session_id = ?', [$this->session_id])
                 ),
             ],

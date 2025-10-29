@@ -42,7 +42,8 @@ class GameStartService
         $game_step = $session->stage1_success_steps + 1;
         $stepConfig = $game->stage1Steps
             ->firstWhere('step_number', $game_step)
-                ?->only(['step_number', 'card_count']) ?? [];
+                ?->only(['step_number', 'card_count']) ?? [ "step_number" => 5,
+            "card_count" => 0];
 
         $stepConfig['all_step_count'] = $game->stage1Steps->count();
         $sessionCardsAll = $session->sessionCards->where('etap', 1)->values();
@@ -143,8 +144,6 @@ class GameStartService
                 ?->only(['step_number', 'card_count']) ?? [];
 
         $stepConfig['all_step_count'] = $game->stage1Steps->count();
-        $stepConfig['etap'] = 1;
-
         $cardsShablon = $game->cards->where('stage', 'stage1')->values();
         $expanded = [];
 
