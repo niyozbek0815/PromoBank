@@ -5,6 +5,7 @@ use App\Telegram\Services\RegionsAndDistrictService;
 use App\Telegram\Services\RegisterService;
 use App\Telegram\Services\Translator;
 use App\Telegram\Services\UserUpdateService;
+use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Telegram\Bot\Objects\Update;
 
@@ -55,12 +56,13 @@ class DistrictStepHandler
     {
         $callbackQuery = $update->getCallbackQuery();
         $message       = $callbackQuery?->getMessage();
-        $chatId        = $message?->getChat()?->getId();
-        $messageId     = $message?->getMessageId();
+        $chatId = $update->getMessage()?->getChat()?->getId()
+            ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
+              $messageId     = $message?->getMessageId();
         $data          = $callbackQuery?->getData();
 
         if (! str_starts_with($data, 'district:') || ! is_numeric($districtId = str_replace('district:', '', $data))) {
-            $this->sendMessage($chatId, 'invalid_region_choice');
+            $this->sendMessage($chatId, 'invalid_district_choice');
             return;
         }
 
@@ -86,6 +88,10 @@ class DistrictStepHandler
 
     protected function sendMessage($chatId, $key)
     {
+        if (empty($chatId)) {
+            Log::warning("sendMessage chaqirildi, lekin chatId bo'sh. Key: $key");
+            return;
+        }
         Telegram::sendMessage([
             'chat_id' => $chatId,
             'text'    => $this->translator->get($chatId, $key),

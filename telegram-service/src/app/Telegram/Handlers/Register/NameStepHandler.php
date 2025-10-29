@@ -35,7 +35,7 @@ class NameStepHandler
 
         Telegram::sendMessage([
             'chat_id' => $chatId,
-            'text'    => "✅ Ismingiz qabul qilindi.",
+            'text'    =>  $this->translator->get($chatId, 'name_received'),
         ]);
 
         app($service)->mergeToCache($chatId, [

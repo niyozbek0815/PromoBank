@@ -8,11 +8,45 @@ use App\Models\GameSessionCard;
 
 class OpenCardsService
 {
+
+        protected function getStepErrorMessage(string $lang, int $expectedCount): string
+    {
+        $messages = [
+            'uz' => "Iltimos, {$expectedCount} ta kartani tanlang.",
+            'ru' => "Пожалуйста, выберите {$expectedCount} карт(ы).",
+            'kr' => "Илтимос, {$expectedCount} та картани танланг.",
+            'en' => "Please select {$expectedCount} card(s).",
+        ];
+
+        return $messages[$lang] ?? $messages['uz'];
+    }
+    public function getAllStepsCompletedMessage(string $lang): string
+    {
+        $messages = [
+            'uz' => "Siz 1-bosqichdagi barcha kartalarni allaqachon ochgansiz 🎉\nEndi 2-bosqichga o‘tish vaqti keldi!",
+            'ru' => "Вы уже открыли все карты 1-го этапа 🎉\nТеперь пора переходить ко 2-му этапу!",
+            'kr' => "Сиз 1-босқичдаги барча карталарни аллақачон очиб бўлдингиз 🎉\nЭнди 2-босқичга ўтиш вақти келди!",
+            'en' => "You’ve already opened all cards in Stage 1 🎉\nNow it’s time to move on to Stage 2!",
+        ];
+
+        return $messages[$lang] ?? $messages['uz'];
+    }
+    public function getStage2BeforeStage1CompletedMessage(string $lang): string
+    {
+        $messages = [
+            'uz' => "Siz hali 1-bosqichni yakunlamagansiz 😊\nIltimos, avval 1-bosqichdagi barcha qadamlarni tugatib oling, shundan so‘ng 2-bosqichni boshlashingiz mumkin bo‘ladi.",
+            'ru' => "Вы ещё не завершили 1-й этап 😊\nПожалуйста, сначала пройдите все шаги 1-го этапа, после этого сможете открыть карты 2-го этапа.",
+            'kr' => "Сиз ҳали 1-босқични якунламадингиз 😊\nИлтимос, аввал 1-босқичдаги барча қадамларни тугатинг, шундан сўнг 2-босқични бошлашингиз мумкин бўлади.",
+            'en' => "You haven’t finished Stage 1 yet 😊\nPlease complete all steps in Stage 1 first, then you’ll be able to open cards in Stage 2.",
+        ];
+
+        return $messages[$lang] ?? $messages['uz'];
+    }
     public function handleStage1($session, $req, $gameStep, $stepConfig)
     {
         if (!$stepConfig || $stepConfig->card_count !== count($req['selected_cards_id'])) {
             return [
-                'message' => "Iltimos {$stepConfig->card_count} ta kartani tanlang.",
+                'message' => $this->getStepErrorMessage($req['lang'], $stepConfig->card_count ?? 0),
             ];
         }
 
@@ -31,7 +65,7 @@ class OpenCardsService
 
         $session->update($session_update_data);
 
-        return response()->json([
+        return [
             'new_game' => false,
             'won' => $data['hasWinningCard'],
             'won_promoball' => $won_promoball,
@@ -40,7 +74,7 @@ class OpenCardsService
                 'point' => $fallbackCard->card->point,
             ],
             'cards' => $data['minimalCardData']
-        ]);
+        ];
     }
     public function handleStage2($session, $req, $gameStep)
     {
@@ -53,7 +87,7 @@ class OpenCardsService
 
         if ($selectedCount !== count($req['selected_cards_id'])) {
             return [
-                'message' => "Iltimos {$selectedCount} ta kartani tanlang.",
+                'message' => $this->getStepErrorMessage($req['lang'], $stepConfig->card_count ?? 0),
             ];
         }
 
@@ -80,13 +114,13 @@ class OpenCardsService
             ])->save();
         }
 
-        return response()->json([
+        return[
             'new_game' => true,
             'won' => true,
             'won_promoball' => $won_promoball,
             'fallback_card' => [],
             'cards' => $minimalCardData
-        ]);
+        ];
     }
 
     public function getActiveSession(int $sessionId, int $userId, array $selectedCardIds)
@@ -130,7 +164,7 @@ class OpenCardsService
             }
             $card->fill([
                 'is_success' => $isWin,
-                'selected_by_user' => false,
+                'selected_by_user' => true,
                 'is_revealed' => true,
                 'step_number' => $gameStep,
             ])->save();

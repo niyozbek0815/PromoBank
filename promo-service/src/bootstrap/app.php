@@ -43,8 +43,13 @@ return Application::configure(basePath: dirname(__DIR__))
             if (! $onlyApi($request)) {
                 return null;
             }
-            return $errorResponse('Validatsiya xatoligi', $e->errors(), 422);
-        });
+    // Barcha xatoliklar
+    $errors = $e->errors();
+
+    // 1-chi xabarni olish
+    $firstMessage = collect($errors)->flatten()->first() ?? 'Validatsiya xatoligi';
+
+    return $errorResponse($firstMessage, $errors, 422);        });
 
         $exceptions->renderable(function (AuthenticationException $e, $request) use ($errorResponse, $onlyApi) {
             if (! $onlyApi($request)) {

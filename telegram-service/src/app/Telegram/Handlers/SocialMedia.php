@@ -5,6 +5,7 @@ namespace App\Telegram\Handlers;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Telegram\Bot\Objects\Update;
 use App\Services\FromServiceRequest;
+use App\Telegram\Services\Translator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Client\Response;
@@ -14,17 +15,18 @@ class SocialMedia
     protected string $prefix = 'tg_social_link:';
 
     private array $allowedTypes = [
-        'instagram' => '📸 Instagram',
-        'facebook' => '📘 Facebook',
-        'youtube' => '▶️ YouTube',
-        'appstore' => '🍏 App Store',
-        'googleplay' => '📲 Google Play',
-        // 'telegram' => '📢 Telegram kanal',
+        'instagram' => 'Instagram',
+        'facebook' => 'Facebook',
+        'youtube' => 'YouTube',
+        'appstore' => 'App Store',
+        'googleplay' => 'Google Play',
+        // 'telegram' => 'Telegram kanal',
     ];
 
-    public function __construct(private FromServiceRequest $forwarder)
-    {
-    }
+    public function __construct(
+        private FromServiceRequest $forwarder,
+        protected Translator $translator
+    ) {}
 
     public function handle(Update $update): void
     {
@@ -58,17 +60,17 @@ class SocialMedia
 
         Log::info("Social links", ['data' => $links]);
 
-        $keyboard = $this->buildKeyboard($links);
+        $keyboard = $this->buildKeyboard($links,$chatId);
 
         Telegram::editMessageText([
             'chat_id' => $chatId,
             'message_id' => $messageId,
-            'text' => "📱 Bizning ijtimoiy tarmoqlarimizga azo bo'ling va kuzatib boring:",
+            'text' => $this->translator->get($chatId, 'social_follow_prompt'),
             'reply_markup' => json_encode(['inline_keyboard' => $keyboard]),
         ]);
     }
 
-    private function buildKeyboard(array $links): array
+    private function buildKeyboard(array $links, $chatId): array
     {
         $keyboard = [];
 
@@ -92,7 +94,7 @@ class SocialMedia
 
         $keyboard[] = [
             [
-                'text' => "⬅️ Ortga",
+                'text' => $this->translator->get($chatId, 'back'),
                 'callback_data' => 'back_to_main_menu',
             ]
         ];

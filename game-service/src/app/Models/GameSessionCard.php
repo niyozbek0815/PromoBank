@@ -14,7 +14,10 @@ class GameSessionCard extends Model
         'is_success',
         'selected_by_user',
     ];
-
+    protected $casts = [
+        'selected_by_user' => 'boolean',
+        'is_revealed' => 'boolean',
+    ];
     public function session()
     {
         return $this->belongsTo(GameSession::class, 'session_id');

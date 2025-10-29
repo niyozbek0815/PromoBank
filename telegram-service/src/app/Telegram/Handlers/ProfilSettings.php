@@ -28,12 +28,9 @@ class ProfilSettings
         "🏘 <b>" . $this->translator->get($chatId, 'profile_district') . ":</b> {$user['district']}\n" .
         "⚧ <b>" . $this->translator->get($chatId, 'profile_gender') . ":</b> " . ($user['gender'] === 'M' ? $this->translator->get($chatId, 'gender_male') : $this->translator->get($chatId, 'gender_female')) . "\n" .
         "📅 <b>" . $this->translator->get($chatId, 'profile_birthdate') . ":</b> " . date('d.m.Y', strtotime($user['birthdate'])) . "\n" .
-        "🌐 <b>" . $this->translator->get($chatId, 'profile_lang') . ":</b> " . match ($lang) {
-            'uz' => "O‘zbekcha",
-            'ru' => "Русский",
-            'kr' => "Кирилл",
-            default => "O‘zbekcha"
-        } . "\n";
+            "🌐 <b>" . $this->translator->get($chatId, 'profile_lang') . ":</b> "
+            . $this->translator->getForLang('language_selection', $lang)
+            . "\n";
 
         $currentMessage = $update->getCallbackQuery()?->getMessage()?->getText();
         if ($currentMessage === $text) {
@@ -48,10 +45,10 @@ class ProfilSettings
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
-                        ['text' => "✏️ Ma'lumotlarni tahrirlash", 'callback_data' => 'edit_profile'],
+                        ['text' => $this->translator->get($chatId, 'profile_update'), 'callback_data' => 'edit_profile'],
                     ],
                     [
-                        ['text' => "🔙 Ortga", 'callback_data' => 'back_to_main_menu'],
+                        ['text' => $this->translator->get($chatId, 'back'), 'callback_data' => 'back_to_main_menu'],
                     ],
                 ],
             ]),

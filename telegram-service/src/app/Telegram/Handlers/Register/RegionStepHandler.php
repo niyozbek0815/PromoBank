@@ -47,12 +47,13 @@ class RegionStepHandler
     {
         $callbackQuery = $update->getCallbackQuery();
         $message       = $callbackQuery?->getMessage();
-        $chatId        = $message?->getChat()?->getId();
+        $chatId = $update->getMessage()?->getChat()?->getId()
+            ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
         $messageId     = $message?->getMessageId();
         $data          = $callbackQuery?->getData();
 
         if (! str_starts_with($data, 'region:') || ! is_numeric($regionId = str_replace('region:', '', $data))) {
-            $this->sendMessage($chatId, 'invalid_region_choice');
+           $this->sendMessage($chatId, 'invalid_region_choice');
             return;
         }
 
@@ -86,9 +87,14 @@ class RegionStepHandler
 
     protected function sendMessage($chatId, $key)
     {
+        if (empty($chatId)) {
+            Log::warning("sendMessage chaqirildi, lekin chatId bo'sh. Key: $key");
+            return;
+        }
+
         Telegram::sendMessage([
             'chat_id' => $chatId,
-            'text'    => $this->translator->get($chatId, $key),
+            'text' => $this->translator->get($chatId, $key),
         ]);
     }
 }

@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class OpenCardRequest extends FormRequest
+class OpenCardTwoRequest extends FormRequest
 {
     protected string $resolvedLang = 'uz';
 
@@ -35,20 +35,21 @@ class OpenCardRequest extends FormRequest
             'session_id' => [
                 'required',
                 'integer',
-                Rule::exists('game_sessions', 'id')->where(fn($q) =>
+                Rule::exists('game_sessions', 'id')->where(
+                    fn($q) =>
                     $q->where('status', 'in_progress')
                 ),
             ],
             'lang' => ['required', 'in:uz,ru,kr,en'],
-            'selected_point' => ['required', 'integer', 'min:1'],
             'selected_cards_id' => ['required', 'array'],
             'selected_cards_id.*' => [
                 'required',
                 'integer',
                 'distinct',
-                Rule::exists('game_session_cards', 'id')->where(fn($q) =>
+                Rule::exists('game_session_cards', 'id')->where(
+                    fn($q) =>
                     $q->where('is_revealed', 0)->where('etap', 2)
-                      ->whereRaw('session_id = ?', [$this->session_id])
+                        ->whereRaw('session_id = ?', [$this->session_id])
                 ),
             ],
         ];

@@ -19,7 +19,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'phone'   => ['required', 'string', 'regex:/^\+998\d{9}$/'],
             'chat_id' => ['required', 'string'],
-            'lang'    => ['nullable', 'in:uz,ru,kr'],
+            'lang'    => ['nullable', 'in:uz,ru,kr,en'],
         ]);
         $message  = "User Not found!!!";
         $userData = null;
@@ -75,7 +75,7 @@ class AuthController extends Controller
             'gender'      => ['nullable', 'in:male,female'],
             'birthdate'   => ['nullable', 'date_format:Y-m-d'],
             'phone2'      => ['nullable', 'string', 'regex:/^\\+998\\d{9}$/'],
-            'lang'        => ['nullable', 'in:uz,ru,kr'],
+            'lang'        => ['nullable', 'in:uz,ru,kr,en'],
         ]);
         $data['gender'] = match ($data['gender'] ?? null) {
             'male' => 'e',

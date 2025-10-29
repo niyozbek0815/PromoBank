@@ -49,13 +49,28 @@ class StartHandler
         if (empty($lang)) {
             Telegram::sendMessage([
                 'chat_id'      => $chatId,
-                'text'         => "🌐 Iltimos, tilni tanlang:\n🌐 Пожалуйста, выберите язык:\n🌐 Илтимос, тилни танланг:",
+                'text'         => "❗️ Iltimos, tilni tanlang.\n❗️ Пожалуйста, выберите язык.\n❗️ Илтимос, тилни танланг.\n❗️ Please, select your language.",
                 'reply_markup' => json_encode([
                     'inline_keyboard' => [
                         [
-                            ['text' => "🇺🇿 O‘zbekcha", 'callback_data' => 'lang:uz'],
-                            ['text' => "🇷🇺 Русский", 'callback_data' => 'lang:ru'],
-                            ['text' => "🇺🇿 Кирилл", 'callback_data' => 'lang:kr'],
+                            [
+                                'text' => $this->translator->getForLang('language_selection', 'uz'),
+                                'callback_data' => 'lang:uz',
+                            ],
+                            [
+                                'text' => $this->translator->getForLang('language_selection', 'ru'),
+                                'callback_data' => 'lang:ru',
+                            ],
+                        ],
+                        [
+                            [
+                                'text' => $this->translator->getForLang('language_selection', 'kr'),
+                                'callback_data' => 'lang:kr',
+                            ],
+                            [
+                                'text' => $this->translator->getForLang('language_selection', 'en'),
+                                'callback_data' => 'lang:en',
+                            ],
                         ],
                     ],
                 ]),

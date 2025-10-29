@@ -16,18 +16,41 @@ class LanguageHandler
 
     public function ask($chatId)
     {
-        $text     = "🌐 Iltimos, tilni tanlang:\n🌐 Пожалуйста, выберите язык:\n🌐 Илтимос, тилни танланг:";
+        // 🔹 4 tildagi "til tanlang" matnlarini Translator orqali olish
+        $text = implode("\n", [
+            $this->translator->get($chatId, 'language_prompt'), // foydalanuvchi tiliga mos
+            $this->translator->getForLang('language_prompt', 'ru'),
+            $this->translator->getForLang('language_prompt', 'kr'),
+            $this->translator->getForLang('language_prompt', 'en'),
+        ]);
+
+        // 🔹 Har bir til nomini Translator orqali olish
         $keyboard = [
             [
-                ['text' => "🇺🇿 O‘zbekcha", 'callback_data' => 'lang:uz'],
-                ['text' => "🇷🇺 Русский", 'callback_data' => 'lang:ru'],
-                ['text' => "🇺🇿 Кирилл", 'callback_data' => 'lang:kr'],
+                [
+                    'text' => $this->translator->getForLang('language_selection', 'uz'),
+                    'callback_data' => 'lang:uz',
+                ],
+                [
+                    'text' => $this->translator->getForLang('language_selection', 'ru'),
+                    'callback_data' => 'lang:ru',
+                ],
+            ],
+            [
+                [
+                    'text' => $this->translator->getForLang('language_selection', 'kr'),
+                    'callback_data' => 'lang:kr',
+                ],
+                [
+                    'text' => $this->translator->getForLang('language_selection', 'en'),
+                    'callback_data' => 'lang:en',
+                ],
             ],
         ];
 
         Telegram::sendMessage([
-            'chat_id'      => $chatId,
-            'text'         => $text,
+            'chat_id' => $chatId,
+            'text' => $text,
             'reply_markup' => json_encode(['inline_keyboard' => $keyboard]),
         ]);
     }
@@ -56,10 +79,15 @@ class LanguageHandler
             ]);
             return app($nextHandlerClass)->ask($chatId);
         }
-
+ $text = implode("\n", [
+            $this->translator->get($chatId, 'language_prompt'), // foydalanuvchi tiliga mos
+            $this->translator->getForLang('language_prompt', 'ru'),
+            $this->translator->getForLang('language_prompt', 'kr'),
+            $this->translator->getForLang('language_prompt', 'en'),
+        ]);
         Telegram::sendMessage([
             'chat_id' => $chatId,
-            'text'    => "❗️ Iltimos, tilni tanlang.\n❗️ Пожалуйста, выберите язык.\n❗️ Илтимос, тилни танланг.",
+            'text' => $text,
         ]);
     }
 

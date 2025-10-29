@@ -69,7 +69,7 @@ class AuthController extends Controller
 
         if (! $token) {
             return $this->errorResponse(
-                'Validatsiya xatoligi',
+                'Token not provided',
                 ['token' => ['Token not provided']],
                 401
             );

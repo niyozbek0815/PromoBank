@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Game;
 use App\Models\GameSession;
 use App\Models\GameSessionCard;
+use Illuminate\Support\Facades\Log;
 
 class GameStartService
 {
@@ -39,19 +40,19 @@ class GameStartService
     {
         $promoball = $session->stage1_score;
         $game_step = $session->stage1_success_steps + 1;
-
-
         $stepConfig = $game->stage1Steps
             ->firstWhere('step_number', $game_step)
-            ?->only(['step_number', 'card_count']) ?? [];
+                ?->only(['step_number', 'card_count']) ?? [];
 
         $stepConfig['all_step_count'] = $game->stage1Steps->count();
-        $stepConfig['etap'] = 1;
         $sessionCardsAll = $session->sessionCards->where('etap', 1)->values();
         [$selectedCards, $unselectedCards] = [
             $sessionCardsAll->where('selected_by_user', true)->values(),
             $sessionCardsAll->where('selected_by_user', false)->values()
         ];
+        Log::info('Selected Cards: ' . $selectedCards->count(), [
+            'data' => $sessionCardsAll->values(),
+        ]);
         return $this->buildResponse($session, $stepConfig, $promoball, $sessionCardsAll, $selectedCards, $unselectedCards);
     }
 
@@ -139,7 +140,7 @@ class GameStartService
 
         $stepConfig = $game->stage1Steps
             ->firstWhere('step_number', $game_step)
-            ?->only(['step_number', 'card_count']) ?? [];
+                ?->only(['step_number', 'card_count']) ?? [];
 
         $stepConfig['all_step_count'] = $game->stage1Steps->count();
         $stepConfig['etap'] = 1;
@@ -217,11 +218,15 @@ class GameStartService
             'selected_summary' => $selectedCards->groupBy(fn($c) => $c->card->point)->map(fn($g) => $g->count()),
             'remaining_summary' => $unselectedCards->groupBy(fn($c) => $c->card->point)->map(fn($g) => $g->count()),
         ];
-
+        if ($this->isStage1InProgress($session)) {
+            $is_show = false;
+        } elseif ($this->isStage2Eligible($session)) {
+                        $is_show = true;
+        }
         return [
             'session_id' => $session->id,
             'promoball' => $promoball,
-            'stage2_request_shown' => false,
+            'stage2_request_shown' => $is_show,
             'step_config' => $stepConfig,
             'summary' => $summary,
             'card_data' => [
@@ -229,5 +234,27 @@ class GameStartService
                 'unselected_cards' => $minimalUnselected,
             ],
         ];
+    }
+  public function getNoSessionMessage(string $lang): string
+    {
+        $messages = [
+            'uz' => "O‘yin hali boshlanmagan 😊\nIltimos, avval 1-bosqichni yakunlang yoki yangi o‘yin boshlang.",
+            'ru' => "Игра ещё не началась 😊\nПожалуйста, сначала завершите 1-й этап или начните новую игру.",
+            'kr' => "Ўйин ҳали бошланмаган 😊\nИлтимос, аввал 1-босқични якунланг ёки янги ўйин бошланг.",
+            'en' => "The game hasn’t started yet 😊\nPlease finish stage 1 or start a new game first.",
+        ];
+
+        return $messages[$lang] ?? $messages['uz'];
+    }
+    public function getNoTwoStepMessage(string $lang): string
+    {
+        $messages = [
+            'uz' => "Avval 1-bosqichni yakunlang 😊\nShundan so‘ng 2-bosqichni boshlashingiz mumkin bo‘ladi.",
+            'ru' => "Сначала завершите 1-й этап 😊\nПосле этого вы сможете начать 2-й этап.",
+            'kr' => "Аввал 1-босқични якунланг 😊\nШундан сўнг 2-босқични бошлашингиз мумкин бўлади.",
+            'en' => "Please finish Stage 1 first 😊\nThen you’ll be able to start Stage 2.",
+        ];
+
+        return $messages[$lang] ?? $messages['uz'];
     }
 }
