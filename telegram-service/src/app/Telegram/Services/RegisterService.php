@@ -34,11 +34,6 @@ class RegisterService
             $this->prefix . $chatId,
             json_encode($merged)
         );
-        // Log::info("mergeToCache" . $this->prefix . $chatId,
-        //     ['data' => Cache::store('redis')->get(
-        //         $this->prefix . $chatId,
-        //     )]
-        // );
 
     }
     public function get(string $chatId)

@@ -1,6 +1,7 @@
 <?php
 namespace App\Telegram\Handlers\Register;
 
+use App\Telegram\Services\NormalizeTextService;
 use App\Telegram\Services\RegisterService;
 use App\Telegram\Services\Translator;
 use App\Telegram\Services\UserUpdateService;
@@ -40,7 +41,7 @@ class NameStepHandler
 
         app($service)->mergeToCache($chatId, [
             'chat_id' => $chatId,
-            'name'    => $messageText,
+            'name'    => app(NormalizeTextService::class)->normalizeText( $messageText),
             'state'   => 'waiting_for_phone2',
         ]);
 

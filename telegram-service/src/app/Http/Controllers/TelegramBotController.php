@@ -16,8 +16,14 @@ class TelegramBotController extends Controller
         //     return response()->json(['error' => 'Unauthorized'], 403);
         // }
 
-        $update = request('__internal_update') ?? Telegram::getWebhookUpdate();
-        // Log::info("Controller ishladi");
+        $rawUpdate = request('__internal_update') ?? Telegram::getWebhookUpdate();
+
+        // Agar bu Collection bo‘lsa, uni to‘g‘ri Update obyektiga aylantiramiz
+        if ($rawUpdate instanceof \Illuminate\Support\Collection) {
+            $rawUpdate = new \Telegram\Bot\Objects\Update($rawUpdate->toArray());
+        }
+
+        $update = $rawUpdate;         // Log::info("Controller ishladi");
         $middlewareResult = app(EnsureTelegramSessionExists::class)->handle($update);
         if ($middlewareResult) {
             // Log::info("Controller middleware ishladi");

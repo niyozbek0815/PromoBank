@@ -352,7 +352,18 @@ class Translator
             'kr' => "📱 Бизинг ижтимоий тармоқларимизга аъзо бўлинг ва кузатиб боринг:",
             'en' => "📱 Follow us on our social networks and stay updated:",
         ],
-
+        'subscription_prompt' => [
+            'uz' => "🔔 Iltimos, yangiliklar va aksiyalar haqida xabardor bo'lish uchun obuna bo'ling:",
+            'ru' => "🔔 Пожалуйста, подпишитесь, чтобы быть в курсе новостей и акций:",
+            'kr' => "🔔 Илтимос, янгиликлар ва акциялар ҳақида хабардор бўлиш учун обуна бўлинг:",
+            'en' => "🔔 Please subscribe to stay informed about news and promotions:",
+        ],
+        'check' => [
+            'uz' => '✅ Tekshirish',
+            'ru' => '✅ Проверить',
+            'kr' => '✅ Текшириш',
+            'en' => '✅ Check',
+        ],
 
     ];
 

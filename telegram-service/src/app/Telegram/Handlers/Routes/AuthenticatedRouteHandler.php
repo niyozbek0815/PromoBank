@@ -24,9 +24,7 @@ class AuthenticatedRouteHandler
         $message = $update->getMessage()?->getText();
         $getData = $update->getCallbackQuery()?->getData();
         $chatId  = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
-        Log::info("AuthenticatedRouteHandler data=>", ['message' => $message, 'getData' => $getData]);
         if ($message === $this->translator->get($chatId, 'menu_profile')) {
-            Log::info("User opened main menu", ['chat_id' => $chatId]);
 
             app(Menu::class)->handle($chatId);
         }

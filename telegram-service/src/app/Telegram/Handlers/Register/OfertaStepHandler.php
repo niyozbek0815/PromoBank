@@ -1,8 +1,10 @@
 <?php
 namespace App\Telegram\Handlers\Register;
 
+use App\Jobs\RegisterPrizeJob;
 use App\Telegram\Services\RegisterService;
 use App\Telegram\Services\Translator;
+use Illuminate\Support\Facades\Queue;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Telegram\Bot\Objects\Update;
 
@@ -60,7 +62,9 @@ class OfertaStepHandler
                 'state' => 'complete',
             ]);
             app(RegisterService::class)->finalizeUserRegistration($update);
-
+            Queue::connection('rabbitmq')->push(new RegisterPrizeJob(
+                $chatId,
+            ));
             return;
 
         }
