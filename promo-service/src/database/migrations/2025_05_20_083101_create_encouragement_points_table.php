@@ -14,9 +14,16 @@ return new class extends Migration
         Schema::create('encouragement_points', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id');
-            $table->foreignId('receipt_id')->nullable()->constrained('sales_receipts')->nullOnDelete();
-            $table->integer('points');
+
+            // Morph relation uchun faqat bitta nullableMorphs qo‘shish
+            $table->nullableMorphs('scope'); // ✅ bu yerda scope_id + scope_type avtomatik yaratiladi
+
+            $table->enum('type', ['scanner', 'game', 'referral_start', 'referral_register'])
+                ->default('scanner')
+                ->index();
+            $table->unsignedBigInteger('points');
             $table->timestamps();
+            $table->index(['user_id', 'type']);
         });
     }
 

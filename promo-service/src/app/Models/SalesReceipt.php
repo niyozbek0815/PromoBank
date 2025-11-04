@@ -47,7 +47,10 @@ class SalesReceipt extends Model
     {
         return $this->hasMany(SalesProduct::class, 'receipt_id');
     }
-
+    public function encouragementPoints()
+    {
+        return $this->morphMany(EncouragementPoint::class, 'scope');
+    }
     /**
      * Chekka tegishli foydalanuvchi cache ma’lumotlari
      */
@@ -75,10 +78,6 @@ class SalesReceipt extends Model
     /**
      * Rag‘bat ballari
      */
-    public function encouragementPoints(): HasMany
-    {
-        return $this->hasMany(EncouragementPoint::class, 'receipt_id');
-    }
 
     /* -----------------------------------------------------------------
      | ⚙️ ACCESSORS / HELPERS

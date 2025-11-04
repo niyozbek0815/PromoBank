@@ -32,6 +32,9 @@ class Menu
                         ['text' => $this->translator->get($chatId, 'menu_social'), 'callback_data' => 'menu_social'],
                     ],
                     [
+                        ['text' => $this->translator->get($chatId, 'menu_referral'), 'callback_data' => 'menu_referral'],
+                    ],
+                    [
                         ['text' => $this->translator->get($chatId, 'menu_profile'), 'callback_data' => 'menu_profile'],
                     ],
                 ],

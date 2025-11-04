@@ -1,6 +1,7 @@
 <?php
 namespace App\Telegram\Services;
 
+use App\Jobs\RegisteredReferralJob;
 use App\Services\FromServiceRequest;
 use App\Telegram\Handlers\Register\BirthdateStepHandler;
 use App\Telegram\Handlers\Register\DistrictStepHandler;
@@ -11,6 +12,7 @@ use App\Telegram\Handlers\Start\StartHandler;
 use App\Telegram\Handlers\Welcome;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Telegram\Bot\Objects\Update;
 
 class RegisterService
@@ -65,11 +67,29 @@ class RegisterService
     public function finalizeUserRegistration(Update $update)
     {
         $chatId = $update->getMessage()?->getChat()?->getId();
-
         $required = $this->get($chatId);
         $fields   = ['region_id', 'district_id', 'name', 'phone2', 'gender', 'birthdate'];
         $lang     = Cache::store('redis')->get("tg_lang:$chatId", 'uz');
         $data     = ['lang' => $lang, 'chat_id' => (string) $chatId, 'phone' => $required['phone'], 'name' => $required['name']];
+        $message = $update->getMessage();
+        $callback = $update->getCallbackQuery();
+
+
+        // 🔹 Foydalanuvchi va chat obyektlarini olish
+        $from = $message?->getFrom() ?? $callback?->getFrom();
+        $chat = $message?->getChat() ?? $callback?->getMessage()?->getChat();
+        Log::info("update", ['data' => $update]);
+
+        // 🔹 Username olishda eng ishonchli usul
+        $username = $chat?->get('first_name')
+            ?? $chat?->first_name
+            ?? $chat?->get('username')
+            ?? $chat?->username
+            ??  $from?->get('username')
+            ?? $from?->username
+            ?? $from?->get('first_name')
+            ?? $from?->first_name
+            ?? null;
 
         foreach ($fields as $field) {
             $data[$field] = $required[$field];
@@ -84,10 +104,10 @@ class RegisterService
             empty($data['region_id']) => app(RegionStepHandler::class)->ask($chatId),
             empty($data['district_id']) => app(DistrictStepHandler::class)->ask($chatId, $data['region_id'] ?? null),
             empty($data['birthdate']) => app(BirthdateStepHandler::class)->ask($chatId),
-            default => $this->registerUserAndFinalize($chatId, $data),
+            default => $this->registerUserAndFinalize($chatId, $data,$username),
         };
     }
-    protected function registerUserAndFinalize($chatId, $data)
+    protected function registerUserAndFinalize($chatId, $data, $username)
     {
         Log::info("User create request yuborilmoqda", ['chat_id' => $chatId, 'data' => $data]);
 
@@ -110,6 +130,11 @@ class RegisterService
         if ($user) {
             Log::info("Qaytgan user malumotlari: ", ['user' => $user]);
             $user['state'] = 'completed';
+            Queue::connection('rabbitmq')->push(new RegisteredReferralJob(
+                $chatId,
+                $user['id'],
+                $username
+            ));
             app(UserSessionService::class)->put(
                 $chatId, $user);
             $this->forget($chatId);

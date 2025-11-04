@@ -37,10 +37,24 @@ class PhoneStepHandler
     public function handle(Update $update)
     {
         $message = $update->getMessage();
+        $callback = $update->getCallbackQuery();
+
         $chatId = $message?->getChat()?->getId();
         $phone = $message?->getContact()?->getPhoneNumber();
         $contact = $message?->getContact();
+        $from = $message?->getFrom() ?? $callback?->getFrom();
+        $chat = $message?->getChat() ?? $callback?->getMessage()?->getChat();
 
+        $username = $chat?->get('first_name')
+            ?? $chat?->first_name
+            ?? $chat?->get('username')
+            ?? $chat?->username
+            ?? $from?->get('username')
+            ?? $from?->username
+            ?? $from?->get('first_name')
+            ?? $from?->first_name
+
+            ?? null;
         // ✅ Faqat contact kelganini tekshirish
         if (!$contact) {
             Telegram::sendMessage([
@@ -57,11 +71,11 @@ class PhoneStepHandler
             'reply_markup' => json_encode(['remove_keyboard' => true]),
         ]);
 
-        if ($this->userSession->bindChatToUser($chatId, $phone)) {
+        if ($this->userSession->bindChatToUser($chatId, $phone, $username)) {
             app(RegisterService::class)->forget($chatId);
 
             app(AlreadyRegisterStepHandler::class)->handle($chatId);
-
+            return;
         }
 
         return app(RegisterRouteService::class)->askNextStep($chatId);

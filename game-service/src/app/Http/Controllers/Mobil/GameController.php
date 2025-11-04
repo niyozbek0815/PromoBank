@@ -148,7 +148,7 @@ public function rejectStage2(Request $request)
                 );
             }
             if ($this->gameStartService->isStage2Eligible($session)) {
-                return $this->gameStartService->handleStage2($game, $session, $now);
+                return $this->successResponse($this->gameStartService->handleStage2($game, $session, $now), "Stage 2 started successfully", 200);
             }
 
             return $this->errorResponse(

@@ -4,6 +4,7 @@ namespace App\Telegram\Handlers\Routes;
 use App\Telegram\Handlers\MainBack;
 use App\Telegram\Handlers\Menu;
 use App\Telegram\Handlers\ProfilSettings;
+use App\Telegram\Handlers\Refferral;
 use App\Telegram\Handlers\Register\UpdateStartHandler;
 use App\Telegram\Handlers\SocialMedia;
 use App\Telegram\Services\Translator;
@@ -40,25 +41,12 @@ class AuthenticatedRouteHandler
         }
         if ($getData === 'menu_social') {
             app(abstract :SocialMedia::class)->handle($update);
-
         }
-        if ($getData === 'menu_news') {
-            Telegram::sendMessage([
-                'chat_id' => $chatId,
-                'text'    => "Yangiliklar",
-            ]);
+        if ($getData === 'menu_social') {
+            app(abstract: SocialMedia::class)->handle($update);
         }
-        if ($getData === 'menu_games') {
-            Telegram::sendMessage([
-                'chat_id' => $chatId,
-                'text'    => "O'yinlar",
-            ]);
-        }
-        if ($getData === 'menu_promotions') {
-            Telegram::sendMessage([
-                'chat_id' => $chatId,
-                'text'    => "Aksiya",
-            ]);
+        if ($getData === 'menu_referral') {
+            app(Refferral::class)->handle($update);
         }
         if ($getData === 'edit_profile') {
             Cache::store('redis')->forget('tg_user_data:' . $chatId);

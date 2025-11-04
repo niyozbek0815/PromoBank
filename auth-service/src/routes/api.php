@@ -27,6 +27,8 @@ Route::controller(BotAuthController::class)->group(function () {
     Route::post('/user_check', 'check');
     Route::post('/user_create', 'create');
     Route::post('/user_update', 'update');
+    Route::post('/bot_start', 'botStart');
+
 });
 Route::controller(WebAppAuthController::class)->prefix('webapp')->name('webapp.')->group(function () {
     Route::post('auth/', 'login');

@@ -14,12 +14,19 @@ return new class extends Migration
     {
         Schema::create('platform_promo_settings', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('default_points')->default(0); // foydalanuvchi har doim oladigan promobal
+            $table->unsignedInteger('scanner_points')->default(0);
+             // foydalanuvchi har doim oladigan promobal
+            $table->unsignedInteger('refferal_start_points')->default(0);
+
+            // foydalanuvchi referal orqali oladigan promobal
+            $table->unsignedInteger('refferal_registered_points')->default(0);
             $table->json('win_message');     // multi-til, yutgan paytdagi tabrik
             $table->timestamps();
         });
         DB::table('platform_promo_settings')->insert([
-            'default_points' => 1,
+            'scanner_points' => 1,
+            'refferal_start_points' => 1,
+            'refferal_registered_points' => 2,
             'win_message' => json_encode([
                         'uz' => 'Siz :promo promobal oldingiz. Yana skanerlang va yig‘ishda davom eting!',
                         'ru' => 'Вы получили :promo промобаллов. Продолжайте сканировать!',

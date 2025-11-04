@@ -17,6 +17,7 @@ use App\Http\Controllers\Frontend\PromotionController as FrontendPromotionContro
 use App\Http\Controllers\Mobil\BannerController;
 use App\Http\Controllers\Mobil\PromoController;
 use App\Http\Controllers\Mobil\ReceiptController;
+use App\Http\Controllers\WebApp\PlatformPromoSettingsController as WebAppPlatformPromoSettingsController;
 use App\Http\Controllers\WebApp\PromotionsController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,7 +49,14 @@ Route::controller(ReceiptController::class)->prefix('receipt')->group(function (
 Route::controller(BannerController::class)->prefix('banners')->group(function () {
     Route::get('/', 'index');
 });
-
+Route::prefix('webapp')->name('webapp.')->group(function () {
+    Route::get('/platform-promo-settings', [WebAppPlatformPromoSettingsController::class, 'index'])
+        ->name('platform-promo-settings.index');
+    Route::post('/add-points-to-user', [WebAppPlatformPromoSettingsController::class, 'addPointsToUser'])
+        ->name('platform-promo-settings.add-points');
+    Route::post('/add-points-to-user_register', [WebAppPlatformPromoSettingsController::class, 'addPointsToUserRegister'])
+        ->name('platform-promo-settings.add-points_register');
+});
 
 Route::prefix('front')->group(function () {
 

@@ -1,9 +1,11 @@
 <?php
 namespace App\Telegram\Services;
 
+use App\Jobs\RegisteredReferralJob;
 use App\Services\FromServiceRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 
 class UserSessionService
 {
@@ -43,7 +45,7 @@ class UserSessionService
         Cache::store('redis')->forget($this->prefix . $chatId);
     }
 
-    public function bindChatToUser(string $chatId, string $phone)
+    public function bindChatToUser(string $chatId, string $phone,$username)
     {
         $baseUrl = config('services.urls.auth_service');
         $lang    = Cache::store('redis')->get("tg_lang:$chatId", 'uz');
@@ -70,6 +72,11 @@ class UserSessionService
             Log::info("Qaytgan user malumotlari: ", ['user' => $user]);
             $user['state'] = 'completed';
             $this->put($chatId, $user);
+            Queue::connection('rabbitmq')->push(new RegisteredReferralJob(
+                $chatId,
+                $user['id'],
+                $username
+            ));
             return true;
         }
         $initialData = [

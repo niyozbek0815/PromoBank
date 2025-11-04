@@ -44,7 +44,12 @@ class GameStartService
             ->firstWhere('step_number', $game_step)
                 ?->only(['step_number', 'card_count']) ?? [ "step_number" => 5,
             "card_count" => 0];
-
+        $selectedCount = GameSessionCard::where('session_id', $session->id)
+            ->where('selected_by_user', true)
+            ->where('is_revealed', true)
+            ->where('is_success', true)
+            ->count();
+            $stepConfig['win_step'] = $selectedCount;
         $stepConfig['all_step_count'] = $game->stage1Steps->count();
         $sessionCardsAll = $session->sessionCards->where('etap', 1)->values();
         [$selectedCards, $unselectedCards] = [
@@ -64,7 +69,7 @@ class GameStartService
             ->where('is_revealed', true)
             ->where('is_success', true)
             ->count();
-        $stepConfig = ['step_number' => 1, 'all_step_count' => 1, 'card_count' => $selectedCount, 'etap' => 2];
+        $stepConfig = ['step_number' => 1, 'all_step_count' => 1, 'card_count' => $selectedCount, 'win_step' => $selectedCount];
         $promoball = 0;
         $session->update([
             'status' => 'in_progress',
@@ -142,6 +147,7 @@ class GameStartService
         $stepConfig = $game->stage1Steps
             ->firstWhere('step_number', $game_step)
                 ?->only(['step_number', 'card_count']) ?? [];
+        $stepConfig['win_step'] = 0;
 
         $stepConfig['all_step_count'] = $game->stage1Steps->count();
         $cardsShablon = $game->cards->where('stage', 'stage1')->values();

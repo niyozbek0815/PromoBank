@@ -364,6 +364,121 @@ class Translator
             'kr' => '✅ Текшириш',
             'en' => '✅ Check',
         ],
+        'menu_referral' => [
+            'uz' => "🤝 Do'stni taklif qilish",
+            'ru' => "🤝 Пригласить друга",
+            'kr' => "🤝 Дўстни таклиф қилиш",
+            'en' => "🤝 Invite a Friend",
+        ],
+        'refferral_text' => [
+            'uz' => "<b>🎉 PROMOBANK — Sizning yutug‘ingiz shu yerda!</b> 💰🔥
+
+PromoBank — bu O‘zbekiston bo‘ylab eng katta yutuqli platforma!
+Har bir ishtirokchi <b>pul mukofotlari</b> 🏆, <b>maishiy texnikalar</b> 🏠 va <b>avtomobillar</b> 🚗 yutib olishi mumkin!
+
+❗️Faqat ro‘yxatdan o‘ting va omadni sinab ko‘ring! 😍
+
+Do‘stlaringizni taklif qiling va har bir taklif uchun bonus oling! 💎
+
+Ushbu havolaga kirib Telegram botda ro‘yxatdan o‘ting 👇
+👉 ::refferral_link
+
+<b>Boshlang — Omad siz tomonda!</b> 🚀",
+
+            'ru' => "<b>🎉 PROMOBANK — Ваш шанс выиграть прямо здесь!</b> 💰🔥
+
+PromoBank — крупнейшая призовая платформа по всему Узбекистану!
+Каждый участник может выиграть <b>денежные призы</b> 🏆, <b>бытовую технику</b> 🏠 и <b>автомобили</b> 🚗!
+
+❗️Просто зарегистрируйтесь и испытайте удачу! 😍
+
+Приглашайте друзей и получайте бонус за каждого приглашённого! 💎
+
+Перейдите по ссылке и зарегистрируйтесь в Telegram-боте 👇
+👉 ::refferral_link
+
+<b>Начните прямо сейчас — удача на вашей стороне!</b> 🚀",
+
+            'kr' => "<b>🎉 PROMOBANK — Сизнинг ютуғингиз шу ерда!</b> 💰🔥
+
+PromoBank — бу Ўзбекистон бўйлаб энг катта ютуқли платформа!
+Ҳар бир иштирокчи <b>пул мукофотлари</b> 🏆, <b>маиший техникалар</b> 🏠 ва <b>автомобиллар</b> 🚗 ютиб олиши мумкин!
+
+❗️Фақат рўйхатдан ўтинг ва омадингизни синаб кўринг! 😍
+
+Дўстларингизни таклиф қилинг ва ҳар бир таклиф учун бонус олинг! 💎
+
+Қуйидаги ҳавола орқали Telegram ботда рўйхатдан ўтинг 👇
+👉 ::refferral_link
+
+<b>Бошланг — Омад сизнинг томонда!</b> 🚀",
+
+            'en' => "<b>🎉 PROMOBANK — Your winnings start here!</b> 💰🔥
+
+PromoBank is the largest reward platform across Uzbekistan!
+Every participant has a chance to win <b>cash prizes</b> 🏆, <b>home appliances</b> 🏠, and <b>cars</b> 🚗!
+
+❗️Just register and try your luck! 😍
+
+Invite your friends and earn a bonus for each one you bring! 💎
+
+Join through this link and register in our Telegram bot 👇
+👉 ::refferral_link
+
+<b>Start now — luck is on your side!</b> 🚀",
+        ],
+        'refferral_get_link' => [
+            'uz' => "🔗 Sizning referal havolangiz:",
+            'ru' => "🔗 Ваша реферальная ссылка:",
+            'kr' => "🔗 Сизнинг реферал ҳаволангиз:",
+            'en' => "🔗 Your referral link:",
+        ],
+        'get_bot' => [
+            'uz' => "👉 Botga o‘tish",
+            'ru' => "👉 Перейти к боту",
+            'kr' => "👉 Ботга ўтиш",
+            'en' => "👉 Go to Bot",
+        ],
+        // 'referral_success_text' => [
+        //     'uz' => "🎉 Tabriklaymiz! Siz muvaffaqiyatli ro'yxatdan o'tdingiz!\n\n" .
+        //     "Sizni ushbu platformaga taklif qilgan foydalanuvchiga minnatdorchilik bildiramiz.\n\n" .
+        //     "Endi siz ham referal tizimidan foydalanib, do'stlaringizni taklif qilib promoball yutishingiz mumkin! 💎",
+        //     'ru' => "🎉 Поздравляем! Вы успешно зарегистрировались!\n\n" .
+        //     "Благодарим пользователя, который пригласил вас на эту платформу.\n\n" .
+        //     "Теперь вы также можете использовать реферальную систему, приглашая своих друзей и зарабатывая промобаллы! 💎",
+        //     'kr' => "🎉 Табриклаймиз! Сиз муваффақиятли рўйхатдан ўтдингиз!\n\n" .
+        //     "Сизни ушбу платформага таклиф қилган фойдаланувчига миннатдорчилик билдирамиз.\n\n" .
+        //     "Энди сиз ҳам реферал тизимидан фойдаланиб, дўстларингизни таклиф қилиб промобалл ютишингиз мумкин! 💎",
+        //     'en' => "🎉 Congratulations! You have successfully registered!\n\n" .
+        //     "We thank the user who invited you to this platform.\n\n" .
+        //     "Now you can also use the referral system to invite your friends and earn promoballs! 💎",
+        // ],
+        'referral_start_text' => [
+            'uz' => "🎉 Ajoyib yangilik! Siz taklif qilgan foydalanuvchi ::username ro‘yxatdan o‘tdi 🎊\n" .
+                "Sizning hisobingizga ::promoball promo ball qo‘shildi.",
+
+            'ru' => "🎉 Отличная новость! Пользователь ::username, которого вы пригласили, зарегистрировался 🎊\n" .
+                "На ваш счёт добавлено ::promoball промобаллов.",
+
+            'kr' => "🎉 Ажойиб янгилик! Сиз таклиф қилган фойдаланувчи ::username рўйхатдан ўтди 🎊\n" .
+                "Ҳисобингизга ::promoball промо балл қўшилди.",
+
+            'en' => "🎉 Great news! The user ::username you invited has registered 🎊\n" .
+                "::promoball promo points have been added to your account.",
+        ],
+        'referral_register_text' => [
+            'uz' => "🎉 Ajoyib yangilik! Siz taklif qilgan foydalanuvchi ::username ro‘yxatdan o‘tdi 🎊\n" .
+                "Sizning hisobingizga ::promoball promo ball qo‘shildi.",
+
+            'ru' => "🎉 Отличная новость! Пользователь ::username, которого вы пригласили, зарегистрировался 🎊\n" .
+                "На ваш счёт добавлено ::promoball промобаллов.",
+
+            'kr' => "🎉 Ажойиб янгилик! Сиз таклиф қилган фойдаланувчи ::username рўйхатдан ўтди 🎊\n" .
+                "Ҳисобингизга ::promoball промо балл қўшилди.",
+
+            'en' => "🎉 Great news! The user ::username you invited has registered 🎊\n" .
+                "::promoball promo points have been added to your account.",
+        ],
 
     ];
 

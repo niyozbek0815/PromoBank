@@ -120,7 +120,7 @@ class CreateReceiptAndProductJob implements ShouldQueue
         $settings = Cache::remember('platform_promo_settings', now()->addHours(1), function () {
             return PlatformPromoSetting::default();
         });
-        $promoball = $settings['default_points'];
+        $promoball = $settings['scanner_points'];
         UserPointBalance::firstOrCreate(
             ['user_id' => $user_id],
             ['balance' => 0]
@@ -141,7 +141,8 @@ class CreateReceiptAndProductJob implements ShouldQueue
         // Log the awarded encouragement points
         EncouragementPoint::create([
             'user_id' => $user_id,
-            'receipt_id' => $receipt_id,
+            'scope_id' => $receipt_id,
+            'scope_type' => "scanner",
             'points' => $promoball,
         ]);
 
