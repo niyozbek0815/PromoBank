@@ -26,6 +26,10 @@ class EncouragementPoint extends Model
     /**
      * Type helpers
      */
+    public function user()
+    {
+        return $this->belongsTo(UsersCache::class, 'user_id', 'user_id');
+    }
     public function isScanner(): bool
     {
         return $this->type === 'scanner';

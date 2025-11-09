@@ -7,7 +7,6 @@ use App\Models\Messages;
 use App\Models\PlatformPromoSetting;
 use App\Models\Prize;
 use App\Models\PromotionShop;
-use App\Models\SalesReceipt;
 use App\Models\UserPointBalance;
 use App\Repositories\PlatformRepository;
 use Illuminate\Support\Carbon;
@@ -32,7 +31,10 @@ class ReceiptService
         $manualPrizeCount = 0;
         // SalesReceipt::truncate();
           $platformId = $this->getPlatformId($platformName);
-        Log::info("Start",['name'=>$req]);
+        $req['name'] = str_replace('\"', '"', $req['name']);  // agar sizda haqiqatan " belgi kerak bo‘lsa
+        $req['name'] = str_replace('"', '', $req['name']);     // agar butunlay " belgini olib tashlamoqchi bo‘lsangiz
+
+        Log::info("Start", ['name' => $req['name']]);
         $shop = PromotionShop::
             where('name', $req['name'])
             ->with(['products', 'promotion'])

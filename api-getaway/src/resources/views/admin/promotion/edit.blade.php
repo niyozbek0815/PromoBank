@@ -551,6 +551,22 @@
     </script>
 @endpush
 @section('content')
+    @php
+        $hasPromoType = collect($promotion['participants_type'] ?? [])
+            ->pluck('name')
+            ->intersect(['QR code', 'Text code'])
+            ->isNotEmpty();
+        $hasShortNumberType = collect($promotion['participants_type'] ?? [])
+            ->pluck('name')
+            ->intersect(['Short number', ''])
+            ->isNotEmpty();
+        $hasReceiptType = collect($promotion['participants_type'] ?? [])
+            ->pluck('name')
+            ->intersect(['Receipt scan'])
+            ->isNotEmpty();
+        $hasPrize = in_array($promotion['winning_strategy'], ['immediate', 'hybrid']);
+
+    @endphp
     <div class="tab-content flex-1 order-2 order-lg-1">
         <div class="tab-pane fade show active" id="settings">
             <div class="card">
@@ -635,71 +651,101 @@
                                 <small class="text-muted">Aksiya tugaydigan sana va vaqtni belgilang.</small>
                             </div>
                         </div>
+                        @if (!$hasShortNumberType)
+                            {{-- 🔁 Multi-select fields --}}
+                            <div class="row">
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label">Aksiya o'tqaziladigan platformalarni tanlang</label>
+                                    <select name="platforms_new[]" class="form-control multiselect" multiple>
+                                        <option value="" disabled selected>-- Platformani tanlang --</option>
+                                        @foreach ($platforms as $name => $id)
+                                            <option value="{{ $id }}">{{ ucfirst($name) }}</option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted">Aksiya qaysi platformalarda (web, telegram, sms)
+                                        o'tkazilishini
+                                        tanlang.</small>
+                                </div>
 
-                        {{-- 🔁 Multi-select fields --}}
-                        <div class="row">
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">Aksiya o'tqaziladigan platformalarni tanlang</label>
-                                <select name="platforms_new[]" class="form-control multiselect" multiple>
-                                    <option value="" disabled selected>-- Platformani tanlang --</option>
-                                    @foreach ($platforms as $name => $id)
-                                        <option value="{{ $id }}">{{ ucfirst($name) }}</option>
-                                    @endforeach
-                                </select>
-                                <small class="text-muted">Aksiya qaysi platformalarda (web, telegram, sms) o'tkazilishini
-                                    tanlang.</small>
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label">ishtirok etish turlari uslublarini tanlang</label>
+                                    <select name="participants_type_new[]" class="form-control multiselect" multiple>
+                                        <option value="" disabled selected>-- Uslubni tanlang --</option>
+
+                                        @foreach ($partisipants_type as $name => $id)
+                                            <option value="{{ $id }}">{{ ucfirst($name) }}</option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted">Foydalanuvchi aksiyada qanday ishtirok etishini belgilang (QR,
+                                        kod, chek va h.k.).</small>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <label class="form-label fw-semibold">Yutuqni berish strategiyasi</label>
+                                    <select name="winning_strategy"
+                                        class="form-control select2-single @error('winning_strategy') is-invalid @enderror"
+                                        required>
+                                        <option value="" disabled
+                                            {{ old('winning_strategy', $promotion['winning_strategy'] ?? '') === null ? 'selected' : '' }}>
+                                            -- Strategiyani tanlang --
+                                        </option>
+                                        <option value="immediate"
+                                            {{ old('winning_strategy', $promotion['winning_strategy'] ?? '') === 'immediate' ? 'selected' : '' }}>
+                                            🎁 Har bir promokod yutuq olib keladi (tez yutuq)
+                                        </option>
+                                        <option value="delayed"
+                                            {{ old('winning_strategy', $promotion['winning_strategy'] ?? '') === 'delayed' ? 'selected' : '' }}>
+                                            🕒 Promokodlar ro'yxatga olinadi, oxirida sovrin beriladi
+                                        </option>
+                                        <option value="hybrid"
+                                            {{ old('winning_strategy', $promotion['winning_strategy'] ?? '') === 'hybrid' ? 'selected' : '' }}>
+                                            ⚖️ Aralash — ba'zilari yutadi, ba'zilari keyinchalik o'ynaydi
+                                        </option>
+                                    </select>
+                                    <small class="text-muted d-block mt-1">
+                                        Aksiya davomida promokodlar qanday tarzda yutuqqa aylanishini belgilang.
+                                    </small>
+                                </div>
                             </div>
 
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label">ishtirok etish turlari uslublarini tanlang</label>
-                                <select name="participants_type_new[]" class="form-control multiselect" multiple>
-                                    <option value="" disabled selected>-- Uslubni tanlang --</option>
+                        @endif
 
-                                    @foreach ($partisipants_type as $name => $id)
-                                        <option value="{{ $id }}">{{ ucfirst($name) }}</option>
-                                    @endforeach
-                                </select>
-                                <small class="text-muted">Foydalanuvchi aksiyada qanday ishtirok etishini belgilang (QR,
-                                    kod, chek va h.k.).</small>
-                            </div>
-                            <div class="col-lg-4 mb-3">
-                                <label class="form-label fw-semibold">Yutuqni berish strategiyasi</label>
-                                <select name="winning_strategy"
-                                    class="form-control select2-single @error('winning_strategy') is-invalid @enderror"
-                                    required>
-                                    <option value="" disabled
-                                        {{ old('winning_strategy', $promotion['winning_strategy'] ?? '') === null ? 'selected' : '' }}>
-                                        -- Strategiyani tanlang --
-                                    </option>
-                                    <option value="immediate"
-                                        {{ old('winning_strategy', $promotion['winning_strategy'] ?? '') === 'immediate' ? 'selected' : '' }}>
-                                        🎁 Har bir promokod yutuq olib keladi (tez yutuq)
-                                    </option>
-                                    <option value="delayed"
-                                        {{ old('winning_strategy', $promotion['winning_strategy'] ?? '') === 'delayed' ? 'selected' : '' }}>
-                                        🕒 Promokodlar ro'yxatga olinadi, oxirida sovrin beriladi
-                                    </option>
-                                    <option value="hybrid"
-                                        {{ old('winning_strategy', $promotion['winning_strategy'] ?? '') === 'hybrid' ? 'selected' : '' }}>
-                                        ⚖️ Aralash — ba'zilari yutadi, ba'zilari keyinchalik o'ynaydi
-                                    </option>
-                                </select>
-                                <small class="text-muted d-block mt-1">
-                                    Aksiya davomida promokodlar qanday tarzda yutuqqa aylanishini belgilang.
-                                </small>
-                            </div>
-                        </div>
 
                         {{-- ✅ Switches --}}
                         <div class="row mb-3">
-                            <div class="col-lg-4 form-check form-switch">
+                                       @if ($hasShortNumberType)
+                                <div class="col-lg-4 mb-3" id="timeInputWrapper">
+                                    <label class="form-label fw-bold">
+                                        Qisqa raqamni qabul qilish oralig‘i (soniya) <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" name="short_number_seconds" id="shortNumberSeconds"
+                                        class="form-control" min="1" step="1" value="{{ old('status', $promotion['short_number_seconds']) }}"
+                                        placeholder="Masalan: 30, 45, 90 …" required>
+                                    <small class="text-muted d-block mt-1">
+                                        Promokod shu sekund oralig‘ida faqat qabul qilinadi. 0 dan katta istalgan son
+                                        kiritilishi mumkin.
+                                    </small>
+                                </div>
+                                               <div class="col-lg-4 mb-3" id="pointsInputWrapper">
+    <label class="form-label fw-bold">
+        Qisqa raqamga beriladigan ball <span class="text-danger">*</span>
+    </label>
+    <input type="number" name="short_number_points" id="shortNumberPoints"
+        class="form-control" min="1" step="1"
+        value="{{ old('short_number_points', $promotion['short_number_points'] ?? 1) }}"
+        placeholder="Masalan: 1, 5, 10 …" required>
+    <small class="text-muted d-block mt-1">
+        Foydalanuvchi ushbu qisqa raqamni yuborganda unga shu miqdorda ball beriladi. 0 dan katta istalgan son kiriting.
+    </small>
+</div>
+                            @endif
+                            <div class="col-lg-4 form-check form-switch mt-4">
                                 <input class="form-check-input" type="checkbox" name="status" value="1"
                                     id="statusSwitch" {{ old('status', $promotion['status']) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="statusSwitch">Faollik</label>
                                 <small class="text-muted d-block">Aksiya faollashtirilgan bo‘lsa, foydalanuvchilar uni
                                     ko‘rishlari mumkin.</small>
                             </div>
-                            <div class="col-lg-4 form-check form-switch">
+                            <div class="col-lg-4 form-check form-switch  mt-4">
                                 <input class="form-check-input" type="checkbox" name="is_public" value="1"
                                     id="publicSwitch" {{ old('is_public', $promotion['is_public']) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="publicSwitch">Ommaviy</label>
@@ -717,6 +763,7 @@
                         <input type="hidden" name="created_by_user_id" value="{{ $promotion['created_by_user_id'] }}">
 
                         <div class="row">
+
                             <div class="col-lg-4 mb-3">
                                 <label class="form-label">Oferta fayl</label>
                                 <input type="file" name="offer_file" class="filepond-offer" />
@@ -747,18 +794,7 @@
             </div>
         </div>
         <div class="card">
-            @php
-                $hasPromoType = collect($promotion['participants_type'] ?? [])
-                    ->pluck('name')
-                    ->intersect(['QR code', 'Text code'])
-                    ->isNotEmpty();
-                $hasReceiptType = collect($promotion['participants_type'] ?? [])
-                    ->pluck('name')
-                    ->intersect(['Receipt scan'])
-                    ->isNotEmpty();
-                $hasPrize = in_array($promotion['winning_strategy'], ['immediate', 'hybrid']);
 
-            @endphp
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Promoaksiya ma'lumotlari</h5>
                 <div class="btn-group">
@@ -799,10 +835,49 @@
                             <i class="ph ph-gift me-1"></i> Sovg'alar
                         </button>
                     @endif
+                    @if ($hasShortNumberType)
+                        <button type="button" class="btn btn-outline-success collapse-toggler"
+                            data-target="#collapse-short_number">
+                            <i class="ph ph-gift me-1"></i>Qisqa raqamlar
+                        </button>
+                        <button type="button" class="btn btn-outline-success collapse-toggler"
+                            data-target="#collapse-prize">
+                            <i class="ph ph-gift me-1"></i>Rating Settings
+                        </button>
+                    @endif
+
                 </div>
             </div>
 
             <div class="card-body">
+                 @if ($hasShortNumberType)
+                    <div class="collapse table-panel" id="collapse-short_number">
+                        <div class="border rounded p-3">
+                            <div class="page-header-content d-flex justify-content-between align-items-center">
+                                <h4 class="page-title mb-0">Qisqa raqamlar jadvali</h4>
+                                <div>
+                                    <a href="{{ route('admin.short_number.create', ['promotion_id' => $promotion['id']]) }}"
+                                        class="btn btn-outline-success ms-3">
+                                        <i class="ph-plus-circle me-1"></i> Qo'shish
+                                    </a>
+                                </div>
+                            </div>
+                            <table id="short-number-table" class="table datatable-button-init-basic">
+                                <thead>
+                                    <tr>
+                                        <th>#ID</th>
+                                        <th>Promocode</th>
+                                        <th>Foydalanilgan</th>
+                                        <th>Foydalanilgan vaqti</th>
+                                        <th>Generation</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                            </table>
+
+                        </div>
+                    </div>
+                @endif
                 <div class="collapse table-panel" id="collapse-platform">
                     <div class="p-3">
                         <div class="page-header-content d-flex justify-content-between align-items-center mb-3">
@@ -961,6 +1036,8 @@
                         </div>
                     </div>
                 @endif
+
+
                 @if ($hasReceiptType)
                     <div class="collapse table-panel" id="collapse-receipt">
                         <div class="border rounded p-3 mb-4">

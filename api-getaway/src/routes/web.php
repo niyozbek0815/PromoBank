@@ -17,7 +17,6 @@ use App\Http\Controllers\Admin\PrizeCategoryController;
 use App\Http\Controllers\Admin\PrizeController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\PromoCodeController;
-use App\Http\Controllers\Admin\PromotionMessagesController;
 use App\Http\Controllers\Admin\PromotionProductController;
 use App\Http\Controllers\Admin\PromotionShopController;
 use App\Http\Controllers\Admin\Promo\PromotionController;
@@ -166,6 +165,17 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
         Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData');
         Route::get('/{promotion}/search', 'searchPromocodes')->name('search');
     });
+    Route::prefix('short-number')->name('short-number.')->controller(PromoCodeController::class)->group(function () {
+        Route::get('/', 'index')->name('index');                         // GET /promocode
+        Route::get('/data', 'data')->name('data');                       // GET /promocode/data
+        Route::get('/create/{promotion_id?}', 'create')->name('create'); // GET /promocode/create
+        Route::get('/{promotion}/show', 'show')->name('show');
+        Route::post('/{promotion}/store', 'storePromoCodes')->name('store');
+        Route::get('/{promotion}/promocodedata', 'promocodeData')->name('promocodedata');
+        Route::get('/{prize}/prizedata', 'prizeData')->name('prizedata');
+        Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData');
+        Route::get('/{promotion}/search', 'searchPromocodes')->name('search');
+    });
     Route::prefix('prize-category')
         ->name('prize-category.')
         ->controller(PrizeCategoryController::class)
@@ -239,8 +249,6 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
                     Route::post('/import', 'importByCategory')->name('importByCategory');
                 });
         });
-
-
 
     Route::prefix('prize_messages')
         ->name('prize_messages.')

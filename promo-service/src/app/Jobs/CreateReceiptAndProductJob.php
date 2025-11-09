@@ -18,7 +18,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Queue;
 
 class CreateReceiptAndProductJob implements ShouldQueue
 {
@@ -106,6 +105,14 @@ class CreateReceiptAndProductJob implements ShouldQueue
                     Log::info("Ball berildi");
                     $this->giveEncouragementPoints($user['id'], $receipt['id'], $actions);
                 }
+                if (!empty($actions)) {
+                    Log::info('actions', ['data' => $actions]);
+                    try {
+                        PromoAction::insert($actions);
+                    } catch (\Throwable $e) {
+                        Log::error("PromoAction insert failed", ['error' => $e->getMessage()]);
+                    }
+                }
             });
 
         } catch (\Exception $e) {
@@ -138,6 +145,8 @@ class CreateReceiptAndProductJob implements ShouldQueue
             "Encouragement points: {$promoball}",
             null
         );
+        Log::info("promoball", ['promo' => $promoball, 'actions'=>$actions]);
+
         // Log the awarded encouragement points
         EncouragementPoint::create([
             'user_id' => $user_id,
@@ -209,13 +218,7 @@ class CreateReceiptAndProductJob implements ShouldQueue
         }
 
         // 3️⃣ Actions insert
-        if (!empty($actions)) {
-            try {
-                PromoAction::insert($actions);
-            } catch (\Throwable $e) {
-                Log::error("PromoAction insert failed", ['error' => $e->getMessage()]);
-            }
-        }
+
 
         // 4️⃣ Log inserted rows (optional, light logging)
         Log::info('Inserted PromoCodeUsers', PromoCodeUser::where('id', '>', $lastIdBeforeInsert)->get(['id', 'prize_id', 'promotion_product_id'])->toArray());

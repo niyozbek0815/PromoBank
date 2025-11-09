@@ -111,6 +111,7 @@
                     </ul>
                 </li>
 
+
                 {{-- Banner sozlamalari --}}
                 <li
                     class="nav-item nav-item-submenu {{ request()->routeIs('admin.banners.*') ? 'nav-item-open' : '' }}">

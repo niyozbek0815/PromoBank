@@ -98,6 +98,10 @@ class SelesReceiptController extends Controller
                 'promoCodeUsers as prize_count' => fn($q) => $q->whereNotNull('prize_id'),
             ])
             ->findOrFail($id);
+        $receipt->products()->delete();
+
+        // O'zini receiptni o'chiramiz
+        $receipt->delete();
         $formatted = [
             'id' => $receipt->id,
             'check_id' => $receipt->chek_id,
@@ -145,8 +149,8 @@ class SelesReceiptController extends Controller
 
         // Foydalanuvchiga berilgan rag‘bat ballari (agar mavjud bo‘lsa)
         $encouragement = DB::table('encouragement_points')
-            ->select('points', 'created_at')
-            ->where('receipt_id', $id)
+            ->select('points', 'created_at')->where('type','scanner')
+            ->where('scope_id', $id)
             ->orderByDesc('created_at')
             ->first();
 

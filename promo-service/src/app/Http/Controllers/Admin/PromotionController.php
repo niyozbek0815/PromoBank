@@ -136,36 +136,32 @@ class PromotionController extends Controller
             ->make(true);
     }
 
-
-
-
-
-
-
-
-
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $participants = $request->input('participants_type', []);
+        $shortNumberType = ParticipationType::where('slug', 'short_number')->first();
+        $hasShortNumber = $shortNumberType && in_array($shortNumberType->id, $participants);
+
+        $rules = [
+            // Name, title, description
             'name' => 'required|array',
             'name.uz' => 'required|string|max:255',
             'name.ru' => 'required|string|max:255',
             'name.en' => 'required|string|max:255',
             'name.kr' => 'required|string|max:255',
 
-            // Sarlavha
             'title' => 'required|array',
             'title.uz' => 'required|string|max:255',
             'title.ru' => 'required|string|max:255',
             'title.en' => 'required|string|max:255',
             'title.kr' => 'required|string|max:255',
 
-            // Tavsif
             'description' => 'required|array',
             'description.uz' => 'required|string',
             'description.ru' => 'required|string',
             'description.en' => 'required|string',
             'description.kr' => 'required|string',
+
             'company_id' => 'required|exists:companies,id',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -178,13 +174,25 @@ class PromotionController extends Controller
 
             'offer_file' => 'required|file|mimes:pdf,doc,docx,odt,rtf,txt|max:2048',
             'media_preview' => 'required|file|mimes:jpg,jpeg,png,gif,mp4,webm|max:512',
-            'media_gallery' => 'required|array|max:10',
+            'media_gallery' => 'nullable|array|max:10',
             'media_gallery.*' => 'file|mimes:jpg,jpeg,png,gif,mp4,webm|max:240480',
+
             'created_by_user_id' => 'required|integer',
-            'winning_strategy' => 'required|in:immediate,delayed,hybrid',
             'status' => 'nullable|boolean',
             'is_public' => 'nullable|boolean',
-        ]);
+        ];
+
+        if ($hasShortNumber) {
+            $rules['short_number_seconds'] = 'required|integer|min:1';
+            $rules['short_number_points'] = 'required|integer|min:1';
+
+            $rules['winning_strategy'] = 'required|in:delayed';
+        } else {
+            $rules['winning_strategy'] = 'required|in:immediate,delayed,hybrid';
+        }
+
+        $validated = $request->validate($rules);
+
 
         $stored = [
             'offer_file' => null,
@@ -210,6 +218,11 @@ class PromotionController extends Controller
             Log::error('File store error in Promotion::store', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json(['message' => 'Faylni saqlashda xatolik yuz berdi.'], 500);
         }
+        $extraConditions = $request->input('extra_conditions', []); // agar frontend orqali boshqa shartlar ham bo'lsa
+        if ($hasShortNumber) {
+            $extraConditions['short_number_seconds'] = $validated['short_number_seconds'];
+            $extraConditions['short_number_points'] = $validated['short_number_points'];
+        }
         try {
             DB::beginTransaction();
             $promotion = Promotions::create([
@@ -223,6 +236,8 @@ class PromotionController extends Controller
                 'created_by_user_id' => $validated['created_by_user_id'],
                 'is_public' => $request->boolean('is_public'),
                 'winning_strategy' => $validated['winning_strategy'],
+                'extra_conditions' => $extraConditions, // JSON sifatida saqlanadi
+
             ]);
 
             $platformData = collect($validated['platforms'] ?? [])->mapWithKeys(fn($platformId) => [
@@ -287,6 +302,7 @@ class PromotionController extends Controller
             'queued_media' => $queued,
             'platform' => $promotion->platformIds,
             'attached_participants_type' => $promotion->participantTypeIds,
+            'promotion' => $promotion
         ], 201);
     }
 
@@ -312,13 +328,36 @@ class PromotionController extends Controller
 
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
+
+
+        $promotion = Promotions::findOrFail($id);
+        $shortNumberType = ParticipationType::where('slug', 'short_number')->first();
+        $currentParticipants = $promotion->participantTypeIds()->pluck('participation_type_id')->toArray();
+        $hasShortNumber = $shortNumberType && in_array($shortNumberType->id, $currentParticipants);
+
+
+        $rules = [
             'name' => 'required|array',
+            'name.uz' => 'required|string|max:255',
+            'name.ru' => 'required|string|max:255',
+            'name.en' => 'required|string|max:255',
+            'name.kr' => 'required|string|max:255',
+
             'title' => 'required|array',
+            'title.uz' => 'required|string|max:255',
+            'title.ru' => 'required|string|max:255',
+            'title.en' => 'required|string|max:255',
+            'title.kr' => 'required|string|max:255',
+
             'description' => 'required|array',
+            'description.uz' => 'required|string',
+            'description.ru' => 'required|string',
+            'description.en' => 'required|string',
+            'description.kr' => 'required|string',
+
             'company_id' => 'required|exists:companies,id',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
 
             'participants_type_new' => 'nullable|array',
             'participants_type_new.*' => 'integer',
@@ -331,14 +370,20 @@ class PromotionController extends Controller
             'media_preview' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,webm|max:5120',
             'media_gallery' => 'nullable|array|max:10',
             'media_gallery.*' => 'file|mimes:jpg,jpeg,png,gif,mp4,webm|max:240480',
-            'winning_strategy' => 'required|in:immediate,delayed,hybrid',
             'status' => 'nullable|boolean',
             'is_public' => 'nullable|boolean',
-        ]);
+        ];
 
-        $promotion = Promotions::findOrFail($id);
+        if ($hasShortNumber) {
+            $rules['short_number_seconds'] = 'required|integer|min:1';
+            $rules['short_number_points'] = 'required|integer|min:1';
+        } else {
+            $rules['winning_strategy'] = 'required|in:immediate,delayed,hybrid';
+        }
 
-        $promotion->update([
+        $validated = $request->validate($rules);
+
+        $data = [
             'name' => $validated['name'],
             'title' => $validated['title'],
             'description' => $validated['description'],
@@ -348,8 +393,17 @@ class PromotionController extends Controller
             'status' => $request->boolean('status'),
             'is_public' => $request->boolean('is_public'),
             'created_by_user_id' => $validated['created_by_user_id'],
-            'winning_strategy' => $validated['winning_strategy'],
-        ]);
+
+        ];
+        if ($hasShortNumber) {
+            $extraConditions['short_number_seconds'] = $validated['short_number_seconds'];
+            $extraConditions['short_number_points'] = $validated['short_number_points'];
+            $data['extra_conditions']=$extraConditions;
+            $data['winning_strategy'] = 'delayed';
+        }
+        Log::info('validated', ['validated' => $validated, 'data' => $data]);
+
+        $promotion->update($data);
         $platformData = collect($validated['platforms_new'] ?? [])->mapWithKeys(function ($platformId) {
             return [
                 $platformId => [
@@ -411,7 +465,7 @@ class PromotionController extends Controller
         if ($additionalRules === '{}' || $additionalRules === '[]') {
             $additionalRules = null; // bazaga bo‘sh yoziladi
         }
-       DB::table('promotion_participation_types')->updateOrInsert(
+        DB::table('promotion_participation_types')->updateOrInsert(
             [
                 'promotion_id' => $promotionId,
                 'participation_type_id' => $participantTypeId,
@@ -524,6 +578,12 @@ class PromotionController extends Controller
                 'winning_strategy' => $promotion->winning_strategy,
                 'start_date' => $promotion->start_date?->toDateTimeString(),
                 'end_date' => $promotion->end_date?->toDateTimeString(),
+                'short_number_seconds' => isset($promotion->extra_conditions['short_number_seconds'])
+                    ? (int) $promotion->extra_conditions['short_number_seconds']
+                    : null,
+                'short_number_points' => isset($promotion->extra_conditions['short_number_points'])
+                    ? (int) $promotion->extra_conditions['short_number_points']
+                    : null,
                 'created_by_user_id' => $promotion->created_by_user_id,
                 'banner' => $promotion->banner,
                 'offer' => $promotion->offer,
@@ -535,7 +595,7 @@ class PromotionController extends Controller
             'companies' => $companies,
             'partisipants_type' => $availableParticipants,
             'prizeCategories' => $prizeCategories,
-            'messagesExists'=>$messagesExists
+            'messagesExists' => $messagesExists
         ]);
     }
     private function mapPlatforms($platform): array

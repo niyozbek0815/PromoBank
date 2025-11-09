@@ -67,7 +67,8 @@ class PlatformPromoSettingsController extends Controller
                 // }
 
                 // 3️⃣ Mukofotni berish va EncouragementPoint yaratish
-                // $encouragement = $referral->givePointsWithoutActivation($validated['promoball'], 'referral_start');                Log::info(' start datalar', [
+                $encouragement = $referral->givePointsWithoutActivation($validated['promoball'], 'referral_start');
+                //  Log::info(' start datalar', [
                 //     'encouragement' => EncouragementPoint::get(),
                 //     'referral' => Referrals::get(),
                 //     'balance' => $balance

@@ -64,6 +64,8 @@ Route::controller(ReceiptController::class)->prefix('receipt')->middleware(['gue
 });
 Route::prefix('games')->middleware(['guestCheck'])->group(function () {
     Route::get('/', [GameController::class, 'listAllGames']);
+    Route::get('/game-reting', [GameController::class, 'rating']);
+    Route::get('/my-game-points', [GameController::class, 'myGamePoints']);
     Route::any('/{game}/{action}', [GetawayGameController::class, 'handle'])->middleware(['guestCheck:false']);
 });
 Route::prefix('notifications')->middleware(['guestCheck'])->controller(NotificationController::class)->group(function () {

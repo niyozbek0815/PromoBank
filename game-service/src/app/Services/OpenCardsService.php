@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\GameAddPromoballJob;
 use App\Models\Game;
 use App\Models\GameSession;
 use App\Models\GameSessionCard;
@@ -76,7 +77,7 @@ class OpenCardsService
             'cards' => $data['minimalCardData']
         ];
     }
-    public function handleStage2($session, $req, $gameStep)
+    public function handleStage2($session, $req, $gameStep,$user_id)
     {
         $cards = $session->sessionCards;
         $selectedCount = GameSessionCard::where('session_id', $session->id)
@@ -113,7 +114,8 @@ class OpenCardsService
                 'step_number' => $gameStep,
             ])->save();
         }
-
+        GameAddPromoballJob::dispatch($won_promoball, $session['id'], $user_id)
+            ->onQueue('promo_queue');
         return[
             'new_game' => true,
             'won' => true,

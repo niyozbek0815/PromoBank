@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\OpenCardRequest;
 use App\Http\Requests\OpenCardTwoRequest;
 use App\Http\Resources\GameResource;
+use App\Jobs\GameAddPromoballJob;
 use App\Models\Game;
 use App\Models\GameSession;
 use App\Models\GameStage1Step;
@@ -106,8 +107,12 @@ public function rejectStage2(Request $request)
             'stage2_confirmed' => false,
             'status' => 'finished',
         ])->save();
+            $promoball = $session->stage1_score;
+            GameAddPromoballJob::dispatch($promoball, $session['id'], $user['id'])
+                ->onQueue('promo_queue');
 
-        return $this->successResponse([], $messages['success'][$lang] ?? $messages['success']['uz'], 200);
+
+            return $this->successResponse([], $messages['success'][$lang] ?? $messages['success']['uz'], 200);
     });
 }
     public function startNext(Request $request)
@@ -241,7 +246,7 @@ public function rejectStage2(Request $request)
 
             // 🔹 Endi 2-bosqichni ishlov berish
             $gameStep = $session->stage1_success_steps + 1;
-            $data = $this->openCardsService->handleStage2($session, $req, $gameStep);
+            $data = $this->openCardsService->handleStage2($session, $req, $gameStep, $user['id']);
 Log::info('Open Cards Final Result', ['data' => $data]);
             // 🔹 Xabar bilan qaytish (agar mavjud bo‘lsa)
             if (!empty($data['message'])) {

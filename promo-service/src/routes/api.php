@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\SocialMediaController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\PromotionController as FrontendPromotionController;
 use App\Http\Controllers\Mobil\BannerController;
+use App\Http\Controllers\Mobil\PromoballControlller;
 use App\Http\Controllers\Mobil\PromoController;
 use App\Http\Controllers\Mobil\ReceiptController;
 use App\Http\Controllers\WebApp\PlatformPromoSettingsController as WebAppPlatformPromoSettingsController;
@@ -57,7 +58,11 @@ Route::prefix('webapp')->name('webapp.')->group(function () {
     Route::post('/add-points-to-user_register', [WebAppPlatformPromoSettingsController::class, 'addPointsToUserRegister'])
         ->name('platform-promo-settings.add-points_register');
 });
-
+Route::controller(PromoballControlller::class)->prefix('promoball')->group(function () {
+    // Route::get('/', 'index');
+    Route::post('/game-rating', 'gameRating');
+    Route::post('/my-game-points', 'myGamePoints');
+});
 Route::prefix('front')->group(function () {
 
     Route::controller(CompanyController::class)->prefix('/company')->group(function () {

@@ -11,4 +11,5 @@ Route::controller(GameController::class)->group(function () {
     Route::post('/reject-stage2', 'rejectStage2');
     Route::get('/front/games/gettypes', 'getTypes');
     Route::post('/start_two', 'startTwo');
+    
 });

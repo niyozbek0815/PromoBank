@@ -11,8 +11,7 @@ return new class extends Migration {
             $table->id();
 
             // 🔗 Bog‘lanishlar
-            $table->foreignId('promotion_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('promo_code_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('promotion_id')->nullable()->constrained();            $table->foreignId('promo_code_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('user_id')->nullable();
             $table->foreignId('prize_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('platform_id')->constrained()->cascadeOnDelete();

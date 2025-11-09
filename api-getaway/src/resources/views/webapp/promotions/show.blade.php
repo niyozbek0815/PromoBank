@@ -92,12 +92,12 @@
                                 @endif
                             @endforeach
 
-                            @if (in_array('telegram', $platforms))
+                            {{-- @if (in_array('telegram', $platforms))
                                 <a href="https://t.me/Niyozbek0815" class="method-btn" target="_blank">
                                     <i class="fa-brands fa-telegram"></i>
                                     <span>{{ __('messages.telegram') }}</span>
                                 </a>
-                            @endif
+                            @endif --}}
 
                             @if (in_array('sms', $platforms))
                                 <a href="#" class="method-btn" onclick="openSmsModal(event)">
@@ -222,10 +222,7 @@
                         <a href="{{ $url }}" target="_blank" class="btn-download ios">
                             <i class="fa-brands fa-apple me-2"></i> App Store
                         </a>
-                    @elseif($type === 'telegram')
-                        <a href="{{ $url }}" target="_blank" class="btn-download telegram">
-                            <i class="fa-brands fa-telegram me-2"></i> Telegram
-                        </a>
+
                     @endif
                 @endforeach
             </div>
