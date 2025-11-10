@@ -4,7 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Messages;
+use App\Models\Prize;
+use App\Models\Promotions;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -52,6 +56,7 @@ class MessagesController extends Controller
                 return match ($item->type) {
                     'promo' => '<i class="ph-gift me-1 text-success"></i> Promokod uchun',
                     'receipt' => '<i class="ph-receipt me-1 text-info"></i> Xarid cheki uchun',
+                    'secret-number' => '<i class="ph-key me-1 text-warning"></i> Sirli raqam uchun',
                     default => '<i class="ph-question me-1 text-muted"></i> Nomaʼlum',
                 };
             })
@@ -139,16 +144,65 @@ class MessagesController extends Controller
         $message->update($validated);
         return response()->json(['message' => "Updatet saccesfullly", 'data' => $message]);
     }
+    private function mapParticipants($type): array
+    {
+        return [
+            'id' => $type->id,
+            'name' => $type->name,
+            'is_enabled' => (bool) $type->pivot->is_enabled,
+            'promotion_id' => $type->pivot->promotion_id,
+            'participation_type_id' => $type->pivot->participation_type_id,
+            'additional_rules' => $type->pivot->additional_rules,
+        ];
+    }
+    private function mapParticipantTypes(array|string $participantNames): array
+    {
+        $types = [];
+
+        if (in_array('QR code', $participantNames) || in_array('Text code', $participantNames)) {
+            $types[] = 'promo';
+        }
+
+        if (in_array('Receipt scan', $participantNames)) {
+            $types[] = 'receipt';
+        }
+
+        if (in_array('Secret number', $participantNames)) {
+            $types[] = 'secret-number';
+        }
+
+        return $types;
+    }
+
     public function promotionGenerate(int $promotionId)
     {
-        return $this->cloneMessages('platform', null, 'promotion', $promotionId);
+        $promotion = Promotions::with(['participationTypes:name', 'platforms:name'])->findOrFail($promotionId);
+
+        $participantNames = $promotion->participationTypes->pluck('name')->toArray();
+
+        $types = $this->mapParticipantTypes($participantNames);
+        $platformNames = $promotion->platforms->pluck('name')->toArray();
+
+        Log::info('promotion participants', ['names' => $participantNames, 'types' => $types, 'Platform' => $platformNames]);
+
+        return $this->cloneMessages('platform', null, 'promotion', $promotionId, $types,$platformNames);
     }
 
     public function prizeGenerate(int $prizeId)
     {
-        // Avval promotion darajasidan olamiz, topilmasa platformdan
+        $prize = Prize::findOrFail($prizeId);
+
+        $promotion = Promotions::with(['participationTypes:name', 'platforms:name'])->findOrFail($prize->promotion_id);
+
+        $participantNames = $promotion->participationTypes->pluck('name')->toArray();
+
+        $types = $this->mapParticipantTypes($participantNames);
+        $platformNames = $promotion->platforms->pluck('name')->toArray();
+
         $source = Messages::promotion($prizeId)->exists() ? 'promotion' : 'platform';
-        return $this->cloneMessages($source, $prizeId, 'prize', $prizeId);
+        Log::info('promotion participants', ['names' => $participantNames, 'types' => $types]);
+
+        return $this->cloneMessages($source, $prizeId, 'prize', $prizeId, $types, $platformNames);
     }
 
     /**
@@ -157,32 +211,39 @@ class MessagesController extends Controller
      * — bulk insert bilan
      * — transaction talab qilinmaydi
      */
-    private function cloneMessages(string $fromScope, ?int $fromId, string $toScope, int $toId)
+    private function cloneMessages(string $fromScope, ?int $fromId, string $toScope, int $toId, array $types, array $platforms)
     {
         $sourceMessages = Messages::query()
             ->when($fromScope === 'platform', fn($q) => $q->platform())
             ->when($fromScope === 'promotion', fn($q) => $q->promotion($fromId))
-            ->get(['type', 'status', 'channel', 'message']);
+            ->whereIn('type', $types)
+            ->get();
 
-        if ($sourceMessages->isEmpty()) {
-            return response()->json(['error' => 'Manba xabarlar topilmadi.'], 404);
+        // if ($sourceMessages->isEmpty()) {
+        //     return response()->json(['error' => 'Manba xabarlar topilmadi.'], 404);
+        // }
+
+
+        foreach ($sourceMessages as $msg) {
+            // agar platform xabari bo'lsa, yoki type + channel allaqachon bor bo'lsa skip qilamiz
+            if (in_array($msg->channel, $platforms)) {
+                Messages::firstOrCreate(
+                    [
+                        'type' => $msg->type,
+                        'channel' => $msg->channel,
+                        'scope_type' => $toScope,
+                        'scope_id' => $toId,
+                        'status' => $msg->status,
+                    ],
+                    [
+                        'message' => $msg->message, // stdClass uchun oddiy property
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                );
+
+            }
         }
-
-        $now = now();
-        $insertData = $sourceMessages->map(static fn($msg) => [
-            'scope_type' => $toScope,
-            'scope_id' => $toId,
-            'type' => $msg->type,
-            'status' => $msg->status,
-            'channel' => $msg->channel,
-            'message' => $msg->getRawOriginal('message'),
-            'created_at' => $now,
-            'updated_at' => $now,
-        ])->toArray();
-
-        // 🔒 insertOrIgnore => mavjud yozuvlar dublikat qilinmaydi
-        Messages::insertOrIgnore($insertData);
-
         return response()->json([
             'success' => ucfirst($toScope) . ' scope uchun default xabarlar muvaffaqiyatli yaratildi (dublikatlarsiz).',
         ]);

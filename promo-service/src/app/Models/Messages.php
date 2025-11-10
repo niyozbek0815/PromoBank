@@ -17,8 +17,8 @@ class Messages extends Model
 
     /** ENUM qiymatlar */
     public const SCOPES = ['platform', 'promotion', 'prize'];
-    public const TYPES = ['promo', 'receipt'];
-    public const STATUSES = ['claim', 'pending', 'invalid', 'win', 'lose', 'fail'];
+    public const TYPES = ['promo', 'receipt','secret-number'];
+    public const STATUSES = ['claim', 'pending', 'invalid', 'win', 'lose', 'fail', 'step0', 'step1', 'step3', 'step_won'];
     public const CHANNELS = ['telegram', 'sms', 'mobile', 'web'];
 
     public function scopeable()

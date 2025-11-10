@@ -23,13 +23,9 @@ return new class extends Migration
                 ->comment('Tegishli obyekt ID (promotion_id yoki prize_id)');
 
             // Xabar turi
-            $table->enum('type', ['promo', 'receipt'])
-                ->comment('Xabar turi: promo kod yoki chek uchun');
+            $table->string('type')->comment('Xabar turi: promo kod yoki chek uchun. Istalgan qiymat berilishi mumkin.');
 
-            // Holat
-            $table->enum('status', ['claim', 'pending', 'invalid', 'win', 'lose', 'fail'])
-                ->comment('Xabar holati: foydalanilgan, kutyapti, noto‘g‘ri, yutdi, yutqazdi yoki xato');
-
+            $table->string('status')->comment('Xabar holati: foydalanilgan, kutyapti, noto‘g‘ri, yutdi, yutqazdi yoki xato. Istalgan qiymat berilishi mumkin.');
             // Kanal
             $table->enum('channel', ['telegram', 'sms', 'mobile', 'web'])
                 ->default('mobile')

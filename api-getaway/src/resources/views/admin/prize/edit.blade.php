@@ -855,14 +855,14 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
                 <div class="border rounded p-3">
                     <div class="page-header-content d-flex justify-content-between align-items-center">
                         <h4 class="page-title mb-0">Xabar sozlamalari</h4>
-                        @if ($messagesExists == false)
+                        {{-- @if ($messagesExists == false) --}}
                             <div>
                                 <a href="{{ route('admin.prize_messages.generate', ['id' => $prize['id']]) }}"
                                     class="btn btn-outline-success ms-3">
-                                    <i class="ph-plus-circle me-1"></i> Default xabarlarni yaratish
+                                    <i class="ph-plus-circle me-1"></i> Mavjud bo'lmagan default xabarlarni nusxalash
                                 </a>
                             </div>
-                        @endif
+                        {{-- @endif --}}
                     </div>
                     <table id="messages-table" class="table datatable-button-init-basic">
                         <thead>
