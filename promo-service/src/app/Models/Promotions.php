@@ -126,4 +126,8 @@ class Promotions extends Model
     {
         return $this->hasMany(PromotionShop::class, 'promotion_id');
     }
+    public function progressBar()
+    {
+        return $this->hasOne(PromotionProgressBar::class, 'promotion_id')->latestOfMany();
+    }
 }

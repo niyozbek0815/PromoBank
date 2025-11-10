@@ -1023,45 +1023,65 @@
 
                         </div>
                     </div>
-                        <div class="collapse table-panel" id="collapse-rating">
+                    <div class="collapse table-panel" id="collapse-rating">
                         <div class="border rounded p-3">
                             <div class="page-header-content d-flex justify-content-between align-items-center">
-                                <h4 class="page-title mb-0">Sirli raqamlar jadvali</h4>
-                                <div>
-                                    <a href="{{ route('admin.secret-number.create', ['promotion_id' => $promotion['id']]) }}"
-                                        class="btn btn-outline-success ms-3">
-                                        <i class="ph-plus-circle me-1"></i> Qo'shish
-                                    </a>
-                                </div>
-                            </div>
-                           <div class="page-header-content d-flex justify-content-between align-items-center mb-3">
-                                <h4 class="page-title mb-0">🎁 Yutuq strategiyalari</h4>
+                                <h4 class="page-title mb-0">Progresbar sozlamalari</h4>
+
                             </div>
 
-                   <div class="row g-4">
-    {{-- Daily Rating Card --}}
-    <div class="col-xl-6 col-lg-6">
-        <div class="card strategy-card shadow-sm border border-primary rounded p-4 h-100 bg-light">
-            <div class="card-body d-flex flex-column justify-content-between">
-                <div>
-                    <h5 class="fw-semibold mb-1">📊 Kunlik Reyting</h5>
-                    <p class="text-muted small mb-3">
-                        Bugungi kun bo‘yicha eng faol foydalanuvchilar va ularning ballari.
-                    </p>
+                        <form action="{{ route('admin.progress-bar.update', ['promotion' => $promotion['id']]) }}" method="POST">
+            @csrf
+            {{-- @method('PUT') --}}
+
+            <div class="row g-4 mt-2">
+                {{-- Daily Points --}}
+                <div class="col-md-6">
+                    <label for="daily_points" class="form-label">Kunlik ball</label>
+                    <input type="number" name="daily_points" id="daily_points"
+                           class="form-control" min="0"
+                           value="{{ old('daily_points', $promotion['progress_bar']['daily_points'] ?? 50) }}">
+                </div>
+    <div class="col-md-6">
+                    <label for="day_start_at" class="form-label">Kun boshlanish vaqti</label>
+                    <input type="time" name="day_start_at" id="day_start_at"
+                           class="form-control"
+                           value="{{ old('day_start_at', $promotion['progress_bar']['day_start_at'] ?? '00:00') }}">
+                </div>
+                {{-- Step 0 Threshold --}}
+                <div class="col-md-4">
+                    <label for="step_0_threshold" class="form-label">Step 0 Threshold</label>
+                    <input type="number" name="step_0_threshold" id="step_0_threshold"
+                           class="form-control" min="0"
+                           value="{{ old('step_0_threshold', $promotion['progress_bar']['step_0_threshold'] ?? 0) }}">
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mt-auto">
-
-                    <a href="#" class="btn btn-sm btn-primary">
-                        <i class="ph ph-trophy me-1"></i> Ko‘rish
-                    </a>
+                {{-- Step 1 Threshold --}}
+                <div class="col-md-4">
+                    <label for="step_1_threshold" class="form-label">Step 1 Threshold</label>
+                    <input type="number" name="step_1_threshold" id="step_1_threshold"
+                           class="form-control" min="0"
+                           value="{{ old('step_1_threshold', $promotion['progress_bar']['step_1_threshold'] ?? 10) }}">
                 </div>
+
+                {{-- Step 2 Threshold --}}
+                <div class="col-md-4">
+                    <label for="step_2_threshold" class="form-label">Step 2 Threshold</label>
+                    <input type="number" name="step_2_threshold" id="step_2_threshold"
+                           class="form-control" min="0"
+                           value="{{ old('step_2_threshold', $promotion['progress_bar']['step_2_threshold'] ?? 30) }}">
+                </div>
+
+                {{-- Day Start At --}}
+
             </div>
-        </div>
-    </div>
 
-    {{-- Shu yerga boshqa static yoki dynamic kategoriya kartalar qo‘shishingiz mumkin --}}
-</div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="ph-floppy-disk me-1"></i> Saqlash
+                </button>
+            </div>
+        </form>
 
                         </div>
                     </div>
@@ -1169,12 +1189,12 @@
                         <div class="page-header-content d-flex justify-content-between align-items-center">
                             <h4 class="page-title mb-0">Xabar sozlamalari</h4>
                             {{-- @if ($messagesExists == false) --}}
-                                <div>
-                                    <a href="{{ route('admin.promotion_messages.generate', ['id' => $promotion['id']]) }}"
-                                        class="btn btn-outline-success ms-3">
-                                        <i class="ph-plus-circle me-1"></i> Mavjud bo'lmagan default xabarlarni nusxalash
-                                    </a>
-                                </div>
+                            <div>
+                                <a href="{{ route('admin.promotion_messages.generate', ['id' => $promotion['id']]) }}"
+                                    class="btn btn-outline-success ms-3">
+                                    <i class="ph-plus-circle me-1"></i> Mavjud bo'lmagan default xabarlarni nusxalash
+                                </a>
+                            </div>
                             {{-- @endif --}}
                         </div>
                         <table id="messages-table" class="table datatable-button-init-basic">

@@ -10,6 +10,7 @@ use App\Models\ParticipationType;
 use App\Models\Platform;
 use App\Models\PlatformPromotion;
 use App\Models\PrizeCategory;
+use App\Models\PromotionProgressBar;
 use App\Models\Promotions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -240,7 +241,14 @@ class PromotionController extends Controller
 
             ]);
             if ($hasSecretNumber) {
-                // shu yerda rating uchundefrault qo'shishim kerak
+                PromotionProgressBar::create([
+                    'promotion_id' => $promotion['id'],
+                    'daily_points' => 50,         // Default kunlik ball
+                    'step_0_threshold' => 0,      // Step 0 threshold
+                    'step_1_threshold' => 10,     // Step 1 threshold
+                    'step_2_threshold' => 30,     // Step 2 threshold
+                    'day_start_at' => '00:00',    // Kun boshlanish vaqti
+                ]);
             }
             $platformData = collect($validated['platforms'] ?? [])->mapWithKeys(fn($platformId) => [
                 $platformId => [
@@ -402,7 +410,16 @@ class PromotionController extends Controller
             $extraConditions['secret_number_points'] = $validated['secret_number_points'];
             $data['extra_conditions']=$extraConditions;
             $data['winning_strategy'] = 'delayed';
+            PromotionProgressBar::create([
+                'promotion_id' => $promotion['id'],
+                'daily_points' => 50,         // Default kunlik ball
+                'step_0_threshold' => 0,      // Step 0 threshold
+                'step_1_threshold' => 10,     // Step 1 threshold
+                'step_2_threshold' => 30,     // Step 2 threshold
+                'day_start_at' => '00:00',    // Kun boshlanish vaqti
+            ]);
         }
+
         Log::info('validated', ['validated' => $validated, 'data' => $data]);
 
         $promotion->update($data);
@@ -547,6 +564,7 @@ class PromotionController extends Controller
             'company:id,name,status',
             'platforms:id,name',
             'participationTypes:id,name',
+            'progressBar',
         ])->findOrFail($id);
         $messagesExists = Messages::where('scope_type', 'promotion')
             ->where('scope_id', $id)
@@ -566,6 +584,13 @@ class PromotionController extends Controller
         $availablePlatforms = Platform::whereNotIn('id', $selectedPlatforms->pluck('id'))
             ->pluck('id', 'name')
             ->toArray();
+        $progressBar = $promotion->progressBar ? [
+            'daily_points' => $promotion->progressBar->daily_points,
+            'step_0_threshold' => $promotion->progressBar->step_0_threshold,
+            'step_1_threshold' => $promotion->progressBar->step_1_threshold,
+            'step_2_threshold' => $promotion->progressBar->step_2_threshold,
+            'day_start_at' => $promotion->progressBar->day_start_at,
+        ] : null;
         $selectedParticipants = $promotion->participationTypes->map(fn($t) => $this->mapParticipants($t));
         $availableParticipants = ParticipationType::whereNotIn('id', $selectedParticipants->pluck('id'))->pluck('id', 'name');
         return response()->json([
@@ -591,7 +616,9 @@ class PromotionController extends Controller
                 'offer' => $promotion->offer,
                 'gallery' => $promotion->gallery,
                 'platforms' => $promotion->platforms->map(fn($p) => $this->mapPlatforms($p)),
-                'participants_type' => $promotion->participationTypes->map(fn($t) => $this->mapParticipants($t))
+                'participants_type' => $promotion->participationTypes->map(fn($t) => $this->mapParticipants($t)),
+                            'progress_bar' => $progressBar, // <- progress bar qo‘shildi
+
             ],
             'platforms' => $availablePlatforms,
             'companies' => $companies,

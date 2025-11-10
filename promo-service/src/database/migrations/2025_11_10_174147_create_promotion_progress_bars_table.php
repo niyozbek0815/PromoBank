@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('step_1_threshold')->default(10)->comment('1-step uchun ball');
             $table->integer('step_2_threshold')->default(30)->comment('2-step uchun ball');
             $table->string('day_start_at', 5)->comment('Kunlik progress boshlanish vaqti HH:MM formatda');
-                        $table->timestamps();
+            $table->timestamps();
         });
     }
 

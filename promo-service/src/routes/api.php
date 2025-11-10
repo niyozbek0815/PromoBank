@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\MessagesController;
 use App\Http\Controllers\Admin\PlatformPromoSettingsController;
 use App\Http\Controllers\Admin\PrizeCategoryController;
 use App\Http\Controllers\Admin\PrizeController;
+use App\Http\Controllers\Admin\ProgressBarController;
 use App\Http\Controllers\Admin\PromoCodeController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\PromotionProductController;
@@ -20,7 +21,6 @@ use App\Http\Controllers\Mobil\BannerController;
 use App\Http\Controllers\Mobil\PromoballControlller;
 use App\Http\Controllers\Mobil\PromoController;
 use App\Http\Controllers\Mobil\ReceiptController;
-use App\Http\Controllers\SecretNumberRatingController;
 use App\Http\Controllers\WebApp\PlatformPromoSettingsController as WebAppPlatformPromoSettingsController;
 use App\Http\Controllers\WebApp\PromotionsController;
 use Illuminate\Support\Facades\Route;
@@ -123,33 +123,21 @@ Route::prefix('front')->group(function () {
             Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData'); // AJAX uchun server-side table
             Route::get('/{promotion}/search', 'searchPromocodes')->name('search');
         });
-    Route::prefix('secret-number')
-        ->name('admin.secret-number.')
-        ->group(function () {
 
-            // 🔹 SecretNumber CRUD
-            Route::get('/{promotion}/secretdata', [SecretNumberController::class, 'in_promotion_data'])->name('in_promotion_data');
-            Route::get('/{secret}/edit', [SecretNumberController::class, 'edit'])->name('edit');
-            Route::post('/{secret}/delete', [SecretNumberController::class, 'delete'])->name('delete');
-            Route::get('/create/{promotion_id?}', [SecretNumberController::class, 'create'])->name('create');
-            Route::post('/store', [SecretNumberController::class, 'store'])->name('store');
-            Route::post('/{secret}/update', [SecretNumberController::class, 'update'])->name('update');
-            Route::get('/{secret}/show', [SecretNumberController::class, 'show'])->name('show');
+    Route::prefix('secret-number')->name('admin.secret-number.')->controller(SecretNumberController::class)->group(function () {
+        // Route::get('/', 'index')->name('index');
+        Route::get('/{promotion}/secretdata', 'in_promotion_data')->name('in_promotion_data');
+        Route::get('/{secret}/edit', 'edit')->name('edit');
+        Route::POST('/{secret}/delete', 'delete')->name('delete');
+        Route::get('/create/{promotion_id?}', 'create')->name('create'); // GET /promocode/create
+        Route::post('/store', 'store')->name('store');
+        Route::post('/{secret}/update', 'update')->name('update');
+        Route::get('/{secret}/show', 'show')->name('show');
 
-            // 🔹 SecretNumber Rating CRUD
-            Route::prefix('rating')
-                ->name('rating.')
-                ->controller(SecretNumberRatingController::class)
-                ->group(function () {
-                Route::get('/', 'index')->name('index');            // Barcha ratinglar
-                Route::get('/create', 'create')->name('create');     // Yaratish formasi
-                Route::post('/store', 'store')->name('store');       // Saqlash
-                Route::get('/{rating}/edit', 'edit')->name('edit');  // Edit form
-                Route::post('/{rating}/update', 'update')->name('update'); // Yangilash
-                Route::post('/{rating}/delete', 'delete')->name('delete'); // O‘chirish
-                Route::get('/{rating}/show', 'show')->name('show');  // Detay ko‘rish
-            });
-        });
+    });
+    Route::prefix('progress-bar')->name('admin.progress-bar.')->controller(ProgressBarController::class)->group(function () {
+        Route::post('/{promotion}/update', 'update')->name('update');
+    });
     Route::prefix('prize-category')
         ->name('admin.prize-category.')
         ->controller(PrizeCategoryController::class)
