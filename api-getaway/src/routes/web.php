@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\SponsorController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\PromotionController as FrontendPromotionController;
+use App\Http\Controllers\SecretNumberRatingController;
 use App\Http\Controllers\WebApp\GamesController;
 use App\Http\Controllers\WebApp\PromotionsController;
 use Illuminate\Support\Facades\Http;
@@ -166,22 +167,34 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
         Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData');
         Route::get('/{promotion}/search', 'searchPromocodes')->name('search');
     });
-    Route::prefix('secret-number')->name('secret-number.')->controller(SecretNumberController::class)->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::get('/{promotion}/secretdata', 'in_promotion_data')->name('in_promotion_data');
-        Route::get('/data', 'data')->name('data');
-        Route::get('/{secret}/edit', 'edit')->name('edit');
-        Route::get('/{secret}/delete', 'delete')->name('delete');
-        Route::get('/create/{promotion_id?}', 'create')->name('create'); // GET /promocode/create
-        Route::post('/store', 'store')->name('store');
-        Route::post('/{secret}/update', 'update')->name('update');
 
+    Route::prefix('secret-number')
+        ->name('secret-number.')
+        ->group(function () {
 
-        Route::get('/{promotion}/show', 'show')->name('show');
-        Route::get('/{prize}/prizedata', 'prizeData')->name('prizedata');
-        Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData');
-        Route::get('/{promotion}/search', 'searchPromocodes')->name('search');
-    });
+            // 🔹 SecretNumber CRUD (avvalgi)
+            Route::get('/', [SecretNumberController::class, 'index'])->name('index');
+            Route::get('/{promotion}/secretdata', [SecretNumberController::class, 'in_promotion_data'])->name('in_promotion_data');
+            Route::get('/data', [SecretNumberController::class, 'data'])->name('data');
+            Route::get('/{secret}/edit', [SecretNumberController::class, 'edit'])->name('edit');
+            Route::get('/{secret}/delete', [SecretNumberController::class, 'delete'])->name('delete');
+            Route::get('/create/{promotion_id?}', [SecretNumberController::class, 'create'])->name('create');
+            Route::post('/store', [SecretNumberController::class, 'store'])->name('store');
+            Route::post('/{secret}/update', [SecretNumberController::class, 'update'])->name('update');
+
+            // 🔹 SecretNumber Rating CRUD
+            Route::prefix('rating')
+                ->name('rating.')
+                ->controller(controller: SecretNumberRatingController::class)
+                ->group(function () {
+                Route::get('/', 'index')->name('index');           // List all ratings
+                Route::get('/create', 'create')->name('create');    // Create rating form
+                Route::post('/store', 'store')->name('store');      // Store new rating
+                Route::get('/{rating}/edit', 'edit')->name('edit'); // Edit rating form
+                Route::post('/{rating}/update', 'update')->name('update'); // Update rating
+                Route::get('/{rating}/delete', 'delete')->name('delete');   // Delete rating
+            });
+        });
     Route::prefix('prize-category')
         ->name('prize-category.')
         ->controller(PrizeCategoryController::class)

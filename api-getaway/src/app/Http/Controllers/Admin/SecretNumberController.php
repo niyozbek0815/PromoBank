@@ -123,7 +123,19 @@ class SecretNumberController extends Controller
     }
 
     public function show(Request $request, $id){
-        dd($id);
+        $response = $this->forwardRequest(
+            'GET',
+            $this->url,
+            "front/secret-number/{$id}/show", // yangilanayotgan promo
+            $request,
+        );
+        if ($response instanceof \Illuminate\Http\Client\Response) {
+            $data = $response->json();
+
+            // dd($data);
+            return view('admin.secret-number.show', $response->json());
+        }
+        return back()->with('error', 'Promoaksiya topilmadi.');
     }
 
 }

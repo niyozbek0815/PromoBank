@@ -239,7 +239,9 @@ class PromotionController extends Controller
                 'extra_conditions' => $extraConditions, // JSON sifatida saqlanadi
 
             ]);
-
+            if ($hasSecretNumber) {
+                // shu yerda rating uchundefrault qo'shishim kerak
+            }
             $platformData = collect($validated['platforms'] ?? [])->mapWithKeys(fn($platformId) => [
                 $platformId => [
                     'is_enabled' => true,

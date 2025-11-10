@@ -124,7 +124,6 @@ class SecretNumberController extends Controller
     public function edit($id)
     {
         $secret = SecretNumber::find($id);
-        $timezone = DB::select("SHOW TIMEZONE");
 
         if (!$secret) {
             return redirect()->back()->with('error', 'Sirli raqam topilmadi.');
@@ -147,7 +146,6 @@ class SecretNumberController extends Controller
         return response()->json(data: [
             'secret' => $secret,
             'promotions' => $promotions,
-            'timezone'=>$timezone
         ]);
     }
 
@@ -179,6 +177,64 @@ class SecretNumberController extends Controller
             'start_at' => $validated['start_at'],
         ]);
         return response()->json(['success' => "Sirli raqam update qilindi"]);
+    }
+    public function show($id)
+    {
+        try {
+            // Sirli raqamni promotion va entries bilan olish
+            $secret = SecretNumber::with(['promotion', 'entries.user'])
+                ->find($id);
+
+            if (!$secret) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sirli raqam topilmadi.'
+                ], 404);
+            }
+
+            // entries uchun toza array
+            $entries = $secret->entries->map(function ($entry) {
+                return [
+                    'id' => $entry->id,
+                    'user_id' => $entry->user_id,
+                    'user_name' => $entry->user?->name ?? 'Noma\'lum',
+                    'user_input' => $entry->user_input,
+                    'points_awarded' => $entry->points_awarded,
+                    'is_accepted' => $entry->is_accepted,
+                    'created_at' => $entry->created_at->format('Y-m-d H:i:s'),
+                    'updated_at' => $entry->updated_at->format('Y-m-d H:i:s'),
+                ];
+            });
+
+            // Javobni JSON formatda qaytarish
+            return response()->json([
+                'data' => [
+                    'id' => $secret->id,
+                    'promotion' => [
+                        'id' => $secret->promotion?->id,
+                        'name_uz' => $secret->promotion?->getTranslation('name', 'uz') ?? '-',
+                    ],
+                    'number' => $secret->number,
+                    'points' => $secret->points ?? 0,
+                    'start_at' => $secret->start_at?->format('Y-m-d H:i:s'),
+                    'entries_count' => $secret->entries->count(),
+                    'entries' => $entries,
+                    'created_at' => $secret->created_at->format('Y-m-d H:i:s'),
+                    'updated_at' => $secret->updated_at->format('Y-m-d H:i:s'),
+                ]
+            ]);
+
+        } catch (\Throwable $e) {
+            Log::error("SecretNumber show error: " . $e->getMessage(), [
+                'id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ichki xatolik yuz berdi. Iltimos, keyinroq urinib ko‘ring.'
+            ], 500);
+        }
     }
 
 }
