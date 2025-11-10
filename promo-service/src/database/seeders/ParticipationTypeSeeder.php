@@ -15,7 +15,7 @@ class ParticipationTypeSeeder extends Seeder
             ['name' => 'QR code', 'slug' => 'qr_code'],
             ['name' => 'Text code', 'slug' => 'text_code'],
             ['name' => 'Receipt scan', 'slug' => 'receipt_scan'],
-            ['name' => 'Short number', 'slug' => 'short_number'],
+            ['name' => 'Secret number', 'slug' => 'secret_number'],
             // ['name' => 'Telegram', 'slug' => 'telegram'],
             // ['name' => 'SMS', 'slug' => 'sms'],
         ]);

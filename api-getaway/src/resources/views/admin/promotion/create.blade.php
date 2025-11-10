@@ -110,21 +110,21 @@ $(document).ready(function() {
 
     const $timeInputWrapper = $('#timeInputWrapper');
     const $pointsInputWrapper = $('#pointsInputWrapper');
-    const $shortNumberSeconds = $('#shortNumberSeconds');
-    const $shortNumberPoints = $('#shortNumberPoints');
+    const $secretNumberSeconds = $('#secretNumberSeconds');
+    const $secretNumberPoints = $('#secretNumberPoints');
 
     $participantsType.on('change', function() {
         const selectedOptions = $participantsType.find('option:selected').map(function() {
             return $(this).text().toLowerCase();
         }).get();
 
-        const hasShortNumber = selectedOptions.some(opt => opt.includes('short number'));
+        const hassecretNumber = selectedOptions.some(opt => opt.includes('secret number'));
 
-        if (hasShortNumber) {
-            // Faqat Short Number tanlanganlarni faol qilamiz
+        if (hassecretNumber) {
+            // Faqat secret Number tanlanganlarni faol qilamiz
             $participantsType.find('option').each(function() {
                 const text = $(this).text().toLowerCase();
-                if (text.includes('short number')) {
+                if (text.includes('secret number')) {
                     $(this).prop('selected', true).prop('disabled', false);
                 } else {
                     $(this).prop('selected', false).prop('disabled', true);
@@ -144,11 +144,11 @@ $(document).ready(function() {
             $winningStrategy.prop('required', true);
             $winningStrategy.select2();
 
-            // ⏱ Short number sekund va ball maydonlari ko‘rsatiladi
+            // ⏱ secret number sekund va ball maydonlari ko‘rsatiladi
             $timeInputWrapper.removeClass('d-none');
             $pointsInputWrapper.removeClass('d-none');
-            $shortNumberSeconds.attr('required', 'required');
-            $shortNumberPoints.attr('required', 'required');
+            $secretNumberSeconds.attr('required', 'required');
+            $secretNumberPoints.attr('required', 'required');
 
             // Platformalarni faqat Telegram qilamiz
             $platforms.find('option').each(function() {
@@ -161,7 +161,7 @@ $(document).ready(function() {
             });
             $platforms.multiselect('rebuild');
         } else {
-            // Short number tanlanmagan — barcha variantlarni tiklash
+            // secret number tanlanmagan — barcha variantlarni tiklash
             $participantsType.find('option').prop('disabled', false);
             $participantsType.multiselect('rebuild');
 
@@ -170,11 +170,11 @@ $(document).ready(function() {
             $winningStrategy.prop('required', true);
             $winningStrategy.select2();
 
-            // Short number maydonlarini yashiramiz
+            // secret number maydonlarini yashiramiz
             $timeInputWrapper.addClass('d-none');
             $pointsInputWrapper.addClass('d-none');
-            $shortNumberSeconds.removeAttr('required');
-            $shortNumberPoints.removeAttr('required');
+            $secretNumberSeconds.removeAttr('required');
+            $secretNumberPoints.removeAttr('required');
 
             // Platformalarni tiklash
             $platforms.find('option').prop('disabled', false);
@@ -353,7 +353,7 @@ $(document).ready(function() {
                                 <label class="form-label fw-bold">
                                     Qisqa raqamni qabul qilish oralig‘i (soniya) <span class="text-danger">*</span>
                                 </label>
-                                <input type="number" name="short_number_seconds" id="shortNumberSeconds"
+                                <input type="number" name="secret_number_seconds" id="secretNumberSeconds"
                                     class="form-control" min="1" step="1" placeholder="Masalan: 30, 45, 90 …"
                                     required>
                                 <small class="text-muted d-block mt-1">
@@ -365,9 +365,9 @@ $(document).ready(function() {
     <label class="form-label fw-bold">
         Qisqa raqamga beriladigan ball <span class="text-danger">*</span>
     </label>
-    <input type="number" name="short_number_points" id="shortNumberPoints"
+    <input type="number" name="secret_number_points" id="secretNumberPoints"
         class="form-control" min="1" step="1"
-        value="{{ old('short_number_points', $promotion['short_number_points'] ?? 1) }}"
+        value="{{ old('secret_number_points', $promotion['secret_number_points'] ?? 1) }}"
         placeholder="Masalan: 1, 5, 10 …" required>
     <small class="text-muted d-block mt-1">
         Foydalanuvchi ushbu qisqa raqamni yuborganda unga shu miqdorda ball beriladi. 0 dan katta istalgan son kiriting.

@@ -44,6 +44,7 @@ class Promotions extends Model
     {
         return $this->getMedia('promotion-banner');
     }
+
     public function getGalleryAttribute()
     {
         return $this->getMediaCollection('promotion-gallery');
@@ -88,7 +89,12 @@ class Promotions extends Model
     {
         return $this->belongsToMany(ParticipationType::class, 'promotion_participation_types', 'promotion_id', 'participation_type_id');
     }
-
+    // public function participantTypeIds()
+    // {
+    //     return $this->belongsToMany(ParticipationType::class, 'promotion_participation_types')
+    //         ->withPivot(['is_enabled', 'additional_rules'])
+    //         ->withTimestamps();
+    // }
     public function participationTypesSms()
     {
         return $this->hasMany(PromotionParticipationType::class, 'promotion_id')->with('participationType')->whereHas('participationType', function ($query) {

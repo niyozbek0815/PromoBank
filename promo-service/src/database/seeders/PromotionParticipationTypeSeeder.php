@@ -18,16 +18,24 @@ class PromotionParticipationTypeSeeder extends Seeder
         $promotions = Promotions::all();
         $participationTypes = ParticipationType::all();
 
-        foreach ($promotions as $promotion) {
-            // Agar short_number turi mavjud bo'lsa, faqat uni tanlaymiz
-            $shortNumberType = $participationTypes->firstWhere('slug', 'short_number');
+        $secretNumberType = $participationTypes->firstWhere('slug', 'secret_number');
 
-            if ($shortNumberType) {
-                $types = [$shortNumberType->id]; // faqat short_number
-            } else {
-                // Aks holda 2–3 tasini tasodifiy tanlaymiz
-                $types = Arr::random($participationTypes->pluck('id')->toArray(), rand(2, 3));
+        foreach ($promotions as $promotion) {
+            $types = [];
+
+            // 1/4 ehtimol bilan secret_number qo'shish
+            if ($secretNumberType && rand(1, 4) === 1) { // 1 dan 4 gacha tasodifiy son, 1 bo'lsa qo'shadi
+                $types[] = $secretNumberType->id;
             }
+
+            // Qolgan ishtirok turlarini tasodifiy tanlash
+            $otherTypes = $participationTypes
+                ->where('slug', '!=', 'secret_number')
+                ->pluck('id')
+                ->toArray();
+
+            // Tasodifiy 1-2 ta boshqa turni tanlaymiz
+            $types = array_merge($types, Arr::random($otherTypes, rand(1, min(2, count($otherTypes)))));
 
             foreach ($types as $typeId) {
                 $type = $participationTypes->firstWhere('id', $typeId);
@@ -37,8 +45,8 @@ class PromotionParticipationTypeSeeder extends Seeder
 
                 if ($type->slug === 'sms') {
                     $rules = ['phone' => '1112'];
-                } elseif ($type->slug === 'short_number') {
-                    $rules = ['short_number_seconds' => rand(10, 60)]; // misol uchun sekund
+                } elseif ($type->slug === 'secret_number') {
+                    $rules = ['secret_number_seconds' => rand(10, 60)]; // misol uchun sekund
                 }
 
                 PromotionParticipationType::create([

@@ -548,7 +548,95 @@
             });
 
         });
-    </script>
+        $(document).ready(function() {
+    // Secret Number o'chirish
+    $(document).on('click', '#secret-number-table .delete-user', function(e) {
+        e.preventDefault();
+
+        const btn = $(this);
+        const secretId = btn.data('id');
+        const url = btn.data('url');
+
+        Swal.fire({
+            title: 'Ishonchingiz komilmi?',
+            text: "Bu amal sirli raqamni o‘chiradi!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ha, o‘chir!',
+            cancelButtonText: 'Bekor qilish'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            $.ajax({
+                url: url,
+                method: 'GET',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(res) {
+                    if (res.success) {
+                        toastr.success(res.message || 'Sirli raqam muvaffaqiyatli o‘chirildi!');
+                        // DataTable rowni yangilash
+        $('#secret-number-table').DataTable().ajax.reload(null, false); // false: current page saqlanadi
+
+                    } else {
+                        toastr.error(res.message || 'O‘chirishda xatolik yuz berdi!');
+                    }
+                },
+                error: function(xhr) {
+                    console.error(xhr.responseText);
+                    toastr.error('Serverda xatolik yuz berdi. Qayta urinib ko‘ring!');
+                }
+            });
+        });
+    });
+});
+
+$(document).ready(function() {
+    const promotionId = "{{ $promotion['id'] ?? ($promotion->id ?? 'unknown') }}";
+                    const url = "{{ route('admin.secret-number.in_promotion_data', $promotion['id'], false) }}";
+
+    // To‘g‘ri jadval nomi ishlatiladi
+    if ($.fn.DataTable.isDataTable('#secret-number-table')) {
+        $('#secret-number-table').DataTable().destroy();
+    }
+
+    $('#secret-number-table').DataTable({
+        processing: true,
+        serverSide: false,
+        ajax: {
+            url: url,
+            type: "GET",
+            dataSrc: function(json) {
+                console.log("🧾 [SECRET NUMBER RESPONSE]:", json);
+                return json.data || [];
+            },
+            error: function(xhr, status, error) {
+                console.error("❌ AJAX XATO:", { status, error, response: xhr.responseText });
+            }
+        },
+        columns: [
+            { data: 'id', name: 'id', title: '#ID' },
+            { data: 'promotion_name', name: 'promotion_name', title: 'Promoaksiya' },
+            { data: 'number', name: 'number', title: 'Raqam' },
+            { data: 'points', name: 'points', title: 'Ball' },
+            { data: 'entries_count', name: 'entries_count', title: 'Ishtiroklar' },
+            { data: 'start_at', name: 'start_at', title: 'Boshlanish' },
+{ data: 'status', name: 'status', title: 'Status', orderable: false, searchable: false },            { data: 'actions', name: 'actions', title: 'Harakatlar', orderable: false, searchable: false },
+        ],
+        buttons: [
+            { extend: 'copy', text: '📋 Nusxa olish' },
+            { extend: 'excel', filename: promotionId + '-sirli_raqamlar' },
+            { extend: 'csv', filename: promotionId + '-sirli_raqamlar' },
+            { extend: 'print', text: '🖨️ Chop etish' }
+        ],
+        responsive: true
+    });
+});
+
+   </script>
 @endpush
 @section('content')
     @php
@@ -556,9 +644,9 @@
             ->pluck('name')
             ->intersect(['QR code', 'Text code'])
             ->isNotEmpty();
-        $hasShortNumberType = collect($promotion['participants_type'] ?? [])
+        $hasSecretNumberType = collect($promotion['participants_type'] ?? [])
             ->pluck('name')
-            ->intersect(['Short number', ''])
+            ->intersect(['Secret number', ''])
             ->isNotEmpty();
         $hasReceiptType = collect($promotion['participants_type'] ?? [])
             ->pluck('name')
@@ -651,7 +739,7 @@
                                 <small class="text-muted">Aksiya tugaydigan sana va vaqtni belgilang.</small>
                             </div>
                         </div>
-                        @if (!$hasShortNumberType)
+                        @if (!$hasSecretNumberType)
                             {{-- 🔁 Multi-select fields --}}
                             <div class="row">
                                 <div class="col-lg-4 mb-3">
@@ -712,13 +800,13 @@
 
                         {{-- ✅ Switches --}}
                         <div class="row mb-3">
-                                       @if ($hasShortNumberType)
+                                       @if ($hasSecretNumberType)
                                 <div class="col-lg-4 mb-3" id="timeInputWrapper">
                                     <label class="form-label fw-bold">
-                                        Qisqa raqamni qabul qilish oralig‘i (soniya) <span class="text-danger">*</span>
+                                        Sirli raqamni qabul qilish oralig‘i (soniya) <span class="text-danger">*</span>
                                     </label>
-                                    <input type="number" name="short_number_seconds" id="shortNumberSeconds"
-                                        class="form-control" min="1" step="1" value="{{ old('status', $promotion['short_number_seconds']) }}"
+                                    <input type="number" name="secret_number_seconds" id="secretNumberSeconds"
+                                        class="form-control" min="1" step="1" value="{{ old('status', $promotion['secret_number_seconds']) }}"
                                         placeholder="Masalan: 30, 45, 90 …" required>
                                     <small class="text-muted d-block mt-1">
                                         Promokod shu sekund oralig‘ida faqat qabul qilinadi. 0 dan katta istalgan son
@@ -727,14 +815,14 @@
                                 </div>
                                                <div class="col-lg-4 mb-3" id="pointsInputWrapper">
     <label class="form-label fw-bold">
-        Qisqa raqamga beriladigan ball <span class="text-danger">*</span>
+        Sirli raqamga beriladigan ball <span class="text-danger">*</span>
     </label>
-    <input type="number" name="short_number_points" id="shortNumberPoints"
+    <input type="number" name="secret_number_points" id="secretNumberPoints"
         class="form-control" min="1" step="1"
-        value="{{ old('short_number_points', $promotion['short_number_points'] ?? 1) }}"
+        value="{{ old('secret_number_points', $promotion['secret_number_points'] ?? 1) }}"
         placeholder="Masalan: 1, 5, 10 …" required>
     <small class="text-muted d-block mt-1">
-        Foydalanuvchi ushbu qisqa raqamni yuborganda unga shu miqdorda ball beriladi. 0 dan katta istalgan son kiriting.
+        Foydalanuvchi ushbu Sirli raqamni yuborganda unga shu miqdorda ball beriladi. 0 dan katta istalgan son kiriting.
     </small>
 </div>
                             @endif
@@ -835,10 +923,10 @@
                             <i class="ph ph-gift me-1"></i> Sovg'alar
                         </button>
                     @endif
-                    @if ($hasShortNumberType)
+                    @if ($hasSecretNumberType)
                         <button type="button" class="btn btn-outline-success collapse-toggler"
-                            data-target="#collapse-short_number">
-                            <i class="ph ph-gift me-1"></i>Qisqa raqamlar
+                            data-target="#collapse-secret_number">
+                            <i class="ph ph-gift me-1"></i>Sirli raqamlar
                         </button>
                         <button type="button" class="btn btn-outline-success collapse-toggler"
                             data-target="#collapse-prize">
@@ -850,30 +938,32 @@
             </div>
 
             <div class="card-body">
-                 @if ($hasShortNumberType)
-                    <div class="collapse table-panel" id="collapse-short_number">
+                 @if ($hasSecretNumberType)
+                    <div class="collapse table-panel" id="collapse-secret_number">
                         <div class="border rounded p-3">
                             <div class="page-header-content d-flex justify-content-between align-items-center">
-                                <h4 class="page-title mb-0">Qisqa raqamlar jadvali</h4>
+                                <h4 class="page-title mb-0">Sirli raqamlar jadvali</h4>
                                 <div>
-                                    <a href="{{ route('admin.short_number.create', ['promotion_id' => $promotion['id']]) }}"
+                                    <a href="{{ route('admin.secret-number.create', ['promotion_id' => $promotion['id']]) }}"
                                         class="btn btn-outline-success ms-3">
                                         <i class="ph-plus-circle me-1"></i> Qo'shish
                                     </a>
                                 </div>
                             </div>
-                            <table id="short-number-table" class="table datatable-button-init-basic">
-                                <thead>
-                                    <tr>
-                                        <th>#ID</th>
-                                        <th>Promocode</th>
-                                        <th>Foydalanilgan</th>
-                                        <th>Foydalanilgan vaqti</th>
-                                        <th>Generation</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                            </table>
+                       <table id="secret-number-table" class="table datatable-button-init-basic">
+    <thead class="table-light">
+        <tr>
+            <th>#ID</th>
+            <th>Promoaksiya nomi</th>
+            <th>Raqam</th>
+            <th>Ball</th>
+            <th>Ishtiroklar soni</th>
+            <th>Boshlanish vaqti</th>
+            <th>Status</th>
+            <th>Harakatlar</th>
+        </tr>
+    </thead>
+</table>
 
                         </div>
                     </div>

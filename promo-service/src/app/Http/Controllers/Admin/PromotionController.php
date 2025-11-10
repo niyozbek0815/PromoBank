@@ -139,8 +139,8 @@ class PromotionController extends Controller
     public function store(Request $request)
     {
         $participants = $request->input('participants_type', []);
-        $shortNumberType = ParticipationType::where('slug', 'short_number')->first();
-        $hasShortNumber = $shortNumberType && in_array($shortNumberType->id, $participants);
+        $secretNumberType = ParticipationType::where('slug', 'secret_number')->first();
+        $hasSecretNumber = $secretNumberType && in_array($secretNumberType->id, $participants);
 
         $rules = [
             // Name, title, description
@@ -182,9 +182,9 @@ class PromotionController extends Controller
             'is_public' => 'nullable|boolean',
         ];
 
-        if ($hasShortNumber) {
-            $rules['short_number_seconds'] = 'required|integer|min:1';
-            $rules['short_number_points'] = 'required|integer|min:1';
+        if ($hasSecretNumber) {
+            $rules['secret_number_seconds'] = 'required|integer|min:1';
+            $rules['secret_number_points'] = 'required|integer|min:1';
 
             $rules['winning_strategy'] = 'required|in:delayed';
         } else {
@@ -219,9 +219,9 @@ class PromotionController extends Controller
             return response()->json(['message' => 'Faylni saqlashda xatolik yuz berdi.'], 500);
         }
         $extraConditions = $request->input('extra_conditions', []); // agar frontend orqali boshqa shartlar ham bo'lsa
-        if ($hasShortNumber) {
-            $extraConditions['short_number_seconds'] = $validated['short_number_seconds'];
-            $extraConditions['short_number_points'] = $validated['short_number_points'];
+        if ($hasSecretNumber) {
+            $extraConditions['secret_number_seconds'] = $validated['secret_number_seconds'];
+            $extraConditions['secret_number_points'] = $validated['secret_number_points'];
         }
         try {
             DB::beginTransaction();
@@ -331,9 +331,9 @@ class PromotionController extends Controller
 
 
         $promotion = Promotions::findOrFail($id);
-        $shortNumberType = ParticipationType::where('slug', 'short_number')->first();
+        $secretNumberType = ParticipationType::where('slug', 'secret_number')->first();
         $currentParticipants = $promotion->participantTypeIds()->pluck('participation_type_id')->toArray();
-        $hasShortNumber = $shortNumberType && in_array($shortNumberType->id, $currentParticipants);
+        $hasSecretNumber = $secretNumberType && in_array($secretNumberType->id, $currentParticipants);
 
 
         $rules = [
@@ -374,9 +374,9 @@ class PromotionController extends Controller
             'is_public' => 'nullable|boolean',
         ];
 
-        if ($hasShortNumber) {
-            $rules['short_number_seconds'] = 'required|integer|min:1';
-            $rules['short_number_points'] = 'required|integer|min:1';
+        if ($hasSecretNumber) {
+            $rules['secret_number_seconds'] = 'required|integer|min:1';
+            $rules['secret_number_points'] = 'required|integer|min:1';
         } else {
             $rules['winning_strategy'] = 'required|in:immediate,delayed,hybrid';
         }
@@ -395,9 +395,9 @@ class PromotionController extends Controller
             'created_by_user_id' => $validated['created_by_user_id'],
 
         ];
-        if ($hasShortNumber) {
-            $extraConditions['short_number_seconds'] = $validated['short_number_seconds'];
-            $extraConditions['short_number_points'] = $validated['short_number_points'];
+        if ($hasSecretNumber) {
+            $extraConditions['secret_number_seconds'] = $validated['secret_number_seconds'];
+            $extraConditions['secret_number_points'] = $validated['secret_number_points'];
             $data['extra_conditions']=$extraConditions;
             $data['winning_strategy'] = 'delayed';
         }
@@ -578,11 +578,11 @@ class PromotionController extends Controller
                 'winning_strategy' => $promotion->winning_strategy,
                 'start_date' => $promotion->start_date?->toDateTimeString(),
                 'end_date' => $promotion->end_date?->toDateTimeString(),
-                'short_number_seconds' => isset($promotion->extra_conditions['short_number_seconds'])
-                    ? (int) $promotion->extra_conditions['short_number_seconds']
+                'secret_number_seconds' => isset($promotion->extra_conditions['secret_number_seconds'])
+                    ? (int) $promotion->extra_conditions['secret_number_seconds']
                     : null,
-                'short_number_points' => isset($promotion->extra_conditions['short_number_points'])
-                    ? (int) $promotion->extra_conditions['short_number_points']
+                'secret_number_points' => isset($promotion->extra_conditions['secret_number_points'])
+                    ? (int) $promotion->extra_conditions['secret_number_points']
                     : null,
                 'created_by_user_id' => $promotion->created_by_user_id,
                 'banner' => $promotion->banner,

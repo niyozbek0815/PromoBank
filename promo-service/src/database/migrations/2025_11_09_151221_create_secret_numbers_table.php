@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
 
-        Schema::create('short_numbers', function (Blueprint $table) {
+        Schema::create('secret_numbers', function (Blueprint $table) {
             $table->id();
-            $table->string('number', 10)->unique(); // Qisqa raqam
+            $table->string('number', 10); // Qisqa raqam
             $table->integer('points')->nullable();   // Userga beriladigan ball
             $table->foreignId('promotion_id')->constrained('promotions')->onDelete('cascade');
             $table->dateTime('start_at');
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('short_numbers');
+        Schema::dropIfExists('secret_numbers');
     }
 };

@@ -84,7 +84,6 @@ class PromotionController extends Controller
     }
     public function store(Request $request)
     {
-
         $response = $this->forwardRequestMedias(
             'POST',
             $this->url,
@@ -92,7 +91,6 @@ class PromotionController extends Controller
             $request,
             ['media_preview', 'media_gallery', 'offer_file']// Fayl nomlari (formdagi `name=""`)
         );
-
         if ($response->status() === 422) {
             return redirect()->back()
                 ->withErrors($response->json('errors'))
@@ -107,7 +105,6 @@ class PromotionController extends Controller
     }
     public function update(Request $request, $id)
     {
-
         $response = $this->forwardRequestMedias(
             'POST', // PUT emas, chunki multipart so‘rovda faqat POST ishlaydi
             $this->url,
@@ -115,8 +112,6 @@ class PromotionController extends Controller
             $request,
             ['media_preview', 'media_gallery', 'offer_file']
         );
-        // dd($response->json());
-
         if ($response->status() === 422) {
             return redirect()->back()
                 ->withErrors($response->json('errors'))

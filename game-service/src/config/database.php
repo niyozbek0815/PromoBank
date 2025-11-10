@@ -95,6 +95,8 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => 'prefer',
+            'timezone' => '+05:00', // Tashkent UTC+5
+
         ],
 
         'sqlsrv' => [

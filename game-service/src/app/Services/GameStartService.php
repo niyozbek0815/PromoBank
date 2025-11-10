@@ -202,6 +202,7 @@ class GameStartService
             'stage2_request_shown' => false,
             'step_config' => $stepConfig,
             'summary' => $summary,
+            'continue_game' => false,
             'card_data' => [
                 'selected_cards' => [],
                 'unselected_cards' => $minimalUnselected,
@@ -234,6 +235,7 @@ class GameStartService
             'stage2_request_shown' => $is_show,
             'step_config' => $stepConfig,
             'summary' => $summary,
+            'continue_game'=>true,
             'card_data' => [
                 'selected_cards' => $minimalSelected,
                 'unselected_cards' => $minimalUnselected,

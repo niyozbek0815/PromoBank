@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ShortNumber extends Model
+class SecretNumber extends Model
 {
     use HasFactory;
 
@@ -14,7 +14,6 @@ class ShortNumber extends Model
         'points',
         'promotion_id',
         'start_at',
-        'end_at',
     ];
 
     protected $casts = [
@@ -29,6 +28,6 @@ class ShortNumber extends Model
 
     public function entries()
     {
-        return $this->hasMany(ShortNumberEntry::class);
+        return $this->hasMany(SecretNumberEntry::class);
     }
 }

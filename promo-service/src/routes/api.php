@@ -10,7 +10,9 @@ use App\Http\Controllers\Admin\PromoCodeController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\PromotionProductController;
 use App\Http\Controllers\Admin\PromotionShopController;
+use App\Http\Controllers\Admin\SecretNumberController;
 use App\Http\Controllers\Admin\SelesReceiptController;
+use App\Http\Controllers\Admin\ShortNumberController;
 use App\Http\Controllers\Admin\SocialMediaController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\PromotionController as FrontendPromotionController;
@@ -120,6 +122,23 @@ Route::prefix('front')->group(function () {
             Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData'); // AJAX uchun server-side table
             Route::get('/{promotion}/search', 'searchPromocodes')->name('search');
         });
+
+    Route::prefix('secret-number')->name('admin.secret-number.')->controller(SecretNumberController::class)->group(function () {
+        // Route::get('/', 'index')->name('index');
+        Route::get('/{promotion}/secretdata', 'in_promotion_data')->name('in_promotion_data');
+        Route::get('/{secret}/edit', 'edit')->name('edit');
+        Route::POST('/{secret}/delete', 'delete')->name('delete');
+        Route::get('/create/{promotion_id?}', 'create')->name('create'); // GET /promocode/create
+        Route::post('/store', 'store')->name('store');
+        Route::post('/{secret}/update', 'update')->name('update');
+
+
+        Route::get('/data', 'data')->name('data');                       // GET /promocode/data
+        Route::get('/{promotion}/show', 'show')->name('show');
+        Route::get('/{prize}/prizedata', 'prizeData')->name('prizedata');
+        Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData');
+        Route::get('/{promotion}/search', 'searchPromocodes')->name('search');
+    });
     Route::prefix('prize-category')
         ->name('admin.prize-category.')
         ->controller(PrizeCategoryController::class)

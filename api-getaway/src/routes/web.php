@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\PromoCodeController;
 use App\Http\Controllers\Admin\PromotionProductController;
 use App\Http\Controllers\Admin\PromotionShopController;
 use App\Http\Controllers\Admin\Promo\PromotionController;
+use App\Http\Controllers\Admin\SecretNumberController;
 use App\Http\Controllers\Admin\SelesReceiptController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SocialMediaController;
@@ -165,13 +166,18 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
         Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData');
         Route::get('/{promotion}/search', 'searchPromocodes')->name('search');
     });
-    Route::prefix('short-number')->name('short-number.')->controller(PromoCodeController::class)->group(function () {
-        Route::get('/', 'index')->name('index');                         // GET /promocode
-        Route::get('/data', 'data')->name('data');                       // GET /promocode/data
+    Route::prefix('secret-number')->name('secret-number.')->controller(SecretNumberController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/{promotion}/secretdata', 'in_promotion_data')->name('in_promotion_data');
+        Route::get('/data', 'data')->name('data');
+        Route::get('/{secret}/edit', 'edit')->name('edit');
+        Route::get('/{secret}/delete', 'delete')->name('delete');
         Route::get('/create/{promotion_id?}', 'create')->name('create'); // GET /promocode/create
+        Route::post('/store', 'store')->name('store');
+        Route::post('/{secret}/update', 'update')->name('update');
+
+
         Route::get('/{promotion}/show', 'show')->name('show');
-        Route::post('/{promotion}/store', 'storePromoCodes')->name('store');
-        Route::get('/{promotion}/promocodedata', 'promocodeData')->name('promocodedata');
         Route::get('/{prize}/prizedata', 'prizeData')->name('prizedata');
         Route::get('/{prize}/autobinddata', 'autobindData')->name('autobindData');
         Route::get('/{promotion}/search', 'searchPromocodes')->name('search');

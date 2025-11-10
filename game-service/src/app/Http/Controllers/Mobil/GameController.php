@@ -26,7 +26,6 @@ class GameController extends Controller
     public function getTypes(Request $request)
     {
         $games = Game::select('id', 'name')->get();
-
         $data = $games->map(function ($game) {
             return [
                 'value' => $game->id,
@@ -35,7 +34,7 @@ class GameController extends Controller
         })->toArray();
 
         Log::info('Game Types', ['data' => $data]);
-        return response()->json($data);
+        return response()->json($games);
     }
 
     public function index(Request $request)

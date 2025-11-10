@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('short_number_entries', function (Blueprint $table) {
+        Schema::create('secret_number_entries', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('short_number_id')->constrained('short_numbers')->onDelete('cascade');
+            $table->foreignId('secret_number_id')->constrained('secret_numbers')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->integer('points_awarded')->default(0); // foydalanuvchiga berilgan ball
             $table->string('user_input', 20);              // foydalanuvchi yuborgan raqam
             $table->boolean('is_accepted')->default(false); // qabul qilindi/yo'q
             $table->timestamps();
-            $table->unique(['short_number_id', 'user_id']); // bir foydalanuvchi bir raqamni bir marta yuboradi
+            $table->unique(['secret_number_id', 'user_id']); // bir foydalanuvchi bir raqamni bir marta yuboradi
         });
     }
 
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('short_number_entries');
+        Schema::dropIfExists('secret_number_entries');
     }
 };
