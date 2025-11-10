@@ -985,9 +985,9 @@
                         </button>
 
                         <button type="button" class="btn btn-outline-success collapse-toggler"
-                            data-target="#collapse-rating">
-                            <i class="ph ph-trophy me-1"></i> Rating Settings
-                        </button>
+        data-target="#collapse-progress">
+    <i class="ph-trophy me-1"></i> Progress-barni yangilash
+</button>
                     @endif
 
                 </div>
@@ -1023,7 +1023,7 @@
 
                         </div>
                     </div>
-                    <div class="collapse table-panel" id="collapse-rating">
+                    <div class="collapse table-panel" id="collapse-progress">
                         <div class="border rounded p-3">
                             <div class="page-header-content d-flex justify-content-between align-items-center">
                                 <h4 class="page-title mb-0">Progresbar sozlamalari</h4>
