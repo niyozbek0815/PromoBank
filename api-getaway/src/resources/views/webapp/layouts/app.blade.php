@@ -77,8 +77,9 @@
             }
 
             const data = await resp.json();
-            console.log('Auth success', data);
-            window.__ACCESS_TOKEN__ = data.access_token;
+         document.cookie = `webapp_token=${data.access_token}; path=/; secure; samesite=lax`;
+         
+window.__ACCESS_TOKEN__ = data.access_token;
         })();
     </script>
 

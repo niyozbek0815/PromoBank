@@ -19,7 +19,6 @@ class WebAppAuthController extends Controller
     {
         Log::info('WebAppAuthController login called',['request'=>$request->all()]);
         $response = $this->forwardRequest("POST", $this->url, '/webapp/auth', $request);
-Log::info('WebAppAuthController login response',['response'=>$response->json()]);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());
         }

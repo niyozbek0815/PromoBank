@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('secret_number_entries', function (Blueprint $table) {
             $table->id();
             $table->foreignId('secret_number_id')->constrained('secret_numbers')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->integer('points_awarded')->default(0); // foydalanuvchiga berilgan ball
+            $table->unsignedBigInteger('user_id');            $table->integer('points_awarded')->default(0); // foydalanuvchiga berilgan ball
             $table->string('user_input', 20);              // foydalanuvchi yuborgan raqam
             $table->boolean('is_accepted')->default(false); // qabul qilindi/yo'q
             $table->timestamps();

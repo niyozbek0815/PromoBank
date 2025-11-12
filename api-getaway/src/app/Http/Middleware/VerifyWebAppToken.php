@@ -16,7 +16,7 @@ class VerifyWebAppToken
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            $token = $request->bearerToken();
+            $token = $request->bearerToken() ?? $request->cookie('webapp_token') ?? $request->query('token');            Log::info("token:".$token);
             if (!$token) {
                 return response()->json(['message' => 'Missing Bearer token'], 419);
             }

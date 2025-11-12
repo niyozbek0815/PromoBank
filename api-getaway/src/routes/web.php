@@ -49,9 +49,10 @@ Route::prefix('webapp')->name('webapp.')->group(function () {
         ->controller(PromotionsController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
-            Route::get('/{id}', 'show')->name('show');
+            Route::get('/{id}', 'show')->name('show')->middleware(['webapp.auth']);
+            Route::get('/{id}/rating', 'rating')->name('rating')->middleware(['webapp.auth']);
             Route::post('/{id}/promocode', 'viaPromocode');
-            Route::post('/{id}/receipt', 'viaReceipt');
+            Route::post('/{id}/receipt', 'viaReceipt')->middleware(['webapp.auth']);
         });
     Route::prefix('games')
         ->name('games.')

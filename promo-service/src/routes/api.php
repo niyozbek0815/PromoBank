@@ -13,7 +13,6 @@ use App\Http\Controllers\Admin\PromotionProductController;
 use App\Http\Controllers\Admin\PromotionShopController;
 use App\Http\Controllers\Admin\SecretNumberController;
 use App\Http\Controllers\Admin\SelesReceiptController;
-use App\Http\Controllers\Admin\ShortNumberController;
 use App\Http\Controllers\Admin\SocialMediaController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\PromotionController as FrontendPromotionController;
@@ -31,11 +30,13 @@ Route::prefix('frontend')->name('frontend.')->group(function () {
     Route::controller(FrontendPromotionController::class)
         ->group(function () {
             Route::post('/promotion/{id}', 'show');
+            Route::post('/promotion/{id}/rating', 'rating');
         });
-
     Route::controller(PromotionsController::class)->prefix('promotion')->name('promotions.')->group(function () {
         Route::post('{promotion}/promocode', 'viaPromocode')->name('viaPromocode');
         Route::post('{promotion}/receipt', 'viaReceipt')->name('viaReceipt');
+        Route::post('{promotion}/secret-number', 'secretNumber')->name('secretNumber');
+
     });
 });
 

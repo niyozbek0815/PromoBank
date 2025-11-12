@@ -44,7 +44,7 @@
                <div class="nav_logo me-5">
                    <img src="{{ asset($settings['navbar_logo']) }}" alt="PromoBank logo">
                </div>
-               <div class="nav-right">
+               <div class="nav-right" style="display: flex">
                    <div class="social-links">
                        @foreach ($socialLinks as $social)
                            @php
@@ -56,25 +56,34 @@
                                <i class="{{ $icon }}"></i>
                            </a>
                        @endforeach
+                   
                    </div>
-                   @if (Route::is('webapp.promotions.show'))
-                       {{-- Orqaga qaytish (faqat promotions.show sahifasida) --}}
-                       <a href="{{ route('webapp.promotions.index') }}" class="btn btn_social"
-                           title="{{ __('Orqaga qaytish') }}">
-                           <i class="fa-solid fa-left"></i>
-                       </a>
-                   @elseif(Route::is('webapp.promotions.index'))
-                       {{-- Games sahifasiga o‘tish (faqat promotions.index sahifasida) --}}
-                       <a href="{{ route('webapp.games.index') }}" class="btn btn_social"
-                           title="{{ __('Games bo‘limi') }}">
-                           <i class="fa-solid fa-gamepad-modern"></i> </a>
-                   @elseif(Route::is('webapp.games.index'))
-                       {{-- Promotions sahifasiga qaytish (faqat games.index sahifasida) --}}
-                       <a href="{{ route('webapp.promotions.index') }}" class="btn btn_social"
-                           title="{{ __('Promotions bo‘limi') }}">
-                           <i class="fa-solid fa-gift"></i>
-                       </a>
-                   @endif
+                   <div>
+                        @if (Route::is('webapp.promotions.show'))
+                           {{-- Orqaga qaytish (faqat promotions.show sahifasida) --}}
+                           <a href="{{ route('webapp.promotions.index') }}" class="btn btn_social"
+                               title="{{ __('Orqaga qaytish') }}">
+                               <i class="fa-solid fa-left"></i>
+                           </a>
+                       @elseif(Route::is('webapp.promotions.index'))
+                           {{-- Games sahifasiga o‘tish (faqat promotions.index sahifasida) --}}
+                           <a href="{{ route('webapp.games.index') }}" class="btn btn_social"
+                               title="{{ __('Games bo‘limi') }}">
+                               <i class="fa-solid fa-gamepad-modern"></i> </a>
+                       @elseif(Route::is('webapp.games.index'))
+                           {{-- Promotions sahifasiga qaytish (faqat games.index sahifasida) --}}
+                           <a href="{{ route('webapp.promotions.index') }}" class="btn btn_social"
+                               title="{{ __('Promotions bo‘limi') }}">
+                               <i class="fa-solid fa-gift"></i>
+                           </a>
+                       @elseif(Route::is('webapp.promotions.rating'))
+                           <a href="{{ route('webapp.promotions.show',['id' => $promotion_id]) }}" class="btn btn_social"
+                               title="{{ __('Orqaga qaytish') }}">
+                               <i class="fa-solid fa-left"></i>
+                           </a>
+                       @endif
+                   </div>
+
                </div>
            </div>
        </div>

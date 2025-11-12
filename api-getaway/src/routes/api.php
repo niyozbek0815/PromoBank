@@ -25,6 +25,8 @@ Route::prefix('webapp')->name('webapp.')->group(function () {
     Route::controller(PromotionsController::class)->prefix('promotions')->name('promotions.')->group(function () {
         Route::post('{promotion}/promocode', 'verifyPromo')->name('verifyPromo')->middleware(['webapp.auth']);
         Route::post('{promotion}/receipt', 'verifyReceipt')->name('verifyReceipt')->middleware(['webapp.auth']);
+        Route::post('/{promotion}/secret-number', 'secretNumber')->middleware(['webapp.auth']);;
+
     });
 });
 

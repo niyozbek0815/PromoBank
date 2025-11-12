@@ -25,7 +25,16 @@ class MessagesSeeder extends Seeder
                     ],
                     'sms' => "❌ Noto‘g‘ri kod: :code. Agar MY5da raqam e'lon qilinsa, uni 1 daqiqa ichida yuboring.",
                 ],
-
+                [
+                    'status' => 'claim',
+                    'message' => [
+                        'uz' => "Sirli raqam: :code dan avval foydalanilgansiz.",
+                        'ru' => "Секретный номер: :code уже был использован ранее.",
+                        'en' => "Secret number: :code has already been used.",
+                        'kr' => "Сирли рақам: :code дан аввал фойдаланилгансиз.",
+                    ],
+                    'sms' => "Sirli raqam: :code dan avval foydalanilgansiz.",
+                ],
                 [
                     'status' => 'inactive_window',
                     'message' => [
@@ -36,7 +45,15 @@ class MessagesSeeder extends Seeder
                     ],
                     'sms' => "Sirli raqam hozir aktiv emas. MY5da 16:00–18:00 orasida e'lon qilinadi — e'lon qilingach 1 daqiqa ichida yuboring.",
                 ],
-
+                [
+                    'status' => 'win',
+                    'message' => [
+                        'uz' => "Tabriklaymiz! Siz sirli raqamni topdingiz va (:prize) ball yutdingiz.",
+                        'ru' => "Поздравляем! Вы угадали секретное число и выиграли (:prize) баллов.",
+                        'en' => "Congratulations! You found the secret number and won (:prize) points.",
+                        'kr' => "Табриклаймиз! Сиз сирли рақамни топдингиз ва (:prize) балл ютдингиз.",
+                    ],
+                ],
                 [
                     'status' => 'step0',
                     'message' => [
@@ -117,12 +134,11 @@ class MessagesSeeder extends Seeder
                 [
                     'status' => 'win',
                     'message' => [
-                        'uz' => "Tabriklaymiz! Siz (:prize) yutdingiz. Tafsilotlar uchun operatorlarimiz bog‘lanadi.",
-                        'ru' => "Поздравляем! Вы выиграли (:prize). Наши операторы скоро свяжутся с вами.",
-                        'en' => "Congratulations! You won (:prize). Our operators will contact you soon.",
-                        'kr' => "Табриклаймиз! Сиз (:prize) ютдингиз. Тафсилотлар учун операторларимиз боғланади.",
+                        'uz' => "Tabriklaymiz! Chekingiz orqali siz (:prize) yutdingiz. Operatorlarimiz tez orada siz bilan bog‘lanadi.",
+                        'ru' => "Поздравляем! Ваш чек выиграл (:prize). Наши операторы скоро свяжутся с вами.",
+                        'en' => "Congratulations! Your receipt won (:prize). Our operators will contact you soon.",
+                        'kr' => "Табриклаймиз! Чекингиз орқали сиз (:prize) ютдингиз. Операторларимиз тез орада сиз билан боғланади.",
                     ],
-                    'sms' => "Tabriklaymiz! Siz (:prize) yutdingiz. Tafsilotlar uchun operatorlarimiz bog‘lanadi.",
                 ],
                 [
                     'status' => 'fail',

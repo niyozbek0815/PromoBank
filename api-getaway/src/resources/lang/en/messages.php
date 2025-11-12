@@ -77,4 +77,12 @@ return [
     // Code Modal
     'code_title' => 'Enter Promo Code',
     'code_placeholder' => 'Enter the code...',
+
+    'secret_number_placeholder' => 'Enter the secret number..',
+    'ball_text' => 'promoball',
+    'today' => 'Today',
+    'top_100' => 'TOP 100 Ranking',
+    // :time ni olib tashlamang
+    'daily_refresh' => 'The table is updated every day at :time',
+'rating_title'=>"🎯 Daily Ranking (TOP :100)'"
 ];

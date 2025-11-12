@@ -308,11 +308,6 @@ class PromotionController extends Controller
         // 5) Hammasi muvaffaqiyatli bo'lsa — javob qaytaramiz
         return response()->json([
             'message' => 'Promoaksiya muvaffaqiyatli saqlandi va media job-lar navbatga qo‘yildi.',
-            'id' => $promotion->id,
-            'queued_media' => $queued,
-            'platform' => $promotion->platformIds,
-            'attached_participants_type' => $promotion->participantTypeIds,
-            'promotion' => $promotion
         ], 201);
     }
 
@@ -410,14 +405,14 @@ class PromotionController extends Controller
             $extraConditions['secret_number_points'] = $validated['secret_number_points'];
             $data['extra_conditions']=$extraConditions;
             $data['winning_strategy'] = 'delayed';
-            PromotionProgressBar::create([
-                'promotion_id' => $promotion['id'],
-                'daily_points' => 50,         // Default kunlik ball
-                'step_0_threshold' => 0,      // Step 0 threshold
-                'step_1_threshold' => 10,     // Step 1 threshold
-                'step_2_threshold' => 30,     // Step 2 threshold
-                'day_start_at' => '00:00',    // Kun boshlanish vaqti
-            ]);
+            // PromotionProgressBar::create([
+            //     'promotion_id' => $promotion['id'],
+            //     'daily_points' => 50,         // Default kunlik ball
+            //     'step_0_threshold' => 0,      // Step 0 threshold
+            //     'step_1_threshold' => 10,     // Step 1 threshold
+            //     'step_2_threshold' => 30,     // Step 2 threshold
+            //     'day_start_at' => '00:00',    // Kun boshlanish vaqti
+            // ]);
         }
 
         Log::info('validated', ['validated' => $validated, 'data' => $data]);

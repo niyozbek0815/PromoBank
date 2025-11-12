@@ -1,6 +1,7 @@
 {
   "php-cs-fixer.executablePath": "/opt/homebrew/bin/php-cs-fixer",
   "CodeGPT.apiKey": "grok",
+  "liveServer.settings.port": 5501,
   
   // "files.exclude": {
   //   "**/vendor": true

@@ -36,3 +36,7 @@ class ProgressBarController extends Controller
         return redirect()->back()->with('error', 'Promoaksiya yangilanmadi.');
     }
 }
+
+
+
+

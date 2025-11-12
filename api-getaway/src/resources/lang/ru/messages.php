@@ -78,4 +78,13 @@ return [
     // Code Modal
     'code_title' => 'Введите промокод',
     'code_placeholder' => 'Введите код...',
+
+    'secret_number_placeholder' => 'Введите секретный номер..',
+    'ball_text' => 'промобалл',
+    'today' => 'Сегодня',
+    'top_100' => 'ТОП 100 Рейтинг',
+    // :time ni olib tashlamang
+    'daily_refresh' => 'Таблица обновляется каждый день в :time',
+    'rating_title' => "Ежедневный рейтинг (TOP :100)'"
+
 ];

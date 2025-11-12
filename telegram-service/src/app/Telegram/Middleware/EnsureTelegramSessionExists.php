@@ -15,8 +15,8 @@ class EnsureTelegramSessionExists
 {
     public function handle($update)
     {
-        $messageText = $update->getMessage()?->getText();
-        $chatId = $update->getMessage()?->getChat()?->getId()
+        $message = $update->getMessage()->first(); // agar collection bo'lsa
+        $messageText = $message?->getText();        $chatId = $update->getMessage()?->getChat()?->getId()
             ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
 
         $getData = $update->getCallbackQuery()?->getData();

@@ -45,7 +45,8 @@ class PromotionRepository implements PromotionRepositoryInterface
             'company.media',
             'company.socialMedia.type',
             'participationTypes',
-            'platforms'
+            'platforms',
+                    'progressBar'
         ])
             ->findOrFail($id);
     }

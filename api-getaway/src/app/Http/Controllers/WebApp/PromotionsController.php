@@ -39,30 +39,20 @@ class PromotionsController extends Controller
     {
         $locale = app()->getLocale();
         $request->merge(['lang' => $locale]);
-
         try {
             $mainResponse = $this->forwardRequest("POST", $this->url, "frontend/pages", $request);
             $promotionResponse = $this->forwardRequest("POST", $this->promo, "frontend/promotion/{$id}", $request);
             // Xizmat javobini tekshirish
             if (!$mainResponse instanceof \Illuminate\Http\Client\Response || !$promotionResponse instanceof \Illuminate\Http\Client\Response) {
-                return view('frontend.error', [
-                    'status' => 500,
-                    'message' => 'Xizmat bilan aloqa o‘rnatilmadi.'
-                ]);
+                abort(500, 'Xizmat bilan aloqa o‘rnatilmadi.');
             }
 
             if ($mainResponse->failed()) {
-                return view('frontend.error', [
-                    'status' => $mainResponse->status(),
-                    'message' => $mainResponse->json('message') ?? 'Asosiy sahifa maʼlumotlarini olishda xatolik.'
-                ]);
+                abort($mainResponse->status(), $mainResponse->json('message') ?? 'Asosiy sahifa maʼlumotlarini olishda xatolik.');
             }
 
             if ($promotionResponse->failed()) {
-                return view('frontend.error', [
-                    'status' => $promotionResponse->status(),
-                    'message' => $promotionResponse->json('message') ?? 'Aksiya maʼlumotlarini olishda xatolik.'
-                ]);
+                abort($promotionResponse->status(), $promotionResponse->json('message') ?? 'Aksiya maʼlumotlarini olishda xatolik.');
             }
 
             $mainData = $mainResponse->json() ?? [];
@@ -76,7 +66,6 @@ class PromotionsController extends Controller
             $mergedData = array_merge($mainData, [
                 'promotion' => $promotionData['data'] ?? $promotionData
             ]);
-
             return view('webapp.promotions.show', $mergedData);
         } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e) {
             return abort(404, 'Bunday aksiya topilmadi.');
@@ -86,7 +75,7 @@ class PromotionsController extends Controller
     }
     public function verifyPromo(Request $request, $id)
     {
-        $locale = app()->getLocale();
+        $locale = $request->header('X-Locale') ?? session('locale', config('app.locale'));
         $request->merge(['lang' => $locale]);
         $response = $this->forwardRequest("POST", $this->promo, "frontend/promotion/{$id}/promocode", $request);
         return response()->json($response->json());
@@ -94,10 +83,56 @@ class PromotionsController extends Controller
 
     public function verifyReceipt(Request $request, $id)
     {
-        $locale = app()->getLocale();
+        $locale = $request->header('X-Locale') ?? session('locale', config('app.locale'));
         $request->merge(['lang' => $locale]);
         $response = $this->forwardRequest("POST", $this->promo, "frontend/promotion/{$id}/receipt", $request);
         Log::info("Response",[$response->json()]);
         return response()->json($response->json());
+    }
+    public function secretNumber(Request $request, $id)
+    {
+        $locale = $request->header('X-Locale') ?? session('locale', config('app.locale'));
+        Log::info("lang:" . $locale);
+        $request->merge(['lang' => $locale]);
+        $response = $this->forwardRequest("POST", $this->promo, "frontend/promotion/{$id}/secret-number", $request);
+        Log::info("Response", [$response->json()]);
+        return response()->json($response->json());
+    }
+    public function rating(Request $request, $id)
+    {
+        $locale = app()->getLocale();
+        $request->merge(['lang' => $locale]);
+
+        try {
+            // Asosiy sahifa ma'lumotlari
+            $mainResponse = $this->forwardRequest("POST", $this->url, "frontend/pages", $request);
+            // Reyting ma'lumotlari
+            $ratingResponse = $this->forwardRequest("POST", $this->promo, "frontend/promotion/{$id}/rating", $request);
+// dd($ratingResponse->json());
+            if (!$mainResponse instanceof \Illuminate\Http\Client\Response || !$ratingResponse instanceof \Illuminate\Http\Client\Response) {
+                abort($mainResponse->status(), $mainResponse->json('message') ?? 'Asosiy sahifa maʼlumotlarini olishda xatolik.');
+            }
+
+            if ($mainResponse->failed() || $ratingResponse->failed()) {
+                abort($ratingResponse->status(), $ratingResponse>json('message') ?? 'Aksiya maʼlumotlarini olishda xatolik.');
+            }
+
+            $mainData = $mainResponse->json() ?? [];
+            $promotionData = $ratingResponse->json() ?? [];
+            // Blade uchun data tayyorlash
+            $data = [
+                'promotion_id' => $id,
+                'refresh_time' => $promotionData['refresh_time'] ?? now()->addMinutes(1)->toDateTimeString(),
+                'my_rank' => $promotionData['user_info'] ?? [],
+                'users' => $promotionData['data'],
+            ];
+            // dd($data);
+            // Bladega yuborish
+            return view('webapp.promotions.rating', array_merge($mainData, $data));
+
+        } catch (\Throwable $e) {
+            Log::error("Rating fetch error: " . $e->getMessage());
+            abort(500);
+        }
     }
 }

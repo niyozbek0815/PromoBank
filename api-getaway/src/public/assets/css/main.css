@@ -377,8 +377,6 @@ section {
 
 .nav-right {
     position: relative;
-    display: flex;
-    flex-direction: row;
 }
 
 
@@ -1147,7 +1145,6 @@ color: var(--accent-color);
 
 .sponsors-list {
     width: 100%;
-    /* yoki agar faqat gorizontal scroll bo‘lsa pan-x */
 }
 
 .sponsors-list {
@@ -1448,7 +1445,7 @@ color: var(--accent-color);
     right: 30px;
     width: 45px;
     height: 45px;
-    background: var(--accent-color);
+    background: #F82F77;
     color: #fff;
     font-size: 17px;
     display: flex;
@@ -2144,14 +2141,7 @@ color: var(--accent-color);
 }
 
 /* Video stream */
-#scannerVideoWrapper {
-    width: 100%;
-    border-radius: 10px;
-    margin-top: 12px;
-    border: 2px solid #333;
-}
-
-#receiptVideoWrapper {
+#scannerVideo {
     width: 100%;
     border-radius: 10px;
     margin-top: 12px;
@@ -2566,6 +2556,198 @@ div.spinner i:nth-child(8) {
     animation-timing-function: cubic-bezier(.09, 2.4, .96, .03);
 }
 
+.rating-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 18px 20px 22px;
+    backdrop-filter: blur(6px);
+    margin: 1.5rem 0;
+}
+
+.promo-send-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #ff3c3c;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+/* Umumiy ball va bugungi ball */
+.total-points {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.total-points .points-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.total-points p {
+    color: var(--secondary-color);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.total-points h3 {
+    color: var(--accent-color);
+    font-size: 1.4rem;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.today-points {
+    font-size: 0.9rem;
+    color: var(--button-color);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Progress bar qismi */
+.progress-container {
+    position: relative;
+    margin: 30px 0 35px;
+    height: 8px;
+    background: #333;
+    box-shadow: inset 0 0 2px #555;
+    border-radius: 4px;
+}
+
+/* Dumaloqlar */
+.progress-container ul li {
+    position: absolute;
+    top: -3px;
+    height: 14px;
+    width: 14px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+    z-index: 6;
+}
+
+/* Dumaloqlar joylashuvi */
+.progress-container ul li:nth-child(1) {
+    left: calc(0% - 7px);
+}
+
+.progress-container ul li:nth-child(2) {
+    left: calc(20% - 7px);
+}
+
+.progress-container ul li:nth-child(3) {
+    left: calc(60% - 7px);
+}
+
+
+.progress-container ul li:nth-child(4) {
+    left: calc(100% - 7px);
+}
+
+/* Qadam ballari */
+.progress-container ul li::before {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-align: center;
+    font-size: 15px;
+    content: attr(data-ball);
+    opacity: 0.85;
+}
+
+/* Toqlar tepada, juftlar pastda */
+.progress-container ul li:nth-child(odd)::before {
+    top: -24px;
+}
+
+.progress-container ul li:nth-child(even)::before {
+    top: 20px;
+}
+#receiptVideoWrapper {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 12px;
+    border: 2px solid #333;
+}
+#secretNumberForm {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#secretNumberForm input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+#secretNumberForm button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #007bff;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+/* To‘ldirilgan chiziq */
+.progress-bar {
+    height: 4px;
+    width: 0%;
+    background: var(--button-color);
+    border-radius: 4px;
+    z-index: 5;
+    position: absolute;
+    top: 2px;
+    transition: width 0.6s ease-in-out;
+}
+
+/* Reyting tugmasi */
+.rating-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.875rem;
+    width: 100%;
+    text-align: center;
+    transition: background 0.25s ease;
+    color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.rating-btn:hover {
+    /* background: var(--accent-transparent-color); */
+    color: var(--button-color);
+}
+
 /* Animatsiya */
 @keyframes rotate {
     to {
@@ -2573,10 +2755,27 @@ div.spinner i:nth-child(8) {
     }
 }
 
+@media (min-width:1600px) {
+    .container {
+        max-width: 1500px;
+    }
+}
+
+@media (min-width:1800px) {
+    .container {
+        max-width: 1600px;
+    }
+}
+
+@media (min-width:2000px) {
+    .container {
+        max-width: 1650px;
+    }
+}
 
 .promotion {
     width: 100%;
-    min-height: 95vh;
+    min-height: 100vh;
     padding: 100px 0;
     background-image: url("../image/download/bg.jpg");
     background-size: cover;
@@ -2598,104 +2797,105 @@ div.spinner i:nth-child(8) {
     border-top: none;
 }
 
-.games {
+
+.rating {
     width: 100%;
-    min-height: 95vh;
-    padding: 100px 0;
-    padding: 100px 0;
+    padding-bottom: 100px;
     background-image: url("../image/download/bg.jpg");
     background-size: cover;
     background-position: center;
+    /* position: relative; */
     z-index: 1;
     overflow: visible;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
 }
 
-.games .download-buttons {
-    display: flex;
-    flex-direction: row;
-    gap: 12px;
-    margin-top: 20px;
-    margin-bottom: 10px;
-}
-
-.games .btn-download {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 0.25s ease;
-}
-
-.games .btn-download.android {
-    background: #2a2a2a;
-    color: #3ddc84;
-    /* Android green */
-    border: 1px solid #3ddc84;
-}
-
-.games .btn-download.android:hover {
-    background: #3ddc84;
-    color: #1c1c1c;
-}
-
-.games .btn-download.ios {
-    background: #2a2a2a;
-    color: #fff;
-    border: 1px solid #fff;
-}
-
-.games .btn-download.ios:hover {
-    background: #fff;
-    color: #1c1c1c;
-}
-
-.games .games-card {
+.rating-header {
+    width: 100%;
     padding: 60px 50px;
-    margin-bottom: 0px;
     background: linear-gradient(145deg, #1d1919, #191717);
     border-radius: 16px;
     box-shadow: 0 12px 24px rgba(30, 30, 30, 0.6);
+    margin-top: 80px;
 }
 
-.games .section-title {
-    margin-bottom: 30px;
+.rating-header .section-title {
+    margin-bottom: 20px;
 }
-
-.games .description {
+.rating .description{
     text-align: center;
-    font-size: 18px;
 }
 
-.games .download-buttons {
-    justify-content: center;
-    margin-bottom: 0;
+.rating table {
+    width: 100%;
+    border-collapse: separate;
+    /* Yangi satrlar orasiga bo‘sh joy */
+    border-spacing: 0 10px;
+    /* satrlar orasidagi vertikal oraliq */
+    color: white;
+    font-size: 15px;
 }
 
-@media (min-width:1600px) {
-    .container {
-        max-width: 1500px;
-    }
+.rating table th,
+.rating table td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    background: #222;
+    /* Har bir katak fon rangi */
 }
 
-@media (min-width:1800px) {
-    .container {
-        max-width: 1600px;
-    }
+.rating table th {
+    background: #333;
+    font-weight: 600;
+    color: #f8f8f8;
 }
 
-@media (min-width:2000px) {
-    .container {
-        max-width: 1650px;
-    }
+.rating tr {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.25s ease;
 }
 
+/* Har bir tr uchun umumiy fon va yumaloqlik */
+.rating tr td:first-child {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+.rating tr td:last-child {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+/* Hover holati */
+.rating tr:hover td {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+
+/* Men foydalanuvchi */
+.rating tr.me-row td {
+    background: var(--accent-color);
+    font-weight: 700;
+    transition:all 0.5s ease-in-out;
+}
+.rating tr.me-row:hover td {
+    background-color: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+    border-bottom: none;
+}
+
+
+/* Jadval header uchun */
+.rating thead tr th:first-child {
+    border-top-left-radius: 12px;
+}
+
+.rating thead tr th:last-child {
+    border-top-right-radius: 12px;
+}
+.secret-number .promotion-header {
+    margin-top: 100px;
+}
 @media (min-width: 1200px) {
 
     h1,
@@ -2944,7 +3144,6 @@ div.spinner i:nth-child(8) {
 
     .nav-right .social-links {
         display: none;
-
     }
 
     .bars {
@@ -3249,19 +3448,13 @@ div.spinner i:nth-child(8) {
     .offer-link {
         margin-left: 0;
     }
-
-    .games .games-card {
-        padding: 40px 30px;
-        margin-bottom: 0px;
-    }
-
-    .games .section-title {
-        margin-bottom: 25px;
-    }
-
-    .games .description {
-        font-size: 15px;
-    }
+        .rating-header .section-title {
+            margin-bottom: 10px;
+            font-size: var(--text-xl);
+        }
+                .rating-header .sub-title{
+                    margin-bottom: 5px;
+                }
 }
 
 @media (max-width: 576px) {
@@ -3445,8 +3638,17 @@ div.spinner i:nth-child(8) {
         padding: 40px 30px;
         margin-bottom: 80px;
         border-radius: 15px;
+        margin-top: 100px;
     }
-
+         .sub-title {
+             font-size: var(--text-sm);
+             line-height: 1.4;
+             letter-spacing: 1.2px;
+             margin-bottom: 10px;
+         }
+.secret-number .promotion-header {
+    margin-top: 100px;
+}
     .banner .section-title {
         margin-bottom: 40px;
     }
@@ -3476,15 +3678,9 @@ div.spinner i:nth-child(8) {
     .footer.footer-webapp .footer-bottom .container {
         gap: 15px;
     }
-
-    .scannerModal .download-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        gap: 12px;
-        margin-top: 20px;
-        margin-bottom: 10px;
-    }
+        .rating-header {
+            padding: 40px 25px;
+        }
 }
 
 @media (max-width: 400px) {

@@ -5,29 +5,31 @@ namespace App\Http\Controllers\WebApp;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SendPromocodeRequest;
 use App\Models\SalesReceipt;
-use App\Repositories\PromotionRepository;
 use App\Services\ReceiptScraperService;
 use App\Services\ReceiptService;
+use App\Services\SecretNumberService;
 use App\Services\ViaPromocodeService;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class PromotionsController extends Controller
 {
     public function __construct(
         private ViaPromocodeService $viaPromocodeService,
-        private PromotionRepository $promotionRepository,
         private ReceiptService $receiptService,
         private ReceiptScraperService $scraper,
+        private SecretNumberService $secretNumberService,
+
     ) {
 
     }
     public function viaPromocode(SendPromocodeRequest $request, $id)
     {
         $user = $request['auth_user'];
+        Log::info("user", ['user' => $user]);
         $req = $request->validated();
         $data = $this->viaPromocodeService->proccess($req, $user, $id, 'telegram');
-        if (!empty($result['promotion'])) {
+        if (!empty($data['promotion'])) {
             return response()->json([
                 'success' => false,
                 'status' => 'failed',
@@ -53,6 +55,23 @@ class PromotionsController extends Controller
             'message' => $message,
             'errors' => null,
         ]);
+    }
+    public function secretNumber(Request $request, $id)
+    {
+
+        $user = $request['auth_user'];
+        $req = $request->validate([
+            'secret_number' => ['required', 'integer', 'min:2'], // number va 1 dan katta
+            'lang' => ['required', 'string', 'in:uz,ru,kr,en']
+        ]);
+        $data = $this->secretNumberService->proccess($req, $user, $id, 'telegram');
+        Log::info("data", ['data' => $data]);
+        return response()->json([
+            'success' => $data['success'],
+            'status' => $data['status'],
+            'message' => $data['message'],
+            'errors' => null,
+        ],$data['code']);
     }
     public function viaReceipt(SendPromocodeRequest $request, $id)
     {

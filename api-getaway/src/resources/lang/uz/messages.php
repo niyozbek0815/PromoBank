@@ -69,7 +69,7 @@ return [
     'scanner_title' => 'QR kodni skanerlash',
     'scanner_hint' => 'QR kodni kameraga tuting',
     'scanner_cancel' => 'Bekor qilish',
-    'scanner_submit' => 'Yuborish',
+    'submit' => 'Yuborish',
 
     // Receipt Modal
     'receipt_title' => 'Harid chekini skanerlash',
@@ -78,4 +78,12 @@ return [
     // Code Modal
     'code_title' => 'Promokodeni kiriting',
     'code_placeholder' => 'Kodni kiriting...',
+    'secret_number_placeholder'=>"Sirli raqamni kiriting..",
+    'ball_text'=>"promoball",
+    'today'=>"Bugun",
+    'top_100'=>"TOP 100 Reyting",
+    // :time ni olib tashlamang
+    'daily_refresh' => 'Jadval har kuni :time da yangilanadi',
+    'rating_title' => "🎯 Kunlik Reyting (TOP :100)"
+
 ];

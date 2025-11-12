@@ -17,10 +17,10 @@ return new class extends Migration
 
             // Morph relation uchun faqat bitta nullableMorphs qo‘shish
             $table->nullableMorphs('scope'); // ✅ bu yerda scope_id + scope_type avtomatik yaratiladi
-
-            $table->enum('type', ['scanner', 'game', 'referral_start', 'referral_register'])
-                ->default('scanner')
-                ->index();
+            $table->string('type')->default('scanner')->index();
+            // $table->enum('type', ['scanner', 'game', 'referral_start', 'referral_register'])
+            //     ->default('scanner')
+            //     ->index();
             $table->unsignedBigInteger('points');
             $table->timestamps();
             $table->index(['user_id', 'type']);

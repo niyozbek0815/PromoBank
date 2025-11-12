@@ -6,6 +6,7 @@ use Yajra\DataTables\Facades\DataTables;
 use App\Http\Controllers\Controller;
 use App\Models\ParticipationType;
 use App\Models\Promotions;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -142,9 +143,12 @@ class SecretNumberController extends Controller
                     'name_uz' => $promotion->getTranslation('name', 'uz'),
                 ];
             });
-
+        $secretArray = $secret->toArray();
+        if ($secret->start_at instanceof Carbon) {
+            $secretArray['start_at'] = $secret->start_at->setTimezone('Asia/Tashkent')->format('Y-m-d H:i:s');
+        }
         return response()->json(data: [
-            'secret' => $secret,
+            'secret' => $secretArray,
             'promotions' => $promotions,
         ]);
     }

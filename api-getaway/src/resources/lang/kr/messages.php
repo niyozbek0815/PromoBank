@@ -80,5 +80,12 @@ return [
     'code_title' => 'Промокодни киритинг',
     'code_placeholder' => 'Кодни киритинг...',
 
-    // Download section
+    'secret_number_placeholder' => 'Сирли рақамни киритинг..',
+    'ball_text' => 'промобалл',
+    'today' => 'Бугун',
+    'top_100' => 'ТОП 100 Рейтинг',
+    // :time ni olib tashlamang
+    'daily_refresh' => 'Жадвал ҳар куни :time да янгиланади',
+    'rating_title'=>"🎯 Кунлик Рейтинг (TOP :100)'"
+
 ];
