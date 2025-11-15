@@ -1,3 +1,4 @@
+
 services:
   nginx:
     image: nginx:latest
@@ -7,11 +8,17 @@ services:
       - "443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./api-getaway:/var/www/api
+      - ./auth-service:/var/www/auth
+      - ./promo-service:/var/www/promo
+      - ./media-service:/var/www/media
+      - ./notification-service:/var/www/notification
     depends_on:
       - api_app
       - auth_app
       - promo_app
       - media_app
+      - notification_app
     networks:
       - promobank
 
@@ -33,8 +40,6 @@ services:
     build:
       context: ./promo-service/php
     container_name: promo_app
-    mem_limit: 1024m
-    mem_reservation: 512m
     networks:
       - promobank
 
@@ -44,16 +49,11 @@ services:
     container_name: media_app
     networks:
       - promobank
+
   notification_app:
     build:
       context: ./notification-service/php
     container_name: notification_app
-    networks:
-      - promobank
-  telegram_app:
-    build:
-      context: ./telegram-service/php
-    container_name: telegram_app
     networks:
       - promobank
 
