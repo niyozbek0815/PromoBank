@@ -84,5 +84,7 @@ return [
     'top_100' => 'TOP 100 Ranking',
     // :time ni olib tashlamang
     'daily_refresh' => 'The table is updated every day at :time',
-'rating_title'=>"🎯 Daily Ranking (TOP :100)'"
+'rating_title'=>"🎯 Daily Ranking (TOP :100)",
+    'read_offer' => 'Read',
+    'no_offer' => 'Not available',
 ];

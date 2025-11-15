@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\BannersController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\MessagesController;
+use App\Http\Controllers\Admin\OnTvVaucherController;
 use App\Http\Controllers\Admin\PlatformPromoSettingsController;
 use App\Http\Controllers\Admin\PrizeCategoryController;
 use App\Http\Controllers\Admin\PrizeController;
@@ -30,16 +31,19 @@ Route::prefix('frontend')->name('frontend.')->group(function () {
     Route::controller(FrontendPromotionController::class)
         ->group(function () {
             Route::post('/promotion/{id}', 'show');
-            Route::post('/promotion/{id}/rating', 'rating');
         });
-    Route::controller(PromotionsController::class)->prefix('promotion')->name('promotions.')->group(function () {
+});
+Route::prefix('webapp')->name('webapp.')->group(function () {
+    Route::controller(PromotionsController::class)->prefix('promotions')->name('promotionss.')->group(function () {
+        Route::post('/', action:  'index')->name('home');
+        Route::post('/{id}', 'show');
+        Route::post('/{id}/showdata', 'showAjaxData')->name('showAjaxData');
+        Route::post('/{id}/rating', 'rating');
         Route::post('{promotion}/promocode', 'viaPromocode')->name('viaPromocode');
         Route::post('{promotion}/receipt', 'viaReceipt')->name('viaReceipt');
         Route::post('{promotion}/secret-number', 'secretNumber')->name('secretNumber');
-
     });
 });
-
 Route::controller(PromoController::class)->prefix('promotions')->group(function () {
     // Route::get('/', 'index');
     Route::get('/', 'index');
@@ -66,6 +70,19 @@ Route::controller(PromoballControlller::class)->prefix('promoball')->group(funct
     // Route::get('/', 'index');
     Route::post('/game-rating', 'gameRating');
     Route::post('/my-game-points', 'myGamePoints');
+});
+Route::prefix('front/ontv')->controller(OnTvVaucherController::class)->group(function () {
+    Route::post('/store', 'store')->name('ontv.store');
+    Route::get('/data', 'data')->name('ontv.data');
+    Route::get('/{vaucher}/edit', 'edit')->name('edit');
+    Route::get('/{vaucher}/delete', 'delete')->name('delete');
+    Route::get('/create', 'create')->name('create'); // GET /promocode/create
+    Route::post('/{vaucher}/update', 'update')->name('update');
+    Route::post('/{vaucher}/show', 'show')->name('show');
+    Route::post('/import', 'import')->name('ontv.import');
+});
+Route::prefix('telegram/ontv')->controller(OnTvVaucherController::class)->group(function () {
+    Route::post('/ontv_vaucher', 'getTelegram')->name('ontv.getTelegram');
 });
 Route::prefix('front')->group(function () {
 
@@ -154,7 +171,7 @@ Route::prefix('front')->group(function () {
             // Route::get('/', 'index')->name('index');
             Route::get('/data', 'prizeData')->name('data');
             Route::get('/{prize}/status', 'changeStatus')->name('status');
-         Route::get('/{prize}/edit', 'edit')->name('edit');
+            Route::get('/{prize}/edit', 'edit')->name('edit');
             Route::match(['POST', 'PUT'], '/{prize}/update', 'update')->name('update');
             Route::post('/{prize}/delete', 'delete')->name('delete');
             Route::post('/{prize}/message', 'storeMessage')->name('message.store');
@@ -188,6 +205,7 @@ Route::prefix('front')->group(function () {
             Route::put('/{id}', 'update')->name('update');
             Route::get("/{promotion_id}/promotion_data", 'promotiondata')->name('promotion_data');
         });
+
     Route::prefix('promotion_products')
         ->name('admin.promotion_products.')
         ->controller(PromotionProductController::class)

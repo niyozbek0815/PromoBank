@@ -56,7 +56,7 @@
                                <i class="{{ $icon }}"></i>
                            </a>
                        @endforeach
-                   
+
                    </div>
                    <div>
                         @if (Route::is('webapp.promotions.show'))
@@ -77,10 +77,10 @@
                                <i class="fa-solid fa-gift"></i>
                            </a>
                        @elseif(Route::is('webapp.promotions.rating'))
-                           <a href="{{ route('webapp.promotions.show',['id' => $promotion_id]) }}" class="btn btn_social"
-                               title="{{ __('Orqaga qaytish') }}">
-                               <i class="fa-solid fa-left"></i>
-                           </a>
+                          {{-- Orqaga qaytish (faqat promotions.rating sahifasida) --}}
+<a href="#" class="btn btn_social" title="{{ __('Orqaga qaytish') }}" onclick="goBackWithToken({{ $promotion_id }})">
+    <i class="fa-solid fa-left"></i>
+</a>
                        @endif
                    </div>
 

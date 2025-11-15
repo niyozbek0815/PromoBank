@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ForSponsorsController;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\MessagesController;
 use App\Http\Controllers\Admin\NotificationsController;
+use App\Http\Controllers\Admin\OnTvVaucherController;
 use App\Http\Controllers\Admin\PlatformPromoSettingsController;
 use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\PrizeCategoryController;
@@ -49,7 +50,8 @@ Route::prefix('webapp')->name('webapp.')->group(function () {
         ->controller(PromotionsController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
-            Route::get('/{id}', 'show')->name('show')->middleware(['webapp.auth']);
+            Route::get('/{id}', 'show')->name('show');
+            Route::post('/{id}/showdata', 'showAjaxData')->name('showAjaxData')->middleware(['webapp.auth']);
             Route::get('/{id}/rating', 'rating')->name('rating')->middleware(['webapp.auth']);
             Route::post('/{id}/promocode', 'viaPromocode');
             Route::post('/{id}/receipt', 'viaReceipt')->middleware(['webapp.auth']);
@@ -177,11 +179,11 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
         Route::get('/create/{promotion_id?}', 'create')->name('create'); // GET /promocode/create
         Route::post('/store', 'store')->name('store');
         Route::post('/{secret}/update', 'update')->name('update');
-
     });
     Route::prefix('progress-bar')->name('progress-bar.')->controller(ProgressBarController::class)->group(function () {
         Route::post('/{promotion}/update', 'update')->name('update');
     });
+
     Route::prefix('prize-category')
         ->name('prize-category.')
         ->controller(PrizeCategoryController::class)
@@ -291,11 +293,17 @@ Route::middleware('checkadmin')->prefix('/admin')->name('admin.')->group(functio
             Route::get('/users', 'getUsers')->name('getUsers');
         });
 
-
-
-
-
-
+    Route::prefix(prefix: 'ontv')->name('bot.ontv.')->controller(OnTvVaucherController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/data', 'data')->name('data');
+        Route::get('/{vaucher}/edit', 'edit')->name('edit');
+        Route::get('/{vaucher}/delete', 'delete')->name('delete');
+        Route::get('/create', 'create')->name('create'); // GET /promocode/create
+        Route::post('/store', 'store')->name('store');
+        Route::post('/{vaucher}/update', 'update')->name('update');
+        Route::post('/{vaucher}/show', 'show')->name('show');
+        Route::post('/import', 'import')->name('import');
+    });
 
     // web sayt routes
     Route::prefix('portfolio')

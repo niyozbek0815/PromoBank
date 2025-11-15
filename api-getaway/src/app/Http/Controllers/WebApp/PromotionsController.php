@@ -20,7 +20,7 @@ class PromotionsController extends Controller
         $locale = app()->getLocale();
         $request->merge(['lang' => $locale]);
         $mainResponse = $this->forwardRequest("POST", $this->url, "frontend/pages", $request);
-        $promoResponse = $this->forwardRequest("POST", $this->promo, "frontend/", $request);
+        $promoResponse = $this->forwardRequest("POST", $this->promo, "webapp/promotions", $request);
         if (
             $mainResponse instanceof \Illuminate\Http\Client\Response
             && $promoResponse instanceof \Illuminate\Http\Client\Response
@@ -41,7 +41,8 @@ class PromotionsController extends Controller
         $request->merge(['lang' => $locale]);
         try {
             $mainResponse = $this->forwardRequest("POST", $this->url, "frontend/pages", $request);
-            $promotionResponse = $this->forwardRequest("POST", $this->promo, "frontend/promotion/{$id}", $request);
+            $promotionResponse = $this->forwardRequest("POST", $this->promo, "webapp/promotions/{$id}", $request);
+            // dd($promotionResponse->json());
             // Xizmat javobini tekshirish
             if (!$mainResponse instanceof \Illuminate\Http\Client\Response || !$promotionResponse instanceof \Illuminate\Http\Client\Response) {
                 abort(500, 'Xizmat bilan aloqa o‘rnatilmadi.');
@@ -77,7 +78,7 @@ class PromotionsController extends Controller
     {
         $locale = $request->header('X-Locale') ?? session('locale', config('app.locale'));
         $request->merge(['lang' => $locale]);
-        $response = $this->forwardRequest("POST", $this->promo, "frontend/promotion/{$id}/promocode", $request);
+        $response = $this->forwardRequest("POST", $this->promo, "webapp/promotions/{$id}/promocode", $request);
         return response()->json($response->json());
     }
 
@@ -85,7 +86,7 @@ class PromotionsController extends Controller
     {
         $locale = $request->header('X-Locale') ?? session('locale', config('app.locale'));
         $request->merge(['lang' => $locale]);
-        $response = $this->forwardRequest("POST", $this->promo, "frontend/promotion/{$id}/receipt", $request);
+        $response = $this->forwardRequest("POST", $this->promo, "webapp/promotions/{$id}/receipt", $request);
         Log::info("Response",[$response->json()]);
         return response()->json($response->json());
     }
@@ -94,9 +95,17 @@ class PromotionsController extends Controller
         $locale = $request->header('X-Locale') ?? session('locale', config('app.locale'));
         Log::info("lang:" . $locale);
         $request->merge(['lang' => $locale]);
-        $response = $this->forwardRequest("POST", $this->promo, "frontend/promotion/{$id}/secret-number", $request);
+        $response = $this->forwardRequest("POST", $this->promo, "webapp/promotions/{$id}/secret-number", $request);
         Log::info("Response", [$response->json()]);
-        return response()->json($response->json());
+        return response()->json($response->json(),$response->status());
+    }
+    public function showAjaxData(Request $request, $id)
+    {
+        $locale = $request->header('X-Locale') ?? session('locale', config('app.locale'));
+        $request->merge(['lang' => $locale]);
+        $response = $this->forwardRequest("POST", $this->promo, "webapp/promotions/{$id}/showdata", $request);
+        Log::info("ResponseShowData", [$response->json()]);
+        return response()->json($response->json(), $response->status());
     }
     public function rating(Request $request, $id)
     {
@@ -107,14 +116,13 @@ class PromotionsController extends Controller
             // Asosiy sahifa ma'lumotlari
             $mainResponse = $this->forwardRequest("POST", $this->url, "frontend/pages", $request);
             // Reyting ma'lumotlari
-            $ratingResponse = $this->forwardRequest("POST", $this->promo, "frontend/promotion/{$id}/rating", $request);
-// dd($ratingResponse->json());
+            $ratingResponse = $this->forwardRequest("POST", $this->promo, "webapp/promotions/{$id}/rating", $request);
             if (!$mainResponse instanceof \Illuminate\Http\Client\Response || !$ratingResponse instanceof \Illuminate\Http\Client\Response) {
                 abort($mainResponse->status(), $mainResponse->json('message') ?? 'Asosiy sahifa maʼlumotlarini olishda xatolik.');
             }
 
             if ($mainResponse->failed() || $ratingResponse->failed()) {
-                abort($ratingResponse->status(), $ratingResponse>json('message') ?? 'Aksiya maʼlumotlarini olishda xatolik.');
+                abort($ratingResponse->status(), $ratingResponse->json('message') ?? 'Aksiya maʼlumotlarini olishda xatolik.');
             }
 
             $mainData = $mainResponse->json() ?? [];

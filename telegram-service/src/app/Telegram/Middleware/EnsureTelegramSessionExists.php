@@ -16,10 +16,19 @@ class EnsureTelegramSessionExists
     public function handle($update)
     {
         $message = $update->getMessage()->first(); // agar collection bo'lsa
-        $messageText = $message?->getText();        $chatId = $update->getMessage()?->getChat()?->getId()
-            ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
+        $message = $update->getMessage();
+        $callback = $update->getCallbackQuery();
 
-        $getData = $update->getCallbackQuery()?->getData();
+        // Xabarning textini xavfsiz olish
+        $messageText = $message?->getText() ?? null;
+
+        // Chat ID ni xavfsiz olish
+        $chatId =
+            $message?->getChat()?->getId()
+            ?? $callback?->getMessage()?->getChat()?->getId()
+            ?? null;
+
+        $getData = $callback?->getData() ?? null;
 Log::info("EnsureTelegramSessionExists chatId: $chatId, messageText: $messageText, getData: $getData");
         // 🔹 "start" so‘zi mavjudligini tekshirish (katta-kichik harf farq qilmaydi)
         $isOpenRoute = $messageText && stripos($messageText, '/start') !== false;

@@ -130,23 +130,7 @@ class EncouragementPoint extends Model
         $fromTime = $from ? now()->parse($from) : null;
         $toTime = $to ? now()->parse($to) : null;
 
-        // 3️⃣ Aggregatsiya: barcha foydalanuvchilar bo‘yicha total points
-        $agg = DB::table('encouragement_points')
-            ->select('user_id', DB::raw('COALESCE(SUM(points), 0) as total_points'))
-            ->when($types, fn($q) => $q->whereIn('scope_type', $types))
-            ->when($fromTime, fn($q) => $q->where('created_at', '>=', $fromTime))
-            ->when($toTime, fn($q) => $q->where('created_at', '<=', $toTime))
-            ->groupBy('user_id');
-
-        // 4️⃣ Rank va total_users hisoblash
-        $rankData = DB::table(DB::raw("({$agg->toSql()}) as t"))
-            ->mergeBindings($agg)
-            ->selectRaw('
-            COUNT(*) as total_users,
-            SUM(CASE WHEN t.total_points > COALESCE((SELECT SUM(points) FROM encouragement_points WHERE user_id = ?),0) THEN 1 ELSE 0 END) as higher_count
-        ', [$userId])
-            ->first();
-
+        // 3️⃣ Foydalanuvchining jami balli
         $userTotal = (int) DB::table('encouragement_points')
             ->when($types, fn($q) => $q->whereIn('scope_type', $types))
             ->when($fromTime, fn($q) => $q->where('created_at', '>=', $fromTime))
@@ -154,15 +138,66 @@ class EncouragementPoint extends Model
             ->where('user_id', $userId)
             ->sum('points');
 
-        $rank = $rankData->higher_count + 1;
+        // 4️⃣ Aggregatsiya: barcha foydalanuvchilar bo‘yicha total points
+        $agg = DB::table('encouragement_points')
+            ->select('user_id', DB::raw('SUM(points) as total_points'))
+            ->when($types, fn($q) => $q->whereIn('scope_type', $types))
+            ->when($fromTime, fn($q) => $q->where('created_at', '>=', $fromTime))
+            ->when($toTime, fn($q) => $q->where('created_at', '<=', $toTime))
+            ->groupBy('user_id');
+
+        // 5️⃣ Rank va total_users hisoblash
+        $rankData = DB::table(DB::raw("({$agg->toSql()}) as t"))
+            ->mergeBindings($agg)
+            ->selectRaw('
+            COUNT(*) as total_users,
+            SUM(CASE WHEN t.total_points > ? THEN 1 ELSE 0 END) as higher_count
+        ', [$userTotal])
+            ->first();
+
+        // Agar foydalanuvchining balli 0 bo‘lsa, rank = ball to‘plaganlar soni + 1
+        $rank = ($userTotal === 0)
+            ? ($rankData->higher_count + 1)  // balli foydalanuvchilar soni + 1
+            : ($rankData->higher_count + 1);
 
         return [
             'user_id' => $userId,
             'name' => UsersCache::where('user_id', $userId)->value('name') ?? $nameFallback,
-            'total_points' => (int) $userTotal,
+            'total_points' => $userTotal,
             'rank' => $rankData->total_users > 0 ? $rank : null,
+            'total_users' => $rankData->total_users,
         ];
     }
+
+    public static function getUserTotalPoints(int $userId, $types = null, string $nameFallback = "Noma'lum user")
+    {
+        // 1️⃣ Typelarni normalize qilish
+        if ($types !== null) {
+            $types = (array) $types;
+            $allowed = [
+                'scanner',
+                'game',
+                'referral_start',
+                'referral_register',
+                'secret_number',
+            ];
+            $types = array_map('strtolower', $types);
+            $types = array_intersect($types, $allowed);
+            if (empty($types)) {
+                $types = null;
+            }
+        }
+
+        // 2️⃣ Foydalanuvchining jami ballarini olish
+        $totalPoints = (int) DB::table('encouragement_points')
+            ->when($types, fn($q) => $q->whereIn('scope_type', $types))
+            ->where('user_id', $userId)
+            ->sum('points');
+
+        // 3️⃣ Natijani qaytarish
+        return $totalPoints;
+    }
+
 
     public static function getTopUsersWithRank(
         $types = null,

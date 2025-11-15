@@ -186,7 +186,8 @@ class PromotionController extends Controller
         if ($hasSecretNumber) {
             $rules['secret_number_seconds'] = 'required|integer|min:1';
             $rules['secret_number_points'] = 'required|integer|min:1';
-
+            $rules['promotion_start_time'] = 'nullable|date_format:H:i';
+            $rules['promotion_end_time'] = 'nullable|date_format:H:i|after:promotion_start_time';
             $rules['winning_strategy'] = 'required|in:delayed';
         } else {
             $rules['winning_strategy'] = 'required|in:immediate,delayed,hybrid';
@@ -194,7 +195,7 @@ class PromotionController extends Controller
 
         $validated = $request->validate($rules);
 
-
+        Log::info($validated);
         $stored = [
             'offer_file' => null,
             'media_preview' => null,
@@ -223,6 +224,8 @@ class PromotionController extends Controller
         if ($hasSecretNumber) {
             $extraConditions['secret_number_seconds'] = $validated['secret_number_seconds'];
             $extraConditions['secret_number_points'] = $validated['secret_number_points'];
+            $extraConditions['promotion_start_time'] = $validated['promotion_start_time'] ?? null;
+            $extraConditions['promotion_end_time'] = $validated['promotion_end_time'] ?? null;
         }
         try {
             DB::beginTransaction();
@@ -382,6 +385,8 @@ class PromotionController extends Controller
         if ($hasSecretNumber) {
             $rules['secret_number_seconds'] = 'required|integer|min:1';
             $rules['secret_number_points'] = 'required|integer|min:1';
+            $rules['promotion_start_time'] = 'nullable|date_format:H:i';
+            $rules['promotion_end_time'] = 'nullable|date_format:H:i|after:promotion_start_time';
         } else {
             $rules['winning_strategy'] = 'required|in:immediate,delayed,hybrid';
         }
@@ -403,7 +408,9 @@ class PromotionController extends Controller
         if ($hasSecretNumber) {
             $extraConditions['secret_number_seconds'] = $validated['secret_number_seconds'];
             $extraConditions['secret_number_points'] = $validated['secret_number_points'];
-            $data['extra_conditions']=$extraConditions;
+            $extraConditions['promotion_start_time'] = $validated['promotion_start_time'] ?? null;
+            $extraConditions['promotion_end_time'] = $validated['promotion_end_time'] ?? null;
+            $data['extra_conditions'] = $extraConditions;
             $data['winning_strategy'] = 'delayed';
             // PromotionProgressBar::create([
             //     'promotion_id' => $promotion['id'],
@@ -561,6 +568,7 @@ class PromotionController extends Controller
             'participationTypes:id,name',
             'progressBar',
         ])->findOrFail($id);
+        Log::info("log", ['data' => $promotion]);
         $messagesExists = Messages::where('scope_type', 'promotion')
             ->where('scope_id', $id)
             ->exists();
@@ -606,13 +614,19 @@ class PromotionController extends Controller
                 'secret_number_points' => isset($promotion->extra_conditions['secret_number_points'])
                     ? (int) $promotion->extra_conditions['secret_number_points']
                     : null,
+                'promotion_start_time' => isset($promotion->extra_conditions['promotion_start_time'])
+                    ? $promotion->extra_conditions['promotion_start_time']
+                    : null,
+                'promotion_end_time' => isset($promotion->extra_conditions['promotion_end_time'])
+                    ? $promotion->extra_conditions['promotion_end_time']
+                    : null,
                 'created_by_user_id' => $promotion->created_by_user_id,
                 'banner' => $promotion->banner,
                 'offer' => $promotion->offer,
                 'gallery' => $promotion->gallery,
                 'platforms' => $promotion->platforms->map(fn($p) => $this->mapPlatforms($p)),
                 'participants_type' => $promotion->participationTypes->map(fn($t) => $this->mapParticipants($t)),
-                            'progress_bar' => $progressBar, // <- progress bar qo‘shildi
+                'progress_bar' => $progressBar, // <- progress bar qo‘shildi
 
             ],
             'platforms' => $availablePlatforms,

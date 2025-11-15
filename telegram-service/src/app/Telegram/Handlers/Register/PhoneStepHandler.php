@@ -9,7 +9,6 @@ use App\Telegram\Services\UserSessionService;
 use Illuminate\Support\Facades\Queue;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Telegram\Bot\Objects\Update;
-use Telegram\Bot\FileUpload\InputFile;
 class PhoneStepHandler
 {
     public function __construct(
@@ -75,6 +74,9 @@ class PhoneStepHandler
             app(RegisterService::class)->forget($chatId);
 
             app(AlreadyRegisterStepHandler::class)->handle($chatId);
+            Queue::connection('rabbitmq')->push(new RegisterPrizeJob(
+                $chatId,
+            ));
             return;
         }
 

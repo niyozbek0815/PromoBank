@@ -219,12 +219,38 @@
                         </li>
                     </ul>
                 </li>
-                @php
+                  @php
+                    $botRoutes = ['admin.bot.*'];
+
+                    $isBotActive = collect($botRoutes)->contains(fn($route) => request()->routeIs($route));
+                @endphp
+
+                <li class="nav-item nav-item-submenu {{  $isBotActive ? 'nav-item-open' : '' }}">
+                    <a href="#" class="nav-link {{  $isBotActive ? 'active' : '' }}">
+                        <i class="ph-gear-six"></i>
+                        <span>Bot Sozlamalari</span>
+                    </a>
+                    <ul class="nav-group-sub collapse {{  $isBotActive ? 'show' : '' }}">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.bot.ontv.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.bot.ontv.*') ? 'active' : '' }}">
+                                <i class="ph ph-chat-dots"></i>
+                                OnTV vaucher
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.settings.platform-promoball.edit') }}"
+                                class="nav-link {{ request()->routeIs('admin.settings.platform-promoball*') ? 'active' : '' }}">
+                                <i class="ph-chat-circle-text"></i>
+                                Majburiy kanallarga </a>
+                        </li>
+                    </ul>
+                </li>
+                 @php
                     $settingsRoutes = ['admin.settings.messages.*'];
 
                     $isSettingsActive = collect($settingsRoutes)->contains(fn($route) => request()->routeIs($route));
                 @endphp
-
                 <li class="nav-item nav-item-submenu {{ $isSettingsActive ? 'nav-item-open' : '' }}">
                     <a href="#" class="nav-link {{ $isSettingsActive ? 'active' : '' }}">
                         <i class="ph-gear-six"></i>
@@ -234,13 +260,13 @@
                         <li class="nav-item">
                             <a href="{{ route('admin.settings.messages.index') }}"
                                 class="nav-link {{ request()->routeIs('admin.settings.messages*') ? 'active' : '' }}">
-                             <i class="ph ph-chat-dots"></i> Default xabarlar
+                                <i class="ph ph-chat-dots"></i> Default xabarlar
                             </a>
                         </li>
-                            <li class="nav-item">
+                        <li class="nav-item">
                             <a href="{{ route('admin.settings.platform-promoball.edit') }}"
                                 class="nav-link {{ request()->routeIs('admin.settings.platform-promoball*') ? 'active' : '' }}">
-<i class="ph ph-coins"></i> Promoball sozlamalari                            </a>
+                                <i class="ph ph-coins"></i> Promoball sozlamalari </a>
                         </li>
                     </ul>
                 </li>

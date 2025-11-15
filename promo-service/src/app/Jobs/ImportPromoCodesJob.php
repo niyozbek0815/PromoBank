@@ -46,7 +46,7 @@ class ImportPromoCodesJob implements ShouldQueue
             ]);
 
             // 📁 2. Fayl yo‘llarini aniqlash
-            $filename = Str::after($this->filePath, 'promo-imports/');
+            $filename = Str::after($this->filePath, 'vaucher-imports/');
             $storageDir = 'promo-imports/results';
             $insertedPath = "{$storageDir}/inserted/inserted_{$generation->id}_{$filename}.xlsx";
             $skippedPath = "{$storageDir}/skipped/skipped_{$generation->id}_{$filename}.xlsx";

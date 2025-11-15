@@ -84,6 +84,9 @@ return [
     'top_100'=>"TOP 100 Reyting",
     // :time ni olib tashlamang
     'daily_refresh' => 'Jadval har kuni :time da yangilanadi',
-    'rating_title' => "🎯 Kunlik Reyting (TOP :100)"
+    'rating_title' => "🎯 Kunlik Reyting (TOP :100)",
+
+    'read_offer' => 'O‘qish',
+    'no_offer' => 'Mavjud emas',
 
 ];

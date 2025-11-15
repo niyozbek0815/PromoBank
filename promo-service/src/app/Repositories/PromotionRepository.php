@@ -36,6 +36,16 @@ class PromotionRepository implements PromotionRepositoryInterface
             ->where('is_public', true)
             ->get();
     }
+    public function getAllPromotionsForWebAppHome()
+    {
+        // Mobil platforma uchun barcha reklama aktsiyalarini olish
+        return $this->model->where('status', true)
+            ->where('is_public', true)
+            ->whereHas('platforms', function ($query) {
+                $query->where('name', 'telegram');
+            })
+            ->get();
+    }
     public function getAllPromotionsShowForWebHome($id)
     {
         // Mobil platforma uchun barcha reklama aktsiyalarini olish

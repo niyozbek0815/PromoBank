@@ -4,12 +4,18 @@ namespace App\Http\Controllers\WebApp;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SendPromocodeRequest;
+use App\Http\Resources\PromotionShowWebAppResource;
+use App\Http\Resources\PromoWebResource;
+use App\Models\EncouragementPoint;
+use App\Models\PromotionProgressBar;
 use App\Models\SalesReceipt;
+use App\Repositories\PromotionRepository;
 use App\Services\ReceiptScraperService;
 use App\Services\ReceiptService;
 use App\Services\SecretNumberService;
 use App\Services\ViaPromocodeService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class PromotionsController extends Controller
@@ -19,9 +25,94 @@ class PromotionsController extends Controller
         private ReceiptService $receiptService,
         private ReceiptScraperService $scraper,
         private SecretNumberService $secretNumberService,
-
+        private PromotionRepository $promotionRepository,
     ) {
 
+    }
+    public function index(Request $request)
+    {
+        $lang = $request->get('lang', 'uz');
+        $page = $request->get('page', 1);
+        $cacheKey = "promotions:platform:webapp:lang:{$lang}:page:{$page}";
+        $ttl = now()->addMinutes(10);
+        // Cache::store('redis')->forget($cacheKey);
+        $promotions = Cache::store('redis')->remember($cacheKey, $ttl, function () {
+            return $this->promotionRepository->getAllPromotionsForWebAppHome();
+        });
+        return response()->json(
+            PromoWebResource::collection($promotions)->additional(['lang' => $lang])
+        );
+    }
+    public function show(Request $request, $id)
+    {
+        $lang = $request->get('lang', 'uz'); // Default til 'uz'
+        $ttl = now()->addMinutes(3);
+                $cacheKey = "promotions:platform:webapp:show:{$id}:lang:{$lang}";
+        // Cache::store('redis')->forget($cacheKey);
+        $promotion = Cache::store('redis')->remember($cacheKey, $ttl, function () use ($id) {
+            return $this->promotionRepository->getAllPromotionsShowForWebHome($id);
+        });
+        // $user = $request['auth_user'];
+
+        return response()->json(
+            (new PromotionShowWebAppResource($promotion))->additional(['lang' => $lang])
+        );
+    }
+    public function rating(Request $request, $id)
+    {
+        $user = $request['auth_user'];
+        Cache::forget("promotion:progressbar:daystart:$id");
+        $dayStartAt = Cache::remember("promotion:progressbar:daystart:$id", now()->addMinutes(15), function () use ($id) {
+            return PromotionProgressBar::where('promotion_id', $id)->value('day_start_at');
+        }) ?? '00:00';
+
+        [$hour, $minute] = explode(':', $dayStartAt);
+        $now = now();
+        $start = $now->copy()->setTime($hour, $minute);
+        if ($now->lt($start)) {
+            $start->subDay();
+        }
+        $end = $start->copy()->addDay();
+        // $start = $now->copy()->subWeek(); // bir hafta oldin
+        // $start->setTime($hour, $minute);   // start vaqtini dayStartAt ga sozlash
+
+        // $end = $now->copy();
+        // $start = $start->copy()->subHours(5);
+        // $end = $end->copy()->subHours(5);
+        // Foydalanuvchi ballarini faqat shu oraliqda hisoblaymiz
+        $usersPoints = EncouragementPoint::getUserTotalAndRank(
+            $user['id'],
+            ['referral_start', 'referral_register', 'secret_number'],
+            "Noma'lum user",
+            $start,
+            $end
+        );
+
+        $topUsers = EncouragementPoint::getTopUsersWithRank(
+            ['referral_start', 'referral_register', 'secret_number'],
+            $start,
+            $end,
+            ($usersPoints && $usersPoints['rank'] > 100) ? 99 : 100
+        );
+        Log::info("ahowAjaxDAta", [
+            'user' => $user,
+            'user_poinst' => $usersPoints,
+            'hour' => $hour,
+            "minut" => $minute,
+            'now' => $now,
+            'start' => $start,
+            'end' => $end,
+
+        ]);
+        return response()->json([
+            'refresh_time' => $dayStartAt,
+            'range' => [
+                'from' => $start->toDateTimeString(),
+                'to' => $end->toDateTimeString(),
+            ],
+            'user_info' => $usersPoints,
+            'data' => $topUsers,
+        ]);
     }
     public function viaPromocode(SendPromocodeRequest $request, $id)
     {
@@ -64,12 +155,13 @@ class PromotionsController extends Controller
             'secret_number' => ['required', 'integer', 'min:2'], // number va 1 dan katta
             'lang' => ['required', 'string', 'in:uz,ru,kr,en']
         ]);
-        $data = $this->secretNumberService->proccess($req, $user, $id, 'telegram');
+        $data = $this->secretNumberService->proccess($req, $user, $id);
         Log::info("data", ['data' => $data]);
         return response()->json([
             'success' => $data['success'],
             'status' => $data['status'],
             'message' => $data['message'],
+            'points' => $data['points']??null,
             'errors' => null,
         ],$data['code']);
     }
@@ -132,5 +224,49 @@ class PromotionsController extends Controller
                 'message' => $result['messages'],
                 'errors' => null
             ]);
+    }
+    public function showAjaxData(Request $request, $id)
+    {
+        $user = $request['auth_user'];
+        $req = $request->validate([
+            'day_start_at' => ['required', 'string'], // number va 1 dan katta
+        ]);
+        [$hour, $minute] = explode(':', $req['day_start_at']);
+        $now = now();
+        $start = $now->copy()->setTime($hour, $minute);
+        if ($now->lt($start)) {
+            $start->subDay();
+        }
+        $end = $start->copy()->addDay();
+        // $start = $now->copy()->subWeek(); // bir hafta oldin
+        // $start->setTime($hour, $minute);   // start vaqtini dayStartAt ga sozlash
+
+        // $end = $now->copy();
+        // $start = $start->copy()->subHours(5);
+        // $end = $end->copy()->subHours(5);
+        // Foydalanuvchi ballarini faqat shu oraliqda hisoblaymiz
+        $usersPoints = EncouragementPoint::getUserTotalAndRank(
+            $user['id'],
+            ['referral_start', 'referral_register', 'secret_number'],
+            "Noma'lum user",
+            $start,
+            $end
+        );
+        Log::info("ahowAjaxDAta", [
+            'user' => $user,
+            'all_points' => EncouragementPoint::getUserTotalPoints($user['id'], ['referral_start', 'referral_register', 'secret_number']),
+            'user_poinst' => $usersPoints,
+            'hour'=>$hour,
+            "minut"=>$minute,
+            'now'=>$now,
+            'start'=>$start,
+            'end'=>$end
+        ]);
+        return response()->json(
+            data: [
+                'all_points'=> EncouragementPoint::getUserTotalPoints($user['id'], ['referral_start', 'referral_register', 'secret_number']),
+                'today_poinst'=>$usersPoints['total_points'],
+            ]
+        );
     }
 }

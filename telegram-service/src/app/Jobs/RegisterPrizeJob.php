@@ -2,6 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Services\FromServiceRequest;
+use App\Telegram\Services\Translator;
+use App\Telegram\Services\UserSessionService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Telegram\Bot\FileUpload\InputFile;
@@ -30,34 +33,49 @@ class RegisterPrizeJob implements ShouldQueue
      */
     public function handle(): void
     {
-        // 🔹 Dinamik promo kod (hozircha misol uchun)
-        $promoCode = 'SHJDBSDBJHSBH1234567';
-Log::info('🎥 RegisterPrizeJob ishga tushdi', ['chat_id' => $this->chatId, 'promo_code' => $promoCode]);
-        // 🔹 Matnni o‘zgaruvchida saqlaymiz (HTML formatda)
-        $text = <<<HTML
-<b>🎉 PromoBank'ga xush kelibsiz!</b>
+        $forwarder = app(FromServiceRequest::class);
+        $translator = app(Translator::class);
+        $user = app(UserSessionService::class)->get($this->chatId);
+        $userId = $user['id'] ?? null;
+        $baseUrl = config('services.urls.promo_service'); // misol: http://promo_nginx
+        $route = '/telegram/ontv/ontv_vaucher'; // full route
+        $response = $forwarder->forward('POST', $baseUrl, $route, ['user_id' => $userId]);
+        if (!$response->successful()) {
+            Log::error('Userni olishda xatolik', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            return;
+        }
 
-Siz birinchi marta bizga qo‘shildingiz 🎊
-Shu munosabat bilan biz sizga <b>ONTV</b> platformasida foydalanish uchun <b>bepul PROMOKOD</b> taqdim etamiz:
+        $data = $response->json();
+        Log::info("return Data", ['data' => $data]);
+        if ($data['is_new']) {
 
-🎁 <code>{$promoCode}</code>
 
-📲 <b>Batafsil ma'lumot uchun:</b>
-👉 <a href="https://ontv.uz">ONTV platformasiga o'tish</a>
-👉 <a href="https://t.me/musofir_shou">Telegram kanalimizi kuzating</a>
-👉 <a href="https://promobank.uz">Promobank rasmiy sayti</a>
+            // 🔹 Dinamik promo kod (hozircha misol uchun)
+            $promoCode = $data['code'];
+            $video_url = $data['url'] ?? 'https://qadarun.com/namuna/video6.mp4';
+            Log::info('🎥 RegisterPrizeJob ishga tushdi', ['chat_id' => $this->chatId, 'promo_code' => $promoCode]);
+            // 🔹 Matnni o‘zgaruvchida saqlaymiz (HTML formatda)
+            $translator = app(Translator::class);
+            $textTemplate = $translator->get($this->chatId, 'ontv_text');
 
-<b>🎬 Har kuni yangi imkoniyatlar sizni kutmoqda!</b>
-HTML;
+            // ::promoCode ni o‘rnatish
+            $text = str_replace('::promoCode', $promoCode, $textTemplate);
 
-        // 🔹 Video bilan birga caption jo‘natish
-        Telegram::sendVideo([
-            'chat_id' => $this->chatId,
-            'video' => InputFile::create('https://qadarun.com/namuna/video6.mp4'),
-            'caption' => $text,
-            'parse_mode' => 'HTML',
-        ]);
+            // 🔹 Video bilan birga caption jo‘natish
+            Telegram::sendVideo([
+                'chat_id' => $this->chatId,
+                'video' => InputFile::create($video_url),
+                'caption' => $text,
+                'parse_mode' => 'HTML',
+            ]);
 
-        Log::info('🎥 RegisterPrizeJob video xabari yuborildi', ['chat_id' => $this->chatId]);
+            Log::info('🎥 RegisterPrizeJob video xabari yuborildi', ['chat_id' => $this->chatId]);
+        }
+
+
+
     }
 }

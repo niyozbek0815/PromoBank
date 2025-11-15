@@ -20,32 +20,30 @@ class Refferral
         $chatId = $update->getMessage()?->getChat()?->getId()
             ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
 
-        if (!$chatId) {
+        if (!$chatId)
             return;
-        }
-
-        // $cache = app(UserSessionService::class)->get($chatId);
 
         $referralLink = "https://t.me/promo_bank_bot?start={$chatId}";
 
-        // 🔹 Xabar matnini tarjima bilan olish
-        $text = $this->translator->get($chatId,'refferral_text', );
-        $message = str_replace('::refferral_link', $referralLink, $text);
+        $text = $this->translator->get($chatId, 'refferral_text');
+
+        // HTML tags to plain text
+        $message = strip_tags(str_replace('::refferral_link', $referralLink, $text));
+
         Telegram::sendMessage([
             'chat_id' => $chatId,
             'text' => $message,
-            'parse_mode' => 'HTML',
+            'disable_web_page_preview' => false,
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
                         [
-                            'text' => $this->translator->get($chatId,'get_bot', ),
-                            'url' => $referralLink,
+                            'text' => $this->translator->get($chatId, 'share_referral'),
+                            'url' => "https://t.me/share/url?url={$referralLink}&text=" . urlencode($message)
                         ],
                     ],
                 ],
             ]),
-            'disable_web_page_preview' => false,
         ]);
     }
 

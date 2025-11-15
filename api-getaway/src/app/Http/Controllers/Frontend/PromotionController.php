@@ -22,6 +22,7 @@ class PromotionController extends Controller
         try {
             $mainResponse = $this->forwardRequest("POST", $this->web, "frontend/pages", $request);
             $promotionResponse = $this->forwardRequest("POST", $this->url, "frontend/promotion/{$id}", $request);
+            // dd($promotionResponse->json());
             // Xizmat javobini tekshirish
             if (! $mainResponse instanceof \Illuminate\Http\Client\Response || ! $promotionResponse instanceof \Illuminate\Http\Client\Response) {
                 return view('frontend.error', [

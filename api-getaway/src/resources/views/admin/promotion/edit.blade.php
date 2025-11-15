@@ -880,7 +880,34 @@
                                         katta istalgan son kiriting.
                                     </small>
                                 </div>
+
+<div class="col-lg-4 mb-3 " id="activeFromWrapper">
+    <label class="form-label fw-bold">
+        Aksiya ochilish vaqti (har kuni) <span class="text-danger">*</span>
+    </label>
+    <input type="time" name="promotion_start_time" id="promotionStartTime"
+           class="form-control"
+           value="{{ old('promotion_start_time', $promotion['promotion_start_time'] ?? '') }}"
+           required>
+    <small class="text-muted d-block mt-1">
+        Har kuni shu vaqtdan boshlab aksiya faol bo‘ladi. Masalan: <b>15:00</b>
+    </small>
+</div>
+
+<div class="col-lg-4 mb-3 " id="activeToWrapper">
+    <label class="form-label fw-bold">
+        Aksiya yopilish vaqti (har kuni) <span class="text-danger">*</span>
+    </label>
+    <input type="time" name="promotion_end_time" id="promotionEndTime"
+           class="form-control"
+           value="{{ old('promotion_end_time', $promotion['promotion_end_time'] ?? '') }}"
+           required>
+    <small class="text-muted d-block mt-1">
+        Har kuni shu vaqtdan boshlab aksiya yopiladi. Masalan: <b>16:30</b>
+    </small>
+</div>
                             @endif
+
                             <div class="col-lg-4 form-check form-switch mt-4">
                                 <input class="form-check-input" type="checkbox" name="status" value="1"
                                     id="statusSwitch" {{ old('status', $promotion['status']) ? 'checked' : '' }}>

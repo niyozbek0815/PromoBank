@@ -102,89 +102,98 @@
             }
         });
 
-$(document).ready(function() {
-    const $participantsType = $('#participantsType');
-    const $platforms = $('select[name="platforms[]"]');
-    const $strategyWrapper = $('#strategyWrapper');
-    const $winningStrategy = $strategyWrapper.find('select');
+        $(document).ready(function() {
+            const $participantsType = $('#participantsType');
+            const $platforms = $('select[name="platforms[]"]');
+            const $strategyWrapper = $('#strategyWrapper');
+            const $winningStrategy = $strategyWrapper.find('select');
 
-    const $timeInputWrapper = $('#timeInputWrapper');
-    const $pointsInputWrapper = $('#pointsInputWrapper');
-    const $secretNumberSeconds = $('#secretNumberSeconds');
-    const $secretNumberPoints = $('#secretNumberPoints');
+            const $timeInputWrapper = $('#timeInputWrapper');
+            const $pointsInputWrapper = $('#pointsInputWrapper');
+            const $secretNumberSeconds = $('#secretNumberSeconds');
+            const $secretNumberPoints = $('#secretNumberPoints');
+const $startTimeWrapper = $('#activeFromWrapper');
+const $endTimeWrapper = $('#activeToWrapper');
+            $participantsType.on('change', function() {
+                const selectedOptions = $participantsType.find('option:selected').map(function() {
+                    return $(this).text().toLowerCase();
+                }).get();
 
-    $participantsType.on('change', function() {
-        const selectedOptions = $participantsType.find('option:selected').map(function() {
-            return $(this).text().toLowerCase();
-        }).get();
+                const hassecretNumber = selectedOptions.some(opt => opt.includes('secret number'));
 
-        const hassecretNumber = selectedOptions.some(opt => opt.includes('secret number'));
+                if (hassecretNumber) {
+                    // Faqat secret Number tanlanganlarni faol qilamiz
+                    $participantsType.find('option').each(function() {
+                        const text = $(this).text().toLowerCase();
+                        if (text.includes('secret number')) {
+                            $(this).prop('selected', true).prop('disabled', false);
+                        } else {
+                            $(this).prop('selected', false).prop('disabled', true);
+                        }
+                    });
+                    $participantsType.multiselect('rebuild');
 
-        if (hassecretNumber) {
-            // Faqat secret Number tanlanganlarni faol qilamiz
-            $participantsType.find('option').each(function() {
-                const text = $(this).text().toLowerCase();
-                if (text.includes('secret number')) {
-                    $(this).prop('selected', true).prop('disabled', false);
+                    // Winning strategy faqat delayed bo‘lsin
+                    $winningStrategy.val('delayed');
+                    $winningStrategy.find('option').each(function() {
+                        if ($(this).val() !== 'delayed') {
+                            $(this).prop('disabled', true);
+                        } else {
+                            $(this).prop('disabled', false);
+                        }
+                    });
+                    $winningStrategy.prop('required', true);
+                    $winningStrategy.select2();
+
+                    // ⏱ secret number sekund va ball maydonlari ko‘rsatiladi
+                    $timeInputWrapper.removeClass('d-none');
+                    $pointsInputWrapper.removeClass('d-none');
+                            $startTimeWrapper.removeClass('d-none');
+                                  $('#promotionStartTime').attr('required', 'required');
+        $('#promotionEndTime').attr('required', 'required');
+        $endTimeWrapper.removeClass('d-none');
+                    $secretNumberSeconds.attr('required', 'required');
+                    $secretNumberPoints.attr('required', 'required');
+
+                    // Platformalarni faqat Telegram qilamiz
+                    $platforms.find('option').each(function() {
+                        const text = $(this).text().toLowerCase();
+                        if (text.includes('telegram')) {
+                            $(this).prop('selected', true).prop('disabled', false);
+                        } else {
+                            $(this).prop('selected', false).prop('disabled', true);
+                        }
+                    });
+                    $platforms.multiselect('rebuild');
                 } else {
-                    $(this).prop('selected', false).prop('disabled', true);
+                    // secret number tanlanmagan — barcha variantlarni tiklash
+                    $participantsType.find('option').prop('disabled', false);
+                    $participantsType.multiselect('rebuild');
+
+                    $winningStrategy.find('option').prop('disabled', false);
+                    $winningStrategy.val('');
+                    $winningStrategy.prop('required', true);
+                    $winningStrategy.select2();
+
+                    // secret number maydonlarini yashiramiz
+                    $timeInputWrapper.addClass('d-none');
+                    $pointsInputWrapper.addClass('d-none');
+                            $startTimeWrapper.addClass('d-none');
+        $endTimeWrapper.addClass('d-none');
+                    $secretNumberSeconds.removeAttr('required');
+                    $secretNumberPoints.removeAttr('required');
+   $('#promotionStartTime').removeAttr('required');
+        $('#promotionEndTime').removeAttr('required');
+                    // Platformalarni tiklash
+                    $platforms.find('option').prop('disabled', false);
+                    $platforms.multiselect('rebuild');
                 }
             });
-            $participantsType.multiselect('rebuild');
 
-            // Winning strategy faqat delayed bo‘lsin
-            $winningStrategy.val('delayed');
-            $winningStrategy.find('option').each(function() {
-                if ($(this).val() !== 'delayed') {
-                    $(this).prop('disabled', true);
-                } else {
-                    $(this).prop('disabled', false);
-                }
-            });
-            $winningStrategy.prop('required', true);
-            $winningStrategy.select2();
-
-            // ⏱ secret number sekund va ball maydonlari ko‘rsatiladi
-            $timeInputWrapper.removeClass('d-none');
-            $pointsInputWrapper.removeClass('d-none');
-            $secretNumberSeconds.attr('required', 'required');
-            $secretNumberPoints.attr('required', 'required');
-
-            // Platformalarni faqat Telegram qilamiz
-            $platforms.find('option').each(function() {
-                const text = $(this).text().toLowerCase();
-                if (text.includes('telegram')) {
-                    $(this).prop('selected', true).prop('disabled', false);
-                } else {
-                    $(this).prop('selected', false).prop('disabled', true);
-                }
-            });
-            $platforms.multiselect('rebuild');
-        } else {
-            // secret number tanlanmagan — barcha variantlarni tiklash
-            $participantsType.find('option').prop('disabled', false);
-            $participantsType.multiselect('rebuild');
-
-            $winningStrategy.find('option').prop('disabled', false);
-            $winningStrategy.val('');
-            $winningStrategy.prop('required', true);
-            $winningStrategy.select2();
-
-            // secret number maydonlarini yashiramiz
-            $timeInputWrapper.addClass('d-none');
-            $pointsInputWrapper.addClass('d-none');
-            $secretNumberSeconds.removeAttr('required');
-            $secretNumberPoints.removeAttr('required');
-
-            // Platformalarni tiklash
-            $platforms.find('option').prop('disabled', false);
-            $platforms.multiselect('rebuild');
-        }
-    });
-
-    // Sahifa yuklanganda tekshirish (edit form uchun)
-    $participantsType.trigger('change');
-});  </script>
+            // Sahifa yuklanganda tekshirish (edit form uchun)
+            $participantsType.trigger('change');
+        });
+    </script>
 @endpush
 @section('content')
     <div class="tab-content flex-1 order-2 order-lg-1">
@@ -362,17 +371,41 @@ $(document).ready(function() {
                                 </small>
                             </div>
                             <div class="col-lg-4 mb-3 d-none" id="pointsInputWrapper">
-    <label class="form-label fw-bold">
-        Qisqa raqamga beriladigan ball <span class="text-danger">*</span>
-    </label>
-    <input type="number" name="secret_number_points" id="secretNumberPoints"
-        class="form-control" min="1" step="1"
-        value="{{ old('secret_number_points', $promotion['secret_number_points'] ?? 1) }}"
-        placeholder="Masalan: 1, 5, 10 …" required>
-    <small class="text-muted d-block mt-1">
-        Foydalanuvchi ushbu qisqa raqamni yuborganda unga shu miqdorda ball beriladi. 0 dan katta istalgan son kiriting.
-    </small>
-</div>
+                                <label class="form-label fw-bold">
+                                    Qisqa raqamga beriladigan ball <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" name="secret_number_points" id="secretNumberPoints"
+                                    class="form-control" min="1" step="1"
+                                    value="{{ old('secret_number_points', $promotion['secret_number_points'] ?? 1) }}"
+                                    placeholder="Masalan: 1, 5, 10 …" required>
+                                <small class="text-muted d-block mt-1">
+                                    Foydalanuvchi ushbu qisqa raqamni yuborganda unga shu miqdorda ball beriladi. 0 dan
+                                    katta istalgan son kiriting.
+                                </small>
+                            </div>
+                            <div class="col-lg-4 mb-3" id="activeFromWrapper">
+                                <label class="form-label fw-bold">
+                                    Aksiya ochilish vaqti (har kuni) <span class="text-danger">*</span>
+                                </label>
+                                <input type="time" name="promotion_start_time" id="promotionStartTime"
+                                    class="form-control"
+                                    required>
+                                <small class="text-muted d-block mt-1">
+                                    Har kuni shu vaqtdan boshlab aksiya faol bo‘ladi. Masalan: <b>15:00</b>
+                                </small>
+                            </div>
+
+                            <div class="col-lg-4 mb-3" id="activeToWrapper">
+                                <label class="form-label fw-bold">
+                                    Aksiya yopilish vaqti (har kuni) <span class="text-danger">*</span>
+                                </label>
+                                <input type="time" name="promotion_end_time" id="promotionEndTime"
+                                    class="form-control"
+                                    required>
+                                <small class="text-muted d-block mt-1">
+                                    Har kuni shu vaqtdan boshlab aksiya yopiladi. Masalan: <b>16:30</b>
+                                </small>
+                            </div>
                             <div class="col-lg-4">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" name="status" value="1"

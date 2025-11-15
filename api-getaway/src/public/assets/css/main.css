@@ -2677,12 +2677,14 @@ div.spinner i:nth-child(8) {
 .progress-container ul li:nth-child(even)::before {
     top: 20px;
 }
+
 #receiptVideoWrapper {
     width: 100%;
     border-radius: 10px;
     margin-top: 12px;
     border: 2px solid #333;
 }
+
 #secretNumberForm {
     display: flex;
     flex-wrap: wrap;
@@ -2807,6 +2809,7 @@ div.spinner i:nth-child(8) {
     /* position: relative; */
     z-index: 1;
     overflow: visible;
+    min-height: calc(100vh - 150px);
 }
 
 .rating-header {
@@ -2821,7 +2824,8 @@ div.spinner i:nth-child(8) {
 .rating-header .section-title {
     margin-bottom: 20px;
 }
-.rating .description{
+
+.rating .description {
     text-align: center;
 }
 
@@ -2876,8 +2880,9 @@ div.spinner i:nth-child(8) {
 .rating tr.me-row td {
     background: var(--accent-color);
     font-weight: 700;
-    transition:all 0.5s ease-in-out;
+    transition: all 0.5s ease-in-out;
 }
+
 .rating tr.me-row:hover td {
     background-color: rgba(255, 255, 255, 0.08);
     box-shadow: none;
@@ -2893,9 +2898,84 @@ div.spinner i:nth-child(8) {
 .rating thead tr th:last-child {
     border-top-right-radius: 12px;
 }
-.secret-number .promotion-header {
-    margin-top: 100px;
+
+.promotion-background-card {
+    width: 100%;
+    padding: 60px 50px;
+    /* margin-bottom: 80px; */
+    background: linear-gradient(145deg, #1d1919, #191717);
+    border-radius: 16px;
+    box-shadow: 0 12px 24px rgba(30, 30, 30, 0.6);
+    margin-bottom: 80px;
 }
+
+.secret-number .promotion-background-card:first-of-type {
+    margin-top: 100px;
+    margin-bottom: 80px;
+}
+
+.secret-number .name-logo {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.secret-number .name-logo .company-logo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #eee;
+}
+
+.secret-number .section-title {
+    margin: 0;
+    padding: 0;
+}
+
+.secret-number .secret-number-bunner {
+    width: 100%;
+    margin-bottom: 80px;
+}
+
+.secret-number .banner-img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    /* 16:9 format */
+    object-fit: cover;
+    /* To'liq sig'dirish */
+    display: block;
+    border-radius: 10px;
+    margin: 0;
+}
+
+.secret-number .offer-section {
+    padding-top: 10px;
+}
+
+.secret-number .offer-link {
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.secret-number .offer-link i {
+    font-size: 1.1rem;
+    transition: transform 0.2s ease-in-out;
+}
+
+.secret-number .offer-link:hover {
+    color: var(--accent-transparent-color);
+}
+
+
+
+.secret-number .text-muted i {
+    font-size: 1.1rem;
+}
+
 @media (min-width: 1200px) {
 
     h1,
@@ -3448,13 +3528,20 @@ div.spinner i:nth-child(8) {
     .offer-link {
         margin-left: 0;
     }
-        .rating-header .section-title {
-            margin-bottom: 10px;
-            font-size: var(--text-xl);
-        }
-                .rating-header .sub-title{
-                    margin-bottom: 5px;
-                }
+
+    .rating-header .section-title {
+        margin-bottom: 10px;
+        font-size: var(--text-xl);
+    }
+
+    .rating-header .sub-title {
+        margin-bottom: 5px;
+    }
+
+    .secret-number .name-logo .company-logo {
+        width: 80px;
+        height: 80px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -3640,15 +3727,22 @@ div.spinner i:nth-child(8) {
         border-radius: 15px;
         margin-top: 100px;
     }
-         .sub-title {
-             font-size: var(--text-sm);
-             line-height: 1.4;
-             letter-spacing: 1.2px;
-             margin-bottom: 10px;
-         }
-.secret-number .promotion-header {
-    margin-top: 100px;
-}
+
+    .sub-title {
+        font-size: var(--text-sm);
+        line-height: 1.4;
+        letter-spacing: 1.2px;
+        margin-bottom: 10px;
+    }
+
+    .promotion-background-card {
+        padding: 40px 30px;
+        margin-bottom: 80px;
+        border-radius: 15px;
+        margin-top: 80px;
+    }
+
+
     .banner .section-title {
         margin-bottom: 40px;
     }
@@ -3678,9 +3772,41 @@ div.spinner i:nth-child(8) {
     .footer.footer-webapp .footer-bottom .container {
         gap: 15px;
     }
-        .rating-header {
-            padding: 40px 25px;
-        }
+
+    .rating-header {
+        padding: 40px 25px;
+    }
+
+    h2,
+    .h2 {
+        font-size: var(--text-xl);
+        line-height: var(--text-xl);
+    }
+
+    .promotion-background-card {
+        padding: 40px 30px;
+        margin-bottom: 60px;
+    }
+
+    .secret-number .promotion-background-card:first-of-type {
+        margin-top: 80px;
+        margin-bottom: 60px;
+    }
+
+    .secret-number .section-title {
+        margin: 0;
+        padding: 0;
+    }
+
+    .secret-number .secret-number-bunner {
+        margin-bottom: 60px;
+    }
+
+    .secret-number .name-logo .company-logo {
+        width: 60px;
+        height: 60px;
+    }
+
 }
 
 @media (max-width: 400px) {

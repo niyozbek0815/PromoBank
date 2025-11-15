@@ -28,7 +28,7 @@ class SecretNumber extends Model
     }
     public function getStartAtAttribute($value)
     {
-        Log::info($this->asDateTime($value)->setTimezone(config('app.timezone')) );
+        // Log::info($this->asDateTime($value)->setTimezone(config('app.timezone')) );
         return $value ? $this->asDateTime($value)->setTimezone(config('app.timezone')) : null;
     }
 

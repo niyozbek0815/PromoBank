@@ -54,9 +54,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-        (async function() {
+      window.tokenReadyPromise = new Promise(async (resolve, reject) => {
+        try {
             const tg = window.Telegram?.WebApp;
-            if (!tg) return console.warn('Not opened from Telegram WebApp');
+            if (!tg) return resolve(); // Telegram bo‘lmasa token talab qilinmaydi
 
             const initData = tg.initData;
 
@@ -66,24 +67,47 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    initData
-                })
+                body: JSON.stringify({ initData })
             });
 
             if (!resp.ok) {
                 console.error('Auth failed', await resp.text());
-                return;
+                return resolve(); // Token bo‘lmasa — sahifa token talab qilmaydigan holatda ishlaydi
             }
 
             const data = await resp.json();
-         document.cookie = `webapp_token=${data.access_token}; path=/; secure; samesite=lax`;
-         
-window.__ACCESS_TOKEN__ = data.access_token;
-        })();
-    </script>
+            document.cookie = `webapp_token=${data.access_token}; path=/; secure; samesite=lax`;
+            window.__ACCESS_TOKEN__ = data.access_token;
 
-            @yield('scripts')
+            resolve(); // TOKEN TAYYOR!
+
+        } catch (e) {
+            console.error("Token ololmadi", e);
+            resolve(); // baribir sahifa ishlashiga ruxsat beramiz
+        }
+    });
+
+        function goBackWithToken(promotionId) {
+            event.preventDefault();
+
+            // Tokenni olish (avval window ichidan, keyin cookie'dan)
+            const token = window.__ACCESS_TOKEN__ || getCookie('webapp_token');
+            if (!token) {
+                Swal.fire("❌ Ro‘yxatdan o‘tish xatoligi", "Token mavjud emas yoki muddati tugagan.", "error");
+                return false;
+            }
+
+            // Token bilan qaytish yo‘li
+            const url = `/webapp/promotions/${promotionId}?token=${encodeURIComponent(token)}`;
+            window.location.href = url;
+        }
+
+        function getCookie(name) {
+            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? match[2] : null;
+        }
+    </script>
+    @yield('scripts')
 
 </body>
 

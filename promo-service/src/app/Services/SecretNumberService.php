@@ -10,6 +10,7 @@ use App\Models\UserPointBalance;
 use App\Repositories\PlatformRepository;
 use App\Repositories\PromoCodeRepository;
 use App\Repositories\PromotionRepository;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,13 +19,7 @@ use Throwable;
 class SecretNumberService
 {
 
-    public function __construct(
-        private PromotionRepository $promotionRepository,
-        private PromoCodeRepository $promoCodeRepository,
-        private PlatformRepository $platformRepository,
-        private SmartPrizeValidatorService $smartPrizeValidator,
-    ) {
-    }
+
 
 
     public function proccess($req, $user, $promotionId)
@@ -38,6 +33,7 @@ class SecretNumberService
                 'input' => $req,
             ]);
             $secretConfig = $this->getPromotionSecretConfig($promotionId);
+            Log::info($secretConfig);
 
             if (!$secretConfig) {
                 $messages = [
@@ -46,7 +42,18 @@ class SecretNumberService
                     'en' => 'Promotion not found or not using secret_number type.',
                     'kr' => 'Акция топилмади ёки сирли рақам тури йўқ.',
                 ];
-                return $this->returnformat($messages[$lang] ?? $messages['uz']);
+                return $this->returnformat($messages[$lang] ?? $messages['uz'],null,422);
+            }
+            if(!$this->isPromotionActive($secretConfig)){
+                $message = $this->getMessage(
+                    $promotionId,
+                    null,
+                    $lang,
+                    'inactive_window',
+                    $req['secret_number'],
+                    "telegram"
+                );
+                return $this->returnformat($message,null, 422);
             }
             $number = $this->findValidSecretNumber($promotionId, $req['secret_number'], $secretConfig['secret_number_seconds']);
             if (!$number) {
@@ -58,7 +65,7 @@ class SecretNumberService
                     $req['secret_number'],
                     "telegram"
                 );
-                return $this->returnformat($message);
+                return $this->returnformat($message,null,422);
             }
             if ($this->entryExists($number->id, $user['id'])) {
                 $message = $this->getMessage(
@@ -69,7 +76,7 @@ class SecretNumberService
                     $req['secret_number'],
                     "telegram"
                 );
-                return $this->returnformat($message);
+                return $this->returnformat($message,null,422);
             }
 
             return DB::transaction(function () use ($number, $user, $req, $secretConfig) {
@@ -114,7 +121,7 @@ class SecretNumberService
                     $req['secret_number'],
                     "telegram"
                 );
-                return $this->returnformat($message, 200);
+                return $this->returnformat($message,$points, 200);
             });
         } catch (Throwable $e) {
             Log::error('SecretNumberService failed', [
@@ -122,20 +129,36 @@ class SecretNumberService
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return $this->returnformat('Internal error, please try again later', 500);
+            return $this->returnformat('Internal error, please try again later',null, 500);
         }
     }
-    private function returnformat(string $message, int $code = 422): array
+
+    public function isPromotionActive($secretConfig)
+    {
+        $now = Carbon::now();
+        $start = Carbon::createFromTimeString($secretConfig['promotion_start_time']);
+        $end = Carbon::createFromTimeString($secretConfig['promotion_end_time']);
+
+        $isActive = $start->lt($end)
+            ? $now->between($start, $end)
+            : ($now->gte($start) || $now->lte($end));
+
+        Log::info("Aksiya ID: " . ($isActive ? '✅ faol' : '⛔ yopiq'), ['$now'=>$now,'start'=>$start,'end'=>$end]);
+        return $isActive;
+    }
+    private function returnformat(string $message, $poinst=null, int $code = 422): array
     {
         return [
             'success' => false,
             'status' => 'failed',
             'code' => $code,
+            'points'=>$poinst,
             'message' => $message,
         ];
     }
     private function getPromotionSecretConfig(int $promotionId): ?array
     {
+        Cache::forget("promotion_{$promotionId}_secret_number_config");
         return Cache::remember("promotion_{$promotionId}_secret_number_config", 3600, function () use ($promotionId) {
             $type = Cache::remember('participation_type_secret_number', 86400, function () {
                 return ParticipationType::where('slug', 'secret_number')->first();
@@ -158,6 +181,8 @@ class SecretNumberService
             return [
                 'secret_number_seconds' => (int) ($promotion->extra_conditions['secret_number_seconds'] ?? 60),
                 'secret_number_points' => (int) ($promotion->extra_conditions['secret_number_points'] ?? 5),
+                'promotion_start_time' =>  ($promotion->extra_conditions['promotion_start_time'] ?? "16:00"),
+                'promotion_end_time' =>  ($promotion->extra_conditions['promotion_end_time'] ?? "18:00"),
             ];
         });
     }

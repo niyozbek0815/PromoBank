@@ -439,6 +439,12 @@ Join through this link and register in our Telegram bot 👇
             'kr' => "👉 Ботга ўтиш",
             'en' => "👉 Go to Bot",
         ],
+        'share_referral' => [
+            'uz' => "Ulashish",           // O‘zbek (lotin)
+            'ru' => "Поделиться",         // Ruscha
+            'kr' => "Улашиш",            // O‘zbek (kiril)
+            'en' => "Share",              // Inglizcha
+        ],
         // 'referral_success_text' => [
         //     'uz' => "🎉 Tabriklaymiz! Siz muvaffaqiyatli ro'yxatdan o'tdingiz!\n\n" .
         //     "Sizni ushbu platformaga taklif qilgan foydalanuvchiga minnatdorchilik bildiramiz.\n\n" .
@@ -478,6 +484,63 @@ Join through this link and register in our Telegram bot 👇
 
             'en' => "🎉 Great news! The user ::username you invited has registered 🎊\n" .
                 "::promoball promo points have been added to your account.",
+        ],
+        'ontv_text' => [
+            'uz' => "<b>🎉 PromoBank'ga xush kelibsiz!</b>
+
+Siz birinchi marta bizga qo‘shildingiz 🎊
+Shu munosabat bilan biz sizga <b>ONTV</b> platformasida foydalanish uchun <b>bepul PROMOKOD</b> taqdim etamiz:
+
+🎁 <code>::promoCode</code>
+
+📲 <b>Batafsil ma'lumot uchun:</b>
+👉 <a href=\"https://ontv.uz\">ONTV platformasiga o'tish</a>
+👉 <a href=\"https://t.me/musofir_shou\">Telegram kanalimizi kuzating</a>
+👉 <a href=\"https://promobank.uz\">Promobank rasmiy sayti</a>
+
+<b>🎬 Har kuni yangi imkoniyatlar sizni kutmoqda!</b>",
+
+            'kr' => "<b>🎉 ПромоБанк'га хуш келибсиз!</b>
+
+Сиз биринчи марта бизга қўшилдингиз 🎊
+Шу муносабат билан биз сизга <b>ONTV</b> платформасида фойдаланиш учун <b>бепул PROMOKOD</b> тақдим этамиз:
+
+🎁 <code>::promoCode</code>
+
+📲 <b>Батафсил маълумот учун:</b>
+👉 <a href=\"https://ontv.uz\">ONTV платформасига ўтиш</a>
+👉 <a href=\"https://t.me/musofir_shou\">Телеграм каналимизга обуна бўлинг</a>
+👉 <a href=\"https://promobank.uz\">ПромоБанк расмий сайти</a>
+
+<b>🎬 Ҳар куни янги имкониятлар сиз учун кутмоқда!</b>",
+
+            'ru' => "<b>🎉 Добро пожаловать в PromoBank!</b>
+
+Вы присоединились к нам впервые 🎊
+В связи с этим мы дарим вам <b>бесплатный PROMOCODE</b> для платформы <b>ONTV</b>:
+
+🎁 <code>::promoCode</code>
+
+📲 <b>Подробнее:</b>
+👉 <a href=\"https://ontv.uz\">Перейти на платформу ONTV</a>
+👉 <a href=\"https://t.me/musofir_shou\">Следите за нашим каналом Telegram</a>
+👉 <a href=\"https://promobank.uz\">Официальный сайт Promobank</a>
+
+<b>🎬 Каждый день новые возможности ждут вас!</b>",
+
+            'en' => "<b>🎉 Welcome to PromoBank!</b>
+
+You joined us for the first time 🎊
+As a welcome gift, we provide you with a <b>free PROMOCODE</b> for the <b>ONTV</b> platform:
+
+🎁 <code>::promoCode</code>
+
+📲 <b>For more information:</b>
+👉 <a href=\"https://ontv.uz\">Visit ONTV platform</a>
+👉 <a href=\"https://t.me/musofir_shou\">Follow our Telegram channel</a>
+👉 <a href=\"https://promobank.uz\">Official Promobank website</a>
+
+<b>🎬 Every day new opportunities await you!</b>",
         ],
 
     ];

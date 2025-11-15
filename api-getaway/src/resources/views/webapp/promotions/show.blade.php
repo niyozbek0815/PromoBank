@@ -144,37 +144,37 @@
                         </div>
                     @endif
 
-                    <h3>{{ __('messages.extra') }}</h3>
-                    <div class="description">
-                        {!! $promotion['description'] ?? '<p class="text-muted">Hech qanday tavsif mavjud emas</p>' !!}
+                    <div class="extra-section mt-3">
+
+                        <a class="text-decoration-none d-flex align-items-center justify-content-between"
+                            data-bs-toggle="collapse" href="#extraDescription" role="button" aria-expanded="false"
+                            aria-controls="extraDescription">
+                            <h3 class="media-title"> {{ __('messages.extra') }}</h3>
+                            <i class="fa-solid fa-chevron-down ms-2"></i>
+                        </a>
+
+                        <div class="collapse" id="extraDescription">
+                            <div class="description mt-3">
+                                {!! $promotion['description'] ?? '<p class="text-muted">Hech qanday tavsif mavjud emas</p>' !!}
+                            </div>
+                        </div>
                     </div>
                 </div>
             @else
                 <div class="container-sm secret-number">
 
-                    <div class="promotion-header">
-                        <div class="name-company">
-                            <p class="sub-title">{{ __('messages.promo_subtitle') }}</p>
+                    <div class="promotion-background-card">
+                        <div class="name-logo">
+                            <img src="{{ $promotion['company']['logo']['url'] ?? asset('assets/image/default-logo.png') }}"
+                                alt="Company Logo" class="company-logo">
                             <h2 class="section-title">{{ $promotion['name'] }}</h2>
-                            <div class="promotion-dates">
-                                <div class="start"><span class="date-label">{{ __('messages.start') }}</span>
-                                    <span class="date-value">
-                                        {{ \Carbon\Carbon::parse($promotion['start_date'])->format('d.m.Y') }}</span>
-                                </div>
-                                <div><span class="date-label">{{ __('messages.end') }}</span>
-                                    <span class="date-value">
-                                        {{ \Carbon\Carbon::parse($promotion['end_date'])->format('d.m.Y') }}</span>
-                                </div>
-                                @if (!empty($promotion['offer']))
-                                    <a href="{{ $promotion['offer'] }}" target="_blank" class="offer-link">
-                                        <i class="fa-regular fa-file-lines"></i> {{ __('messages.offer') }}
-                                    </a>
-                                @endif
-
-                            </div>
                         </div>
-
-
+                    </div>
+                    <div class=" secret-number-bunner">
+                        <img src="{{ $promotion['banner'] ?? asset('assets/image/default-banner.jpg') }}"
+                            alt="{{ $promotion['name'] }}" class="banner-img">
+                    </div>
+                    <div class="promotion-background-card">
                         <form id="secretNumberForm" class="participation-methods" onsubmit="submitSecretNumber(event)">
 
                             <input type="number" id="secretNumber" name="secret-number" min="2" step="1"
@@ -186,12 +186,12 @@
                         <div class="rating-card">
                             <div class="total-points">
                                 <div class="points-info">
-                                    <h3 id="totalPoints">{{ $progress_bar['all_points'] }}
-                                        <span>{{ __('messages.ball_text') }}</span>
+                                    <h3 id="totalPoints"><span>{{ $progress_bar['all_points'] }}</span>
+                                        {{ __('messages.ball_text') }}
                                     </h3>
                                 </div>
-                                <div class="today-points">{{ __('messages.today') }}:
-                                    +{{ $progress_bar['today_poinst'] }}</div>
+                                <div class="today-points" id="today-points">{{ __('messages.today') }}:
+                                    +<span>{{ $progress_bar['today_poinst'] }}</span></div>
                             </div>
 
                             <div class="progress-container">
@@ -203,32 +203,10 @@
                                 </ul>
                                 <div class="progress-bar" id="progressBar"></div>
                             </div>
-<a href="#" id="top100Btn" class="rating-btn" onclick="openRatingPage(event, {{ $promotion['id'] }})">
-    <i class="fa-solid fa-ranking-star"></i> {{ __('messages.top_100') }}
-</a>
-                        </div>
-                        <div class="company-card">
-                            <div class="company-header">
-                                <img src="{{ $promotion['company']['logo']['url'] ?? asset('assets/image/default-logo.png') }}"
-                                    alt="Company Logo" class="company-logo">
-                                <div class="company-details">
-                                    <h5 class="company-name">
-                                        {{ $promotion['company']['name'][$locale] ?? $promotion['company']['name']['uz'] }}
-                                    </h5>
-                                    <p class="company-address"><i class="fa-solid fa-location-dot"></i></i>
-                                        {{ $promotion['company']['region'] ?? '' }},
-                                        {{ $promotion['company']['address'] ?? '' }}</p>
-                                </div>
-                            </div>
-                            @if (!empty($promotion['company']['social_media']))
-                                <div class="social-links">
-                                    @foreach ($promotion['company']['social_media'] as $social)
-                                        <a href="{{ $social['url'] }}" class="btn btn_social" target="_blank">
-                                            <i class="fa-brands fa-{{ strtolower($social['type']) }}"></i>
-                                        </a>
-                                    @endforeach
-                                </div>
-                            @endif
+                            <a href="#" id="top100Btn" class="rating-btn"
+                                onclick="openRatingPage(event, {{ $promotion['id'] }})">
+                                <i class="fa-solid fa-ranking-star"></i> {{ __('messages.top_100') }}
+                            </a>
                         </div>
                     </div>
                     @if (!empty($promotion['gallery']))
@@ -252,9 +230,39 @@
                         </div>
                     @endif
 
-                    <h3>{{ __('messages.extra') }}</h3>
-                    <div class="description">
-                        {!! $promotion['description'] ?? '<p class="text-muted">Hech qanday tavsif mavjud emas</p>' !!}
+                    <div class="extra-section mt-3">
+
+                        <a class="text-decoration-none d-flex align-items-center justify-content-between"
+                            data-bs-toggle="collapse" href="#extraDescription" role="button" aria-expanded="false"
+                            aria-controls="extraDescription">
+                            <h3 class="media-title"> {{ __('messages.extra') }}</h3>
+                            <i class="fa-solid fa-chevron-down ms-2"></i>
+                        </a>
+
+                        <div class="collapse" id="extraDescription">
+                            <div class="description mt-3">
+                                {!! $promotion['description'] ?? '<p class="text-muted">Hech qanday tavsif mavjud emas</p>' !!}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="offer-section mt-4 d-flex align-items-center justify-content-between">
+                        <div class="offer-text">
+                            <h3 class="media-title mb-0">{{ __('messages.offer') }}</h3>
+                        </div>
+
+                        @if (!empty($promotion['offer']))
+                            <a href="{{ $promotion['offer'] }}" target="_blank"
+                                class="offer-link d-flex align-items-center gap-2"
+                                title="{{ __('messages.read_offer') ?? 'O‘qish' }}">
+                                <i class="fa-solid fa-download"></i>
+                                <span>{{ __('messages.read_offer') ?? 'O‘qish' }}</span>
+                            </a>
+                        @else
+                            <span class="text-muted d-flex align-items-center gap-2">
+                                <i class="fa-regular fa-file-lines"></i>
+                                {{ __('messages.no_offer') ?? 'Mavjud emas' }}
+                            </span>
+                        @endif
                     </div>
                 </div>
             @endif
@@ -320,6 +328,7 @@
                 </div>
             </form>
         </div>
+
     </div>
     <div id="appModal" class="scannerModal">
         <div class="modal-content">
@@ -361,60 +370,121 @@
 @endsection
 
 @section('scripts')
-<script>
-    function getCookie(name) {
-        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-        return match ? match[2] : null;
-    }
-
-    function openRatingPage(event, promoId) {
-        event.preventDefault();
-
-        // Tokenni olish
-        const token = window.__ACCESS_TOKEN__ || getCookie('webapp_token');
-        if (!token) {
-            Swal.fire("❌ Ro‘yxatdan o‘tish xatoligi",
-                      "Token mavjud emas yoki muddati tugagan.", "error");
-            return;
+    <script>
+        function getCookie(name) {
+            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? match[2] : null;
         }
 
-        // Hard refresh bilan token query orqali yuborish
-        const targetUrl = `/webapp/promotions/${promoId}/rating?token=${encodeURIComponent(token)}`;
-        window.location.href = targetUrl;
-    }
-</script>
+        function openRatingPage(event, promoId) {
+            event.preventDefault();
+
+            // Tokenni olish
+            const token = window.__ACCESS_TOKEN__ || getCookie('webapp_token');
+            if (!token) {
+                Swal.fire("❌ Ro‘yxatdan o‘tish xatoligi",
+                    "Token mavjud emas yoki muddati tugagan. Iltimos qaytadan MiniAppni oching", "error");
+                return;
+            }
+
+            // Hard refresh bilan token query orqali yuborish
+            const targetUrl = `/webapp/promotions/${promoId}/rating?token=${encodeURIComponent(token)}`;
+            window.location.href = targetUrl;
+        }
+    </script>
     <script>
         const CSRF_TOKEN = "{{ csrf_token() }}";
-
         if ({{ $hasSecretNumberType }}) {
-            document.addEventListener("DOMContentLoaded", function() {
-                // Agar progress_bar mavjud bo'lsa
-                @if ($progress_bar)
-                    const allPoints = {{ $progress_bar['daily_points'] }};
-                    const liElements = document.querySelectorAll('.progress-container ul li');
+       document.addEventListener("DOMContentLoaded", function() {
+                window.tokenReadyPromise.then(() => {
 
-                    // Har bir step markerining left pozitsiyasini aniqlash
-                    liElements.forEach(li => {
-                        const stepPoints = parseFloat(li.dataset.ball) || 0;
-
-                        // Step foizini hisoblash
-                        let percent = (stepPoints / allPoints) * 100;
-
-                        // left CSS ni o'rnatish, markerni markazi hisobga olingan holda
-                        li.style.left = `calc(${percent}% - 7px)`;
-                    });
-
-                    // Bugungi ball progress barini o'rnatish
-                    const totalBall = {{ $progress_bar['today_poinst'] }};
-                    const maxBall = {{ $progress_bar['daily_points'] }};
-                    const progressPercent = Math.min((totalBall / maxBall) * 100, 100); // 100% dan oshmasligi
-
-                    const progressBarEl = document.getElementById('progressBar');
-                    if (progressBarEl) {
-                        progressBarEl.style.width = progressPercent + '%';
+                    const token = window.__ACCESS_TOKEN__;
+                    if (!token) {
+                        Swal.fire(
+                            "❌ Ro‘yxatdan o‘tish xatoligi",
+                            "Token mavjud emas yoki muddati tugagan. Iltimos qaytadan MiniAppni oching",
+                            "error"
+                        );
+                        return;
                     }
-                @endif
-            });
+
+                    const promotionId = {{ $promotion['id'] }};
+                    const url = "{{ secure_url('webapp/promotions') }}/" + promotionId +
+                    "/showdata"; // day_start_at ni JSON formatda yuborish
+                    const payload = {
+                        day_start_at: @json($progress_bar['day_start_at'])
+                    };
+                    fetch(url, {
+                            method: "POST",
+                            headers: {
+                                "Authorization": "Bearer " + token,
+                                "Content-Type": "application/json",
+                                "Accept": "application/json",
+                                "X-Locale": document.getElementById('languageSwitcher').value,
+                                "X-CSRF-TOKEN": CSRF_TOKEN
+                            },
+                            body: JSON.stringify(payload)
+                        })
+                        .then(function(response) {
+                            if (!response.ok) {
+                                throw new Error("Server javobi xato: " + response.status);
+                            }
+                            return response.json();
+                        })
+
+                        .then(function(data) {
+                            // Muvaffaqiyatli holat
+                            const all_points = Number(data.all_points || 0);
+                            const today_poinst = Number(data.today_poinst || 0);
+
+                            // 1️⃣ TOTAL POINTS NI YANGILASH
+                            const span = document.querySelector("#totalPoints span");
+                            if (span) {
+                                span.textContent = all_points;
+                            }
+                            const todayPointsSpan = document.querySelector("#today-points span");
+                            if (todayPointsSpan) {
+                                todayPointsSpan.textContent = today_poinst;
+                            }
+
+
+                                                                                const progressBarEl = document.getElementById("progressBar");
+                            if (progressBarEl) {
+                                let totalBall = parseInt(todayPointsSpan.textContent.trim()) || 0;
+                                let maxBall = 100;
+                                let progressPercent = Math.min((totalBall / maxBall) * 100, 100);
+                                progressBarEl.style.width = progressPercent + "%";
+                            }
+
+
+                        })
+                        .catch(function(err) {
+                            Swal.fire("❌ Xatolik", err.message, "error");
+                            console.error(err);
+                        });
+
+                });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            })
 
 
             document.addEventListener("DOMContentLoaded", function() {
@@ -464,7 +534,8 @@
                     const token = window.__ACCESS_TOKEN__;
                     if (!token) {
                         Swal.fire("❌ Ro‘yxatdan o‘tish xatoligi",
-                            "Token mavjud emas yoki muddati tugagan.", "error");
+                            "Token mavjud emas yoki muddati tugagan. Iltimos qaytadan MiniAppni oching",
+                            "error");
                         return;
                     }
 
@@ -528,10 +599,55 @@
                         }
 
                         // Muvaffaqiyatli holat
+                        // Muvaffaqiyatli holat
                         if (response.ok) {
                             const successMsg = data.message || "✅ Sirli raqam qabul qilindi!";
                             await showMessagesSequential([successMsg], "success", "✅ Muvaffaqiyatli");
                             input.value = "";
+
+                            const addedPoints = Number(data.points || 0);
+
+                            /* ---------------------------------------------------
+                               1️⃣ TOTAL POINTS NI YANGILASH
+                            --------------------------------------------------- */
+
+                            const span = document.querySelector("#totalPoints span");
+
+                            if (span) {
+                                // Hozirgi qiymatni olish
+                                let currentValue = parseInt(span.textContent.trim()) || 0;
+
+                                // 10 ni qo‘shish
+                                let newValue = currentValue + addedPoints;
+
+                                // Yangilangan qiymatni span ichiga yozish
+                                span.textContent = newValue;
+                            }
+                            const todayPointsSpan = document.querySelector("#today-points span");
+
+                            if (todayPointsSpan) {
+                                let currentValue = parseInt(todayPointsSpan.textContent.trim()) || 0;
+                                let newValue = currentValue + addedPoints;
+
+                                todayPointsSpan.textContent = newValue;
+                            }
+                            /* ---------------------------------------------------
+                                      2️⃣ DAILY PROGRESS BAR NI YANGILASH
+                                   --------------------------------------------------- */
+                            const progressBarEl = document.getElementById("progressBar");
+                            totalBall = parseInt(todayPointsSpan.textContent.trim()) || 0;;
+                            maxBall = {{ $progress_bar['daily_points'] ?? 50 }};
+                            totalBall += addedPoints;
+
+                            if (progressBarEl) {
+                                const progressPercent = Math.min((totalBall / maxBall) * 100,
+                                    100); // 100% dan oshmasligi
+                                const progressBarEl = document.getElementById('progressBar');
+                                if (progressBarEl) {
+                                    progressBarEl.style.width = progressPercent + '%';
+                                }
+                            }
+
                         }
 
                     } catch (err) {
@@ -555,8 +671,7 @@
                     }
                 }
             });
-        }
-        // Backenddan keladigan umumiy ball
+        }; // Backenddan keladigan umumiy ball
     </script>
     <script>
         const promotionId = {{ $promotion['id'] }};
@@ -616,7 +731,8 @@
         }
         async function sendToServer(url, qrValue, type = "code") {
             if (!token) {
-                Swal.fire("❌ Ro‘yxatdan o‘tish xatoligi", "Token mavjud emas yoki muddati tugagan.", "error");
+                Swal.fire("❌ Ro‘yxatdan o‘tish xatoligi",
+                    "Token mavjud emas yoki muddati tugagan. Iltimos qaytadan MiniAppni oching", "error");
                 return;
             }
 
@@ -700,16 +816,16 @@
         <hr style="border:0; border-top:1px dashed #ccc; margin:6px 0;">
         <div style="font-size:12px;">
             ${(receipt.products || []).map(p => `
-                                            <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dotted #eee;">
-                                                <div style="flex:1; text-align:left;">${p.name ?? ''}</div>
-                                                <div style="flex:0 0 90px; text-align:right;">
-                                                    <div style="font-size:11px; color:#888;">x${p.count ?? 1}</div>
-                                                    <div style="font-size:12px; font-weight:bold; color:#2e7d32;">
-                                                        ${(Number(p.summa) || 0).toLocaleString()} so'm
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        `).join("")}
+                                                                                    <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dotted #eee;">
+                                                                                        <div style="flex:1; text-align:left;">${p.name ?? ''}</div>
+                                                                                        <div style="flex:0 0 90px; text-align:right;">
+                                                                                            <div style="font-size:11px; color:#888;">x${p.count ?? 1}</div>
+                                                                                            <div style="font-size:12px; font-weight:bold; color:#2e7d32;">
+                                                                                                ${(Number(p.summa) || 0).toLocaleString()} so'm
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                `).join("")}
         </div>
         <hr style="border:0; border-top:1px dashed #ccc; margin:6px 0;">
         <p style="text-align:right; font-size:14px; font-weight:bold; margin:4px 0; color:#d32f2f;">
