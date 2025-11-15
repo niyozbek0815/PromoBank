@@ -29,9 +29,9 @@ class SubscriptionService
         }
 
         $channels = [
-            '@niyozbek_mn',
-            '@testChannel11212',
-            '@PromoBank_uz_bot'
+            '@my5tv',
+            '@@promobank_uz',
+            '@musofir_shou'
         ];
 
         $notSubscribed = [];
