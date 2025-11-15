@@ -53,7 +53,21 @@ network:
 	else \
 		echo "✅ Docker network '$(DOCKER_NETWORK)' already exists."; \
 	fi
-
+.PHONY: fix-permissions
+fix-permissions:
+	@if [ -z "$(s)" ]; then \
+		for service in $(SERVICES); do \
+			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
+			echo "🔧 Fixing permissions for $$service (container: $$app_container)..."; \
+			docker compose -f $$service/docker-compose.yml exec -T $$app_container bash -c "chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && chmod -R 775 /var/www/storage /var/www/bootstrap/cache"; \
+		done; \
+	else \
+		for service in $(s); do \
+			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
+			echo "🔧 Fixing permissions for $$service (container: $$app_container)..."; \
+			docker compose -f $$service/docker-compose.yml exec -T $$app_container bash -c "chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && chmod -R 775 /var/www/storage /var/www/bootstrap/cache"; \
+		done; \
+	fi
 # Start pgAdmin
 .PHONY: docker-global
 docker-global:
