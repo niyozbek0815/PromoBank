@@ -38,7 +38,7 @@ services:
       POSTGRES_USER: root 
       POSTGRES_PASSWORD: password 
     networks:
-    - promobank
+      - promobank
   # Application Service
   web_app:
     container_name: web_app
