@@ -1,3 +1,4 @@
+version: '3.9'
 
 services:
   nginx:
@@ -13,6 +14,7 @@ services:
       - ./promo-service:/var/www/promo
       - ./media-service:/var/www/media
       - ./notification-service:/var/www/notification
+      - ./certbot:/var/www/certbot
     depends_on:
       - api_app
       - auth_app
@@ -28,6 +30,8 @@ services:
     container_name: api_app
     networks:
       - promobank
+    expose:
+      - "9000"
 
   auth_app:
     build:
@@ -35,6 +39,8 @@ services:
     container_name: auth_app
     networks:
       - promobank
+    expose:
+      - "9000"
 
   promo_app:
     build:
@@ -42,6 +48,8 @@ services:
     container_name: promo_app
     networks:
       - promobank
+    expose:
+      - "9000"
 
   media_app:
     build:
@@ -49,6 +57,8 @@ services:
     container_name: media_app
     networks:
       - promobank
+    expose:
+      - "9000"
 
   notification_app:
     build:
@@ -56,6 +66,8 @@ services:
     container_name: notification_app
     networks:
       - promobank
+    expose:
+      - "9000"
 
 networks:
   promobank:
