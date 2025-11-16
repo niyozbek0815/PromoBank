@@ -1,30 +1,30 @@
 # Docker settings
 DOCKER_NETWORK=promobank
-SERVICES=  api-getaway    auth-service media-service promo-service telegram-service  web-service
-# notification-service payment-service  profile-service   game-service    
+SERVICES=  api-getaway    auth-service media-service promo-service telegram-service  web-service  game-service  notification-service
+# notification-service payment-service  profile-service    
 INFRA_COMPOSE=docker-compose/infrastructure.yml 
 
 # Helper
-.PHONY: helpmake 
+.PHONY: helpmake
 help:
 	@echo ""
-	@echo "🔧 NETWORK & PGADMIN:"
+	@echo " NETWORK & PGADMIN:"
 	@echo "  make network                        # Create Docker network if not exists"
 	@echo "  make pgadmin                        # Start pgAdmin container"
 	@echo ""
-	@echo "🔨 BUILD:"
+	@echo " BUILD:"
 	@echo "  make build                          # Build all services"
 	@echo "  make build s=\"promo-service auth-service\""
 	@echo ""
-	@echo "🚀 UP:"
+	@echo " UP:"
 	@echo "  make up                             # Run all services"
 	@echo "  make up s=\"api-getaway\""
 	@echo ""
-	@echo "📦 MIGRATE:"
+	@echo " MIGRATE:"
 	@echo "  make migrate                        # Migrate all services"
 	@echo "  make migrate s=\"promo-service auth-service\""
 	@echo ""
-	@echo "🧯 DOWN:"
+	@echo "璘 DOWN:"
 	@echo "  make down                           # Stop all services"
 	@echo "  make down s=\"auth-service\""
 	@echo "  make down s=\"api-getaway promo-service\""
@@ -33,14 +33,14 @@ help:
 	@echo "  make restart                        # Restart all services (down -> build -> up)"
 	@echo "  make restart s=\"game-service\"      # Restart specific service(s)"
 	@echo ""
-	@echo "🔑 KEY:"
+	@echo " KEY:"
 	@echo "  make key s=\"service-name\"          # Generate Laravel APP_KEY for a service"
 	@echo ""
-	@echo "🚀 OPTIMIZE:"
+	@echo " OPTIMIZE:"
 	@echo "  make optimize                       # Optimize all Laravel services"
 	@echo "  make optimize s=\"auth-service\"     # Optimize specific service"
 	@echo ""
-	@echo "🧰 CUSTOM COMMAND:"
+	@echo "藺 CUSTOM COMMAND:"
 	@echo "  make run s=service c='command'      # Run any command inside a service (artisan, composer, bash...)"
 	@echo "  make run-all c='command'            # Run a command in all services"
 	@echo "                                      # Example: make run s=\"auth-service\" c=\"php artisan migrate\""
@@ -58,13 +58,13 @@ fix-permissions:
 	@if [ -z "$(s)" ]; then \
 		for service in $(SERVICES); do \
 			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
-			echo "🔧 Fixing permissions for $$service (container: $$app_container)..."; \
+			echo " Fixing permissions for $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container bash -c "chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && chmod -R 775 /var/www/storage /var/www/bootstrap/cache"; \
 		done; \
 	else \
 		for service in $(s); do \
 			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
-			echo "🔧 Fixing permissions for $$service (container: $$app_container)..."; \
+			echo " Fixing permissions for $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container bash -c "chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && chmod -R 775 /var/www/storage /var/www/bootstrap/cache"; \
 		done; \
 	fi
@@ -90,12 +90,12 @@ rebuild:
 build:
 	@if [ -z "$(s)" ]; then \
 		for service in $(SERVICES); do \
-			echo "🔨 Building $$service..."; \
+			echo " Building $$service..."; \
 			docker compose -f $$service/docker-compose.yml build; \
 		done; \
 	else \
 		for service in $(s); do \
-			echo "🔨 Building $$service..."; \
+			echo " Building $$service..."; \
 			docker compose -f $$service/docker-compose.yml build; \
 		done; \
 	fi
@@ -105,12 +105,12 @@ build:
 up:
 	@if [ -z "$(s)" ]; then \
 		for service in $(SERVICES); do \
-			echo "🚀 Starting $$service..."; \
+			echo " Starting $$service..."; \
 			docker compose -f $$service/docker-compose.yml up -d; \
 		done; \
 	else \
 		for service in $(s); do \
-			echo "🚀 Starting $$service..."; \
+			echo " Starting $$service..."; \
 			docker compose -f $$service/docker-compose.yml up -d; \
 		done; \
 	fi
@@ -122,13 +122,13 @@ migrate:
 	@if [ -z "$(s)" ]; then \
 		for service in $(SERVICES); do \
 			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
-			echo "📦 Migrating & Seeding $$service (container: $$app_container)..."; \
+			echo " Migrating & Seeding $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan migrate --seed || { echo "❌ Migration failed for $$service"; exit 1; }; \
 		done; \
 	else \
 		for service in $(s); do \
 			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
-			echo "📦 Migrating & Seeding $$service (container: $$app_container)..."; \
+			echo " Migrating & Seeding $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan migrate --seed || { echo "❌ Migration failed for $$service"; exit 1; }; \
 		done; \
 	fi
@@ -138,13 +138,13 @@ fresh:
 	@if [ -z "$(s)" ]; then \
 		for service in $(SERVICES); do \
 			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
-			echo "🧹 Fresh migrating & seeding $$service (container: $$app_container)..."; \
+			echo "粒 Fresh migrating & seeding $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan migrate:fresh --seed || { echo "❌ Fresh migration failed for $$service"; exit 1; }; \
 		done; \
 	else \
 		for service in $(s); do \
 			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
-			echo "🧹 Fresh migrating & seeding $$service (container: $$app_container)..."; \
+			echo "粒 Fresh migrating & seeding $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan migrate:fresh --seed || { echo "❌ Fresh migration failed for $$service"; exit 1; }; \
 		done; \
 	fi
@@ -153,12 +153,12 @@ fresh:
 down:
 	@if [ -z "$(s)" ]; then \
 		for service in $(SERVICES); do \
-			echo "🧯 Stopping $$service..."; \
+			echo "璘 Stopping $$service..."; \
 			docker compose -f $$service/docker-compose.yml down; \
 		done; \
 	else \
 		for service in $(s); do \
-			echo "🧯 Stopping $$service..."; \
+			echo "璘 Stopping $$service..."; \
 			docker compose -f $$service/docker-compose.yml down; \
 		done; \
 	fi
@@ -190,7 +190,7 @@ key:
 	else \
 		for service in $(s); do \
 			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
-			echo "🔑 Generating APP_KEY for $$service (container: $$app_container)..."; \
+			echo " Generating APP_KEY for $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan key:generate; \
 		done; \
 	fi
@@ -201,13 +201,13 @@ optimize:
 	@if [ -z "$(s)" ]; then \
 		for service in $(SERVICES); do \
 			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
-			echo "🚀 Optimizing $$service (container: $$app_container)..."; \
+			echo " Optimizing $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan optimize; \
 		done; \
 	else \
 		for service in $(s); do \
 			app_container="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
-			echo "🚀 Optimizing $$service (container: $$app_container)..."; \
+			echo " Optimizing $$service (container: $$app_container)..."; \
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container php artisan optimize; \
 		done; \
 	fi

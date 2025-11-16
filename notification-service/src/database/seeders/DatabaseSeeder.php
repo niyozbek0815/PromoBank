@@ -16,6 +16,6 @@ class DatabaseSeeder extends Seeder
 
 
         // Run UserDevicesSeeder
-        $this->call(UserDevicesSeeder::class);
+        // $this->call(UserDevicesSeeder::class);
     }
 }
