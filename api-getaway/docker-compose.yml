@@ -3,7 +3,7 @@ services:
     image: nginx:alpine
     container_name: api_nginx
     ports:
-      - "8080:80"
+      - "9000:9000"    # ichki port, faqat ichki tarmoq uchun
     volumes:
       - ./src:/var/www
       - ./nginx/conf.d/:/etc/nginx/conf.d/
@@ -46,8 +46,6 @@ services:
     volumes:
       - ./src:/var/www
       - ../common:/var/www/common
-    ports:
-      - "9000:9000"
     working_dir: /var/www
     networks:
       - promobank
