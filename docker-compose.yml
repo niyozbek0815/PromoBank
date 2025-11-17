@@ -72,6 +72,7 @@ services:
     container_name: web_app
     networks:
       - promobank
+
 networks:
   promobank:
     external: true
