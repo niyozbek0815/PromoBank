@@ -81,7 +81,7 @@ class SubscriptionService
             Queue::connection('rabbitmq')->push(new RegisterPrizeJob(
                 chatId: $chatId,
             ));
-            Cache::store('bot')->put($cacheKey, true, now()->addHour(3));
+            Cache::store('bot')->put($cacheKey, true, now()->addHours(3));
             Log::info("{$chatId} barcha kanallarga obuna — cache saqlandi (1 soatga).");
         }
 
