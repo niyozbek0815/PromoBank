@@ -112,6 +112,28 @@ class EnsureTelegramSessionExists
 
         if ($status === 'none') {
             Log::info("Middleware none", ['chat_id' => $chatId]);
+
+            // Agar foydalanuvchi hali sessionga ega emas — start xabarini simulyatsiya qilamiz
+            $fakeUpdate = new \Telegram\Bot\Objects\Update([
+                'update_id' => $update->getUpdateId(),
+                'message' => [
+                    'message_id' => $update->getMessage()?->getMessageId() ?? 0,
+                    'from' => [
+                        'id' => $chatId,
+                        'is_bot' => false,
+                        'first_name' => $update->getMessage()?->getFrom()?->getFirstName() ?? '',
+                    ],
+                    'chat' => [
+                        'id' => $chatId,
+                        'type' => 'private',
+                    ],
+                    'date' => now()->timestamp,
+                    'text' => '/start',
+                ]
+            ]);
+
+            // /start handler ga yo‘naltiramiz
+            return app(StartRouteHandler::class)->handle($fakeUpdate);
         }
 
         return response()->noContent();
