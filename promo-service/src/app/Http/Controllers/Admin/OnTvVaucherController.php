@@ -138,7 +138,7 @@ class OnTvVaucherController extends Controller
             return response()->json([
                 'is_new' => false,
                 'code' => null,
-                'url' => 'https://promobank.io/namuna/video6.mp4'
+                'url' => 'https://promobank.io/namuna/ontv.jpg'
             ]);
         }
 

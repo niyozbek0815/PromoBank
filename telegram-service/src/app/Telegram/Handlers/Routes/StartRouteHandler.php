@@ -50,6 +50,7 @@ class StartRouteHandler
             'message_text' => $messageText,
             'update' => $update
         ]);
+        Cache::store('bot')->forget("tg_subscriptions_ok:$chatId");
 
         Cache::store('bot')->forget("tg_user_data:$chatId");
         Cache::store('bot')->forget("tg_user:$chatId");
@@ -63,7 +64,3 @@ class StartRouteHandler
         return app(StartHandler::class)->startAsk($chatId);
     }
 }
-
-
-
-
