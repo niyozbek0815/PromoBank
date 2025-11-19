@@ -19,9 +19,8 @@ class RegisterRouteHandler
 
     public function handle(Update $update)
     {
-        $text   = $update->getMessage()?->getText() ?? $update->getCallbackQuery()?->getData();
+        $text = $update->getMessage()?->getText() ?? $update->getCallbackQuery()?->getData();
         $chatId = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
-        Log::info("data:" . $text);
         $data = app(RegisterService::class)->get($chatId);
 
         switch ($data['state']) {
@@ -44,7 +43,7 @@ class RegisterRouteHandler
             case 'waiting_for_offer':
                 return app(OfertaStepHandler::class)->handle($update);
             case 'completed':
-                return app(abstract :RegisterService::class)->finalizeUserRegistration($update);
+                return app(abstract: RegisterService::class)->finalizeUserRegistration($update);
             default:
                 return app(PhoneStepHandler::class)->handle($update);
         }

@@ -13,19 +13,19 @@ class MainBack
     }
     public function handle(Update $update)
     {
-        $chatId    = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
+        $chatId = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
         $messageId = $update->getCallbackQuery()?->getMessage()?->getMessageId();
 
         // Edit the message text to show the main menu
         Telegram::editMessageText([
-            'chat_id'      => $chatId,
-            'message_id'   => $messageId, // You need to pass actual message_id from the callback
-            'text'         => $this->translator->get($chatId, 'main_menu_title'),
+            'chat_id' => $chatId,
+            'message_id' => $messageId, // You need to pass actual message_id from the callback
+            'text' => $this->translator->get($chatId, 'main_menu_title'),
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
                         [
-                            'text'    => $this->translator->get($chatId, 'menu_promotions'),
+                            'text' => $this->translator->get($chatId, 'menu_promotions'),
                             'web_app' => ['url' => 'https://promobank.io/webapp/promotions/1'],
                         ],
                         // [
@@ -33,7 +33,7 @@ class MainBack
                         //     'web_app' => ['url' => 'https://promobank.io/webapp/games'],
                         // ],
                     ],
-                         [
+                    [
                         ['text' => $this->translator->get($chatId, 'menu_social'), 'callback_data' => 'menu_social'],
 
                     ],

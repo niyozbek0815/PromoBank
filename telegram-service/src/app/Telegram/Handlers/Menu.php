@@ -13,22 +13,22 @@ class Menu
     public function handle($chatId)
     {
         Telegram::sendMessage([
-            'chat_id'      => $chatId,
-            'text'         => $this->translator->get($chatId, 'main_menu_title'),
+            'chat_id' => $chatId,
+            'text' => $this->translator->get($chatId, 'main_menu_title'),
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
                         [
-                            'text'    => $this->translator->get($chatId, 'menu_promotions'),
+                            'text' => $this->translator->get($chatId, 'menu_promotions'),
                             'web_app' => ['url' => 'https://promobank.io/webapp/promotions/1'],
                         ],
                         // [
                         //     'text'    => $this->translator->get($chatId, key: 'menu_games'),
-                        //     'web_app' => ['url' => 'https://qadarun.com/webapp/games'],
+                        //     'web_app' => ['url' => 'https://promobank.io/webapp/games'],
                         // ],
                     ],
-                       [
-                                                ['text' => $this->translator->get($chatId, 'menu_referral'), 'callback_data' => 'menu_referral'],
+                    [
+                        ['text' => $this->translator->get($chatId, 'menu_referral'), 'callback_data' => 'menu_referral'],
                     ],
                     [
                         // ['text' => $this->translator->get($chatId, 'menu_news'), 'callback_data' => 'menu_news'],

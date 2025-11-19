@@ -24,15 +24,15 @@ class RegisterService
     }
     public function mergeToCache(string $chatId, array $newData)
     {
-        $existing = Cache::store('redis')->get(
+        $existing = Cache::connection("bot")->get(
             $this->prefix . $chatId,
         );
 
         $data = $existing ? json_decode($existing, true) : [];
 
         // Yangi ma’lumotlarni birlashtiramiz
-        $merged   = array_merge($data, $newData);
-        $existing = Cache::store('redis')->set(
+        $merged = array_merge($data, $newData);
+        $existing = Cache::connection("bot")->set(
             $this->prefix . $chatId,
             json_encode($merged)
         );
@@ -40,25 +40,25 @@ class RegisterService
     }
     public function get(string $chatId)
     {
-        $existing = Cache::store('redis')->get($this->prefix . $chatId);
-        $data     = $existing ? json_decode($existing, true) : [];
+        $existing = Cache::connection("bot")->get($this->prefix . $chatId);
+        $data = $existing ? json_decode($existing, true) : [];
         return $data;
     }
     public function forget(string $chatId)
     {
-        Cache::store('redis')->forget($this->prefix . $chatId, );
+        Cache::connection("bot")->forget($this->prefix . $chatId, );
     }
     public function getSessionStatus(string $chatId)
     {
-        if (Cache::store('redis')->has('tg_user_data:' . $chatId)) {
+        if (Cache::connection("bot")->has('tg_user_data:' . $chatId)) {
             return 'in_register';
         }
 
-        if (Cache::store('redis')->has('tg_user_update:' . $chatId)) {
+        if (Cache::connection("bot")->has('tg_user_update:' . $chatId)) {
             return 'in_update';
         }
 
-        if (Cache::store('redis')->has('tg_user:' . $chatId)) {
+        if (Cache::connection("bot")->has('tg_user:' . $chatId)) {
             return 'authenticated';
         }
 
@@ -68,9 +68,9 @@ class RegisterService
     {
         $chatId = $update->getMessage()?->getChat()?->getId();
         $required = $this->get($chatId);
-        $fields   = ['region_id', 'district_id', 'name', 'phone2', 'gender', 'birthdate'];
-        $lang     = Cache::store('redis')->get("tg_lang:$chatId", 'uz');
-        $data     = ['lang' => $lang, 'chat_id' => (string) $chatId, 'phone' => $required['phone'], 'name' => $required['name']];
+        $fields = ['region_id', 'district_id', 'name', 'phone2', 'gender', 'birthdate'];
+        $lang = Cache::connection("bot")->get("tg_lang:$chatId", 'uz');
+        $data = ['lang' => $lang, 'chat_id' => (string) $chatId, 'phone' => $required['phone'], 'name' => $required['name']];
         $message = $update->getMessage();
         $callback = $update->getCallbackQuery();
 
@@ -85,7 +85,7 @@ class RegisterService
             ?? $chat?->first_name
             ?? $chat?->get('username')
             ?? $chat?->username
-            ??  $from?->get('username')
+            ?? $from?->get('username')
             ?? $from?->username
             ?? $from?->get('first_name')
             ?? $from?->first_name
@@ -95,27 +95,26 @@ class RegisterService
             $data[$field] = $required[$field];
         }
 
-        Log::info("Foydalanuvchi ro‘yxatga olish yakunlanmoqda", ['chat_id' => $chatId, 'data' => $data]);
 
         return match (true) {
             empty($data['lang']) => app(StartHandler::class)->ask($chatId),
-            ! array_key_exists('phone2', $data) => app(Phone2StepHandler::class)->ask($chatId),
+            !array_key_exists('phone2', $data) => app(Phone2StepHandler::class)->ask($chatId),
             empty($data['gender']) => app(GenderStepHandler::class)->ask($chatId),
             empty($data['region_id']) => app(RegionStepHandler::class)->ask($chatId),
             empty($data['district_id']) => app(DistrictStepHandler::class)->ask($chatId, $data['region_id'] ?? null),
             empty($data['birthdate']) => app(BirthdateStepHandler::class)->ask($chatId),
-            default => $this->registerUserAndFinalize($chatId, $data,$username),
+            default => $this->registerUserAndFinalize($chatId, $data, $username),
         };
     }
     protected function registerUserAndFinalize($chatId, $data, $username)
     {
         Log::info("User create request yuborilmoqda", ['chat_id' => $chatId, 'data' => $data]);
 
-        $baseUrl         = config('services.urls.auth_service');
+        $baseUrl = config('services.urls.auth_service');
         $data['chat_id'] = (string) $chatId;
-        $response        = $this->forwarder->forward('POST', $baseUrl, '/user_create', $data);
+        $response = $this->forwarder->forward('POST', $baseUrl, '/user_create', $data);
 
-        if (! $response instanceof \Illuminate\Http\Client\Response  || ! $response->successful()) {
+        if (!$response instanceof \Illuminate\Http\Client\Response || !$response->successful()) {
             // logger()->error('Userni olishda xatolik', [
             //     'status' => $response->status(),
             //     'body'   => $response->body(),
@@ -136,7 +135,9 @@ class RegisterService
                 $username
             ));
             app(UserSessionService::class)->put(
-                $chatId, $user);
+                $chatId,
+                $user
+            );
             $this->forget($chatId);
             Log::info("User session saqlandi va ro‘yxat yakunlandi", ['chat_id' => $chatId]);
             return app(Welcome::class)->handle($chatId);

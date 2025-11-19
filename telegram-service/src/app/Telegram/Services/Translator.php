@@ -461,19 +461,19 @@ Join through this link and register in our Telegram bot 👇
         // ],
         'referral_start_text' => [
             'uz' => "🎉 Ajoyib yangilik! Siz taklif qilgan foydalanuvchi ::username botga tashrif buyurdi 🎊\n" .
-                "Buning evaziga sizga ::promoball ball berildi.\n".
+                "Buning evaziga sizga ::promoball ball berildi.\n" .
                 "Agar ushbu foydalanuvchi to‘liq ro‘yxatdan o‘tsa sizga qo‘shimcha yana 2 ball beriladi!",
 
             'ru' => "🎉 Отличные новости! Приглашённый вами пользователь ::username посетил бота 🎊\n" .
-                "Взамен вы получили баллы ::promoball \n".
+                "Взамен вы получили баллы ::promoball \n" .
                 "Если этот пользователь полностью зарегистрируется, вы получите 2 дополнительных балла!",
 
             'kr' => "🎉 Ажойиб янгилик! Сиз таклиф қилган фойдаланувчи ::username ботга ташриф буюрди 🎊\n" .
-                "Бунинг евазига сизга ::promoball балл қўшилди.\n".
+                "Бунинг евазига сизга ::promoball балл қўшилди.\n" .
                 "Агар ушбу фойдаланувчи тўлиқ рўйхатдан ўтса сизга қўшимча яна 2 балл берилади!",
 
             'en' => "🎉 Great news! The user you invited ::username visited the bot 🎊\n" .
-                "In return, you were awarded ::promoball points.".
+                "In return, you were awarded ::promoball points." .
                 "If this user fully registers, you will receive 2 additional points!",
         ],
         'referral_register_text' => [
@@ -551,7 +551,7 @@ As a welcome gift, we provide you with a <b>free PROMOCODE</b> for the <b>ONTV</
 
     public function get($chatId, $key)
     {
-        $lang = Cache::store('redis')->get("tg_lang:$chatId", 'uz');
+        $lang = Cache::connection('bot')->get("tg_lang:$chatId", 'uz');
         return $this->messages[$key][$lang] ?? $this->messages[$key]['uz'];
     }
     public function getForLang(string $key, string $lang): string

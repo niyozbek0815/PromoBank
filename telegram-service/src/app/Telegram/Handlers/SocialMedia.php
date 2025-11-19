@@ -26,7 +26,8 @@ class SocialMedia
     public function __construct(
         private FromServiceRequest $forwarder,
         protected Translator $translator
-    ) {}
+    ) {
+    }
 
     public function handle(Update $update): void
     {
@@ -35,25 +36,23 @@ class SocialMedia
             ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
         $messageId = $update->getCallbackQuery()?->getMessage()?->getMessageId();
 
-        // Avval cache'dan olishga urinib ko‘ramiz
-Cache::store('redis')->forget($this->prefix);
-$links = Cache::store('redis')->remember($this->prefix, now()->addHours(6), function () use ($baseUrl) {
-    $response = $this->forwarder->forward('POST', $baseUrl, '/telegram/social_links', []);
+        $links = Cache::connection('bot')->remember($this->prefix, now()->addHours(6), function () use ($baseUrl) {
+            $response = $this->forwarder->forward('POST', $baseUrl, '/telegram/social_links', []);
 
-    if (!$response instanceof Response || !$response->successful()) {
-        Log::error('Social links olishda xatolik', [
-            'status' => $response instanceof Response ? $response->status() : null,
-            'body'   => $response instanceof Response ? $response->body()   : null,
-        ]);
-        return [];
-    }
+            if (!$response instanceof Response || !$response->successful()) {
+                Log::error('Social links olishda xatolik', [
+                    'status' => $response instanceof Response ? $response->status() : null,
+                    'body' => $response instanceof Response ? $response->body() : null,
+                ]);
+                return [];
+            }
 
-    return $response->json() ?? [];
-});
+            return $response->json() ?? [];
+        });
 
         Log::info("Social links", ['data' => $links]);
 
-        $keyboard = $this->buildKeyboard($links,$chatId);
+        $keyboard = $this->buildKeyboard($links, $chatId);
 
         Telegram::editMessageText([
             'chat_id' => $chatId,

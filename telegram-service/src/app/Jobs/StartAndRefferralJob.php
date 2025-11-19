@@ -33,7 +33,7 @@ class StartAndRefferralJob implements ShouldQueue
         $forwarder = app(FromServiceRequest::class);
         $translator = app(Translator::class);
         $baseUrl = config('services.urls.auth_service');
-        $lang = Cache::store('redis')->get("tg_lang:$this->chatId", 'uz');
+        $lang = Cache::connection('bot')->get("tg_lang:$this->chatId", 'uz');
 
         Log::info("StartAndRefferralJob ishga tushdi", [
             'chat_id' => $this->chatId,
@@ -85,7 +85,7 @@ class StartAndRefferralJob implements ShouldQueue
         ]);
         // 🎯 Yangi foydalanuvchi + mavjud referal
         if ($new && $referralExists && !empty($this->referrerId)) {
-            $promoball = Cache::remember('promo_settings_start_bot', now()->addHours(1), function () use ($forwarder) {
+            $promoball = Cache::connection('bot')->remember('promo_settings_start_bot', now()->addHours(1), function () use ($forwarder) {
                 $response = $forwarder->forward(
                     'GET',
                     config('services.urls.promo_service'),
@@ -120,7 +120,7 @@ class StartAndRefferralJob implements ShouldQueue
                 'POST',
                 config('services.urls.promo_service'),
                 '/webapp/add-points-to-user',
-                ['promoball' => $startPoints, 'referrer_id' => $referrerUser['id'],'referred_id'=>$referredUser['id'], 'referred_chat_id'=>$this->chatId,'referrer_chat_id'=>$this->referrerId ,'referred_username'=> $this->username]
+                ['promoball' => $startPoints, 'referrer_id' => $referrerUser['id'], 'referred_id' => $referredUser['id'], 'referred_chat_id' => $this->chatId, 'referrer_chat_id' => $this->referrerId, 'referred_username' => $this->username]
             );
         }
     }

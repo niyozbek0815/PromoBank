@@ -16,9 +16,8 @@ class UpdateRouteHandler
 {
     public function handle(Update $update)
     {
-        $text   = $update->getMessage()?->getText() ?? $update->getCallbackQuery()?->getData();
+        $text = $update->getMessage()?->getText() ?? $update->getCallbackQuery()?->getData();
         $chatId = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
-        Log::info("data:" . $text);
         $data = app(UserUpdateService::class)->get($chatId);
 
         switch ($data['state']) {

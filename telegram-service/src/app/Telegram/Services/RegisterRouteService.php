@@ -17,7 +17,7 @@ class RegisterRouteService
 {
     public function askNextStep($chatId)
     {
-        $tg_user_data = json_decode(Cache::store('redis')->get("tg_user_data:$chatId"), true) ?? [];
+        $tg_user_data = json_decode(Cache::connection('bot')->get("tg_user_data:$chatId"), true) ?? [];
         return match ($tg_user_data['state'] ?? null) {
             'waiting_for_language' => app(LanguageHandler::class)->ask($chatId),
             'waiting_for_name' => app(NameStepHandler::class)->ask($chatId),

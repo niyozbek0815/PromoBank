@@ -11,83 +11,83 @@ class MediaController extends Controller
 {
     public function upload(MediaRequest $request)
     {
-        $file      = $request->file('file');
+        $file = $request->file('file');
         $imageUrls = $request->input('image_urls');
         if ($imageUrls !== null) {
-          $this->deleteImages($imageUrls);
+            $this->deleteImages($imageUrls);
         }
         $context = $request->input('context'); // ex: 'user_avatar'
-        $saved   = $this->store($file, $context);
+        $saved = $this->store($file, $context);
         [
-    [
-        'url'       => 'https://promobank.io/namuna/1.gif',
-        'mime_type' => 'image/gif',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/2.gif',
-        'mime_type' => 'image/gif',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/3.gif',
-        'mime_type' => 'image/gif',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/4.jpeg',
-        'mime_type' => 'image/jpeg',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/5.jpeg',
-        'mime_type' => 'image/jpeg',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/6.jpeg',
-        'mime_type' => 'image/jpeg',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/7.jpeg',
-        'mime_type' => 'image/jpeg',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/8.jpeg',
-        'mime_type' => 'image/jpeg',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/9.jpeg',
-        'mime_type' => 'image/jpeg',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/promo-default.xlsx',
-        'mime_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/php.docx',
-        'mime_type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/video1.mp4',
-        'mime_type' => 'video/mp4',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/video2.mp4',
-        'mime_type' => 'video/mp4',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/video3.mp4',
-        'mime_type' => 'video/mp4',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/video4.mp4',
-        'mime_type' => 'video/mp4',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/video5.mp4',
-        'mime_type' => 'video/mp4',
-    ],
-    [
-        'url'       => 'https://promobank.io/namuna/video6.mp4',
-        'mime_type' => 'video/mp4',
-    ],
-];
+            [
+                'url' => 'https://promobank.io/namuna/1.gif',
+                'mime_type' => 'image/gif',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/2.gif',
+                'mime_type' => 'image/gif',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/3.gif',
+                'mime_type' => 'image/gif',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/4.jpeg',
+                'mime_type' => 'image/jpeg',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/5.jpeg',
+                'mime_type' => 'image/jpeg',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/6.jpeg',
+                'mime_type' => 'image/jpeg',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/7.jpeg',
+                'mime_type' => 'image/jpeg',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/8.jpeg',
+                'mime_type' => 'image/jpeg',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/9.jpeg',
+                'mime_type' => 'image/jpeg',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/promo-default.xlsx',
+                'mime_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/php.docx',
+                'mime_type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/video1.mp4',
+                'mime_type' => 'video/mp4',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/video2.mp4',
+                'mime_type' => 'video/mp4',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/video3.mp4',
+                'mime_type' => 'video/mp4',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/video4.mp4',
+                'mime_type' => 'video/mp4',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/video5.mp4',
+                'mime_type' => 'video/mp4',
+            ],
+            [
+                'url' => 'https://promobank.io/namuna/video6.mp4',
+                'mime_type' => 'video/mp4',
+            ],
+        ];
 
         return response()->json($saved);
     }
@@ -95,20 +95,20 @@ class MediaController extends Controller
     public function store($file, string $context): array
     {
         $originalName = $file->getClientOriginalName();
-        $mimeType     = $file->getClientMimeType();
-        $extension    = $file->getClientOriginalExtension();
-        $uuid     = (string) Str::uuid();
+        $mimeType = $file->getClientMimeType();
+        $extension = $file->getClientOriginalExtension();
+        $uuid = (string) Str::uuid();
         $fileName = $uuid . '.' . $extension;
         $path = "uploads/{$context}";
         $file->storeAs($path, $fileName, 'public');
         $fileData = [
-            'file_name'       => $fileName,
-            'name'            => $originalName,
-            'mime_type'       => $mimeType,
+            'file_name' => $fileName,
+            'name' => $originalName,
+            'mime_type' => $mimeType,
             'collection_name' => $context,
-            'uuid'            => $uuid,
-            'path'            => $path,
-            'url'             => "/media/uploads/{$context}/{$fileName}",
+            'uuid' => $uuid,
+            'path' => $path,
+            'url' => "/media/uploads/{$context}/{$fileName}",
         ];
         return $fileData;
     }
@@ -118,11 +118,11 @@ class MediaController extends Controller
         $allDeleted = true;
         foreach ($imageUrls as $image) {
             $relativePath = str_starts_with($image, '/media')
-            ? ltrim(substr($image, strlen('/media')), '/')
-            : ltrim($image, '/');
+                ? ltrim(substr($image, strlen('/media')), '/')
+                : ltrim($image, '/');
             if (Storage::disk('public')->exists($relativePath)) {
                 $deleted = Storage::disk('public')->delete($relativePath);
-                if (! $deleted) {
+                if (!$deleted) {
                     $allDeleted = false;
                 }
             } else {
@@ -139,9 +139,9 @@ class MediaController extends Controller
             'user_id' => $request->input('user_id'),
         ]);
 
-        $files     = $request->file('files');
-        $context   = $request->input('context');
-        $userId    = $request->input('user_id');
+        $files = $request->file('files');
+        $context = $request->input('context');
+        $userId = $request->input('user_id');
         $responses = [];
         $imageUrls = $request->input('image_urls');
 
@@ -149,33 +149,33 @@ class MediaController extends Controller
             $this->deleteImages($imageUrls);
         }
 
-        if (! $files || ! is_array($files)) {
+        if (!$files || !is_array($files)) {
             return response()->json(['message' => 'No files received.'], 422);
         }
         foreach ($files as $file) {
             try {
                 $originalName = $file->getClientOriginalName();
-                $mimeType     = $file->getClientMimeType();
-                $extension    = $file->getClientOriginalExtension();
-                $uuid         = (string) Str::uuid();
-                $fileName     = $uuid . '.' . $extension;
-                $path         = "uploads/{$context}";
+                $mimeType = $file->getClientMimeType();
+                $extension = $file->getClientOriginalExtension();
+                $uuid = (string) Str::uuid();
+                $fileName = $uuid . '.' . $extension;
+                $path = "uploads/{$context}";
                 $file->storeAs($path, $fileName, 'public');
                 $fileData = [
-                    'file_name'       => $fileName,
-                    'name'            => $originalName,
-                    'mime_type'       => $mimeType,
+                    'file_name' => $fileName,
+                    'name' => $originalName,
+                    'mime_type' => $mimeType,
                     'collection_name' => $context,
-                    'uuid'            => $uuid,
-                    'path'            => $path,
-                    'url'             => "/media/{$path}/{$fileName}",
+                    'uuid' => $uuid,
+                    'path' => $path,
+                    'url' => "/media/{$path}/{$fileName}",
                 ];
                 $responses[] = $fileData;
             } catch (\Throwable $e) {
                 Log::error('❌ Faylni saqlashda xatolik', [
-                    'file'    => $file?->getClientOriginalName(),
+                    'file' => $file?->getClientOriginalName(),
                     'message' => $e->getMessage(),
-                    'trace'   => $e->getTraceAsString(),
+                    'trace' => $e->getTraceAsString(),
                 ]);
             }
         }

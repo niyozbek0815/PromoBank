@@ -17,21 +17,21 @@ class UserSessionService
 
     public function exists(string $chatId)
     {
-        return Cache::store('redis')->has($this->prefix . $chatId);
+        return Cache::connection('bot')->has($this->prefix . $chatId);
     }
 
     public function put(string $chatId, array $data)
     {
-        Cache::store('redis')->put(
+        Cache::connection('bot')->put(
             $this->prefix . $chatId,
             $data,
-            now()->addDays(7)
+            now()->addDays(700)
         );
     }
 
     public function get(string $chatId)
     {
-        $data = Cache::store('redis')->get($this->prefix . $chatId);
+        $data = Cache::connection('bot')->get($this->prefix . $chatId);
         // ✅ Agar $data string bo‘lsa, decode qilamiz, aks holda o‘zini qaytaramiz
         if (is_string($data)) {
             return json_decode($data, true) ?? [];
@@ -42,13 +42,13 @@ class UserSessionService
 
     public function clear($chatId)
     {
-        Cache::store('redis')->forget($this->prefix . $chatId);
+        Cache::connection('bot')->forget($this->prefix . $chatId);
     }
 
-    public function bindChatToUser(string $chatId, string $phone,$username)
+    public function bindChatToUser(string $chatId, string $phone, $username)
     {
         $baseUrl = config('services.urls.auth_service');
-        $lang    = Cache::store('redis')->get("tg_lang:$chatId", 'uz');
+        $lang = Cache::connection('bot')->get("tg_lang:$chatId", 'uz');
         Log::info("url=" . $lang);
         $response = $this->forwarder->forward(
             'POST',
@@ -57,15 +57,15 @@ class UserSessionService
             ['phone' => $phone, 'chat_id' => $chatId, 'lang' => $lang]
         );
 
-        if (! $response->successful()) {
+        if (!$response->successful()) {
             logger()->error('Userni olishda xatolik', [
                 'status' => $response->status(),
-                'body'   => $response->body(),
+                'body' => $response->body(),
             ]);
             return;
         }
-        $data  = $response->json();
-        $user  = $data['user'] ?? null;
+        $data = $response->json();
+        $user = $data['user'] ?? null;
         $exist = $data['exist'] ?? false;
         if ($exist && $user) {
             // ✅ Mavjud user – Redisga yozamiz

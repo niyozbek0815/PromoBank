@@ -24,7 +24,7 @@ class AuthenticatedRouteHandler
 
         $message = $update->getMessage()?->getText();
         $getData = $update->getCallbackQuery()?->getData();
-        $chatId  = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
+        $chatId = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
         if ($message === $this->translator->get($chatId, 'menu_profile')) {
 
             app(Menu::class)->handle($chatId);
@@ -37,10 +37,10 @@ class AuthenticatedRouteHandler
             app(MainBack::class)->handle($update);
         }
         if ($getData === 'menu_profile') {
-            app(abstract :ProfilSettings::class)->handle($update);
+            app(abstract: ProfilSettings::class)->handle($update);
         }
         if ($getData === 'menu_social') {
-            app(abstract :SocialMedia::class)->handle($update);
+            app(abstract: SocialMedia::class)->handle($update);
         }
         if ($getData === 'menu_social') {
             app(abstract: SocialMedia::class)->handle($update);
@@ -49,9 +49,9 @@ class AuthenticatedRouteHandler
             app(Refferral::class)->handle($update);
         }
         if ($getData === 'edit_profile') {
-            Cache::store('redis')->forget('tg_user_data:' . $chatId);
-            Cache::store('redis')->forget('tg_user:' . $chatId);
-            Cache::store('redis')->forget('tg_user_update:' . $chatId);
+            // Cache::connection('bot')->forget('tg_user_data:' . $chatId);
+            // Cache::connection('bot')->forget('tg_user:' . $chatId);
+            // Cache::connection('bot')->forget('tg_user_update:' . $chatId);
 
             return app(UpdateStartHandler::class)->handle($chatId);
         }

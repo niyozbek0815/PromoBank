@@ -12,7 +12,8 @@ class LanguageHandler
 {
     public function __construct(
         protected Translator $translator
-    ) {}
+    ) {
+    }
 
     public function ask($chatId)
     {
@@ -57,29 +58,29 @@ class LanguageHandler
 
     protected function processLanguage($update, $serviceClass, $nextHandlerClass, $nextState)
     {
-        $callbackQuery   = $update->getCallbackQuery();
-        $messageText     = $callbackQuery?->getData();
-        $chatId          = $update->getMessage()?->getChat()?->getId() ?? $callbackQuery?->getMessage()?->getChat()?->getId();
+        $callbackQuery = $update->getCallbackQuery();
+        $messageText = $callbackQuery?->getData();
+        $chatId = $update->getMessage()?->getChat()?->getId() ?? $callbackQuery?->getMessage()?->getChat()?->getId();
         $callbackMessage = $callbackQuery?->getMessage();
 
         if (strpos($messageText, 'lang:') === 0) {
             if ($callbackMessage) {
                 Telegram::deleteMessage([
-                    'chat_id'    => $chatId,
+                    'chat_id' => $chatId,
                     'message_id' => $callbackMessage->getMessageId(),
                 ]);
             }
             $lang = str_replace('lang:', '', $messageText);
             Log::info("Language selected: $lang");
-            Cache::store('redis')->put("tg_lang:$chatId", $lang, now()->addDays(7));
+            Cache::connection('bot')->put("tg_lang:$chatId", $lang, now()->addDays(700));
             app($serviceClass)->mergeToCache($chatId, [
                 'chat_id' => $chatId,
-                'lang'    => $lang,
-                'state'   => $nextState,
+                'lang' => $lang,
+                'state' => $nextState,
             ]);
             return app($nextHandlerClass)->ask($chatId);
         }
- $text = implode("\n", [
+        $text = implode("\n", [
             $this->translator->get($chatId, 'language_prompt'), // foydalanuvchi tiliga mos
             $this->translator->getForLang('language_prompt', 'ru'),
             $this->translator->getForLang('language_prompt', 'kr'),

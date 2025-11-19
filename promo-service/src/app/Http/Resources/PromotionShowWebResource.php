@@ -47,26 +47,26 @@ class PromotionShowWebResource extends JsonResource
 
 
         return [
-            'id'                 => $this->id,
-            'name' =>           $this->getTranslation('name', $lang),
-            'title'              => $this->getTranslation('title',$lang),
-            'description'        => $this->getTranslation('description', $lang),
-            'start_date'         => $this->start_date,
-            'end_date'           => $this->end_date,
+            'id' => $this->id,
+            'name' => $this->getTranslation('name', $lang),
+            'title' => $this->getTranslation('title', $lang),
+            'description' => $this->getTranslation('description', $lang),
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
 
-            'offer'              => is_array($this->offer) && isset($this->offer['url']) ? $this->offer['url'] : 'https://promobank.io/namuna/php.docx',
-            'banner'             => is_array($this->banner) && isset($this->banner['url']) ? $this->banner['url'] : $defaultimage->random()['url'],
-            'gallery'            => ! empty($this->gallery) && count($this->gallery) >= 1
+            'offer' => is_array($this->offer) && isset($this->offer['url']) ? $this->offer['url'] : 'https://promobank.io/namuna/php.docx',
+            'banner' => is_array($this->banner) && isset($this->banner['url']) ? $this->banner['url'] : $defaultimage->random()['url'],
+            'gallery' => !empty($this->gallery) && count($this->gallery) >= 1
                 ? $this->gallery
                 : $defaultMedia->shuffle()->take(4)->values()->all(),
             'participation_type' => ParticipationTypeResource::collection($this->participationTypes),
-            'company'            => new CompanyResource(resource: $this->company),
+            'company' => new CompanyResource(resource: $this->company),
             'platforms' => $this->platforms->map(function ($platform) {
                 return [
-                    'name'  => $platform->name,
+                    'name' => $platform->name,
                     'phone' => $platform->pivot->phone,
                 ];
             }),
-         ];
+        ];
     }
 }

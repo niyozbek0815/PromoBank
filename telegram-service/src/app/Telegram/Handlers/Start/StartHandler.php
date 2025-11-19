@@ -18,8 +18,8 @@ class StartHandler
     public function startAsk($chatId)
     {
         Telegram::sendMessage([
-            'chat_id'      => $chatId,
-            'text'         => $this->translator->get($chatId, 'start'),
+            'chat_id' => $chatId,
+            'text' => $this->translator->get($chatId, 'start'),
             'reply_markup' => json_encode([
                 'remove_keyboard' => true,
             ]),
@@ -27,29 +27,29 @@ class StartHandler
 
         app(RegisterService::class)->mergeToCache($chatId, [
             'chat_id' => $chatId,
-            'state'   => 'waiting_for_language',
+            'state' => 'waiting_for_language',
         ]);
 
         Log::info("StartHandler startAsk ishladi: $chatId");
-        return app(abstract :RegisterRouteService::class)->askNextStep($chatId);
+        return app(abstract: RegisterRouteService::class)->askNextStep($chatId);
 
     }
     public function ask($chatId)
     {
         Telegram::sendMessage([
-            'chat_id'      => $chatId,
-            'text'         => $this->translator->get($chatId, 'welcome'),
+            'chat_id' => $chatId,
+            'text' => $this->translator->get($chatId, 'welcome'),
             'reply_markup' => json_encode([
                 'remove_keyboard' => true,
             ]),
         ]);
 
-        $lang = json_decode(Cache::store('redis')->get("tg_lang:$chatId"), true) ?? [];
+        $lang = json_decode(Cache::connection('bot')->get("tg_lang:$chatId"), true) ?? [];
 
         if (empty($lang)) {
             Telegram::sendMessage([
-                'chat_id'      => $chatId,
-                'text'         => "❗️ Iltimos, tilni tanlang.\n❗️ Пожалуйста, выберите язык.\n❗️ Илтимос, тилни танланг.\n❗️ Please, select your language.",
+                'chat_id' => $chatId,
+                'text' => "❗️ Iltimos, tilni tanlang.\n❗️ Пожалуйста, выберите язык.\n❗️ Илтимос, тилни танланг.\n❗️ Please, select your language.",
                 'reply_markup' => json_encode([
                     'inline_keyboard' => [
                         [

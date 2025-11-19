@@ -3,12 +3,8 @@
 namespace App\Telegram\Handlers;
 
 use Telegram\Bot\Laravel\Facades\Telegram;
-use Telegram\Bot\Objects\Update;
-use App\Services\FromServiceRequest;
 use App\Telegram\Services\Translator;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Http\Client\Response;
 
 class Subscriptions
 {

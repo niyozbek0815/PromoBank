@@ -45,9 +45,9 @@ class PromoWebResource extends JsonResource
         ]);
 
         return [
-            'id'                 => $this->id,
+            'id' => $this->id,
             'name' => $this->getTranslation('name', $lang),
-            'banner'             => is_array($this->banner) && isset($this->banner['url']) ? $this->banner['url'] : $defaultimage->random()['url'],
+            'banner' => is_array($this->banner) && isset($this->banner['url']) ? $this->banner['url'] : $defaultimage->random()['url'],
         ];
     }
 }

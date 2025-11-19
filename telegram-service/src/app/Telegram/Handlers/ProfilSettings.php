@@ -15,19 +15,19 @@ class ProfilSettings
     }
     public function handle(Update $update)
     {
-        $chatId    = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
+        $chatId = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
         $messageId = $update->getCallbackQuery()?->getMessage()?->getMessageId();
-        $user      = app(UserSessionService::class)->get($chatId);
-        $lang      = Cache::store('redis')->get("tg_lang:$chatId", 'uz');
+        $user = app(UserSessionService::class)->get($chatId);
+        $lang = Cache::connection('bot')->get("tg_lang:$chatId", 'uz');
 
         $text = "📋 <b>" . $this->translator->get($chatId, 'profile_title') . "</b>\n\n" .
-        "👤 <b>" . $this->translator->get($chatId, 'profile_name') . ":</b> {$user['name']}\n" .
-        "📞 <b>" . $this->translator->get($chatId, 'profile_phone') . ":</b> {$user['phone']}\n" .
-        ($user['phone2'] ? "📞 <b>" . $this->translator->get($chatId, 'profile_phone2') . ":</b> {$user['phone2']}\n" : '') .
-        "📍 <b>" . $this->translator->get($chatId, 'profile_region') . ":</b> {$user['region']}\n" .
-        "🏘 <b>" . $this->translator->get($chatId, 'profile_district') . ":</b> {$user['district']}\n" .
-        "⚧ <b>" . $this->translator->get($chatId, 'profile_gender') . ":</b> " . ($user['gender'] === 'M' ? $this->translator->get($chatId, 'gender_male') : $this->translator->get($chatId, 'gender_female')) . "\n" .
-        "📅 <b>" . $this->translator->get($chatId, 'profile_birthdate') . ":</b> " . date('d.m.Y', strtotime($user['birthdate'])) . "\n" .
+            "👤 <b>" . $this->translator->get($chatId, 'profile_name') . ":</b> {$user['name']}\n" .
+            "📞 <b>" . $this->translator->get($chatId, 'profile_phone') . ":</b> {$user['phone']}\n" .
+            ($user['phone2'] ? "📞 <b>" . $this->translator->get($chatId, 'profile_phone2') . ":</b> {$user['phone2']}\n" : '') .
+            "📍 <b>" . $this->translator->get($chatId, 'profile_region') . ":</b> {$user['region']}\n" .
+            "🏘 <b>" . $this->translator->get($chatId, 'profile_district') . ":</b> {$user['district']}\n" .
+            "⚧ <b>" . $this->translator->get($chatId, 'profile_gender') . ":</b> " . ($user['gender'] === 'M' ? $this->translator->get($chatId, 'gender_male') : $this->translator->get($chatId, 'gender_female')) . "\n" .
+            "📅 <b>" . $this->translator->get($chatId, 'profile_birthdate') . ":</b> " . date('d.m.Y', strtotime($user['birthdate'])) . "\n" .
             "🌐 <b>" . $this->translator->get($chatId, 'profile_lang') . ":</b> "
             . $this->translator->getForLang('language_selection', $lang)
             . "\n";
@@ -38,10 +38,10 @@ class ProfilSettings
         }
 
         Telegram::editMessageText([
-            'chat_id'      => $chatId,
-            'message_id'   => $messageId,
-            'text'         => $text,
-            'parse_mode'   => 'HTML',
+            'chat_id' => $chatId,
+            'message_id' => $messageId,
+            'text' => $text,
+            'parse_mode' => 'HTML',
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [

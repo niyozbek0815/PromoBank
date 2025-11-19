@@ -16,16 +16,17 @@ class SubscriptionService
      * ularni oxirida doimiy ro‘yxatga qo‘shadi.
      */
 
-    public function handle(){
+    public function handle()
+    {
 
     }
     public function checkUserSubscriptions(int|string $chatId): array
     {
         // 🔹 Avval cache'ni tekshiramiz
         $cacheKey = "tg_subscriptions_ok:$chatId";
-        // Cache::store('redis')->forget($cacheKey);
+        // Cache::connection('bot')->forget($cacheKey);
 
-  if (Cache::store('redis')->has($cacheKey)) {
+        if (Cache::connection('bot')->has($cacheKey)) {
             Log::info("{$chatId} uchun obuna cache mavjud — qayta tekshirilmaydi.");
             return []; // ✅ Barcha kanallarga obuna deb hisoblanadi
         }
@@ -77,17 +78,17 @@ class SubscriptionService
 
         // ✅ Agar hammasiga obuna bo‘lsa — cache saqlaymiz (masalan 1 soat)
         if (empty($notSubscribed)) {
-                 Queue::connection('rabbitmq')->push(new RegisterPrizeJob(
+            Queue::connection('rabbitmq')->push(new RegisterPrizeJob(
                 chatId: $chatId,
             ));
-            Cache::store('redis')->put($cacheKey, true, now()->addHour());
+            Cache::connection('bot')->put($cacheKey, true, now()->addHour(3));
             Log::info("{$chatId} barcha kanallarga obuna — cache saqlandi (1 soatga).");
         }
 
         return $notSubscribed;
     }
 
-    public function deleteMessage( $chatId, $messageId =null)
+    public function deleteMessage($chatId, $messageId = null)
     {
 
         if ($messageId) {
@@ -120,7 +121,7 @@ class SubscriptionService
 
     public function storePendingAction($chatId, $update, array $payload = [])
     {
-        Cache::store('redis')->set("tg_pending_action:$chatId", json_encode($update), 600);
+        Cache::connection('bot')->set("tg_pending_action:$chatId", json_encode($update), 600);
     }
 
     public function getPendingAction($chatId): ?array
@@ -129,11 +130,11 @@ class SubscriptionService
         $key = "tg_pending_action:$chatId";
 
         // Cache’dan olish
-        $json = Cache::store('redis')->get($key);
+        $json = Cache::connection('bot')->get($key);
 
         if ($json) {
             // O'qilganidan so'ng darhol o'chirish
-            Cache::store('redis')->forget($key);
+            Cache::connection('bot')->forget($key);
             return json_decode($json, true);
         }
 
@@ -142,7 +143,7 @@ class SubscriptionService
 
     public function isSubscriptionCached(int|string $chatId): bool
     {
-        return Cache::store('redis')->has("tg_subscriptions_ok:$chatId");
+        return Cache::connection('bot')->has("tg_subscriptions_ok:$chatId");
     }
 
 }

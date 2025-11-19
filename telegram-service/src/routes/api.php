@@ -14,5 +14,5 @@ Route::post('internal/telegram/webhook', [TelegramBotController::class, 'handle'
 Route::post('/setwebhook', function () {
     $response = Telegram::setWebhook(['url' => 'https://promobank.io/api/telegram/webhook']);
     Log::info('Webhook set: ' . $response);
-    return response()->json(['data'=>$response]);
+    return response()->json(['data' => $response]);
 });

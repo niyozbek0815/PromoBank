@@ -28,11 +28,11 @@ class StartRouteHandler
         $chatId = $chat?->getId();
 
         // 🔹 Username olishda eng ishonchli usul
-        $username =   $chat?->get('first_name')
+        $username = $chat?->get('first_name')
             ?? $chat?->first_name
             ?? $chat?->get('username')
             ?? $chat?->username
-            ??  $from?->get('username')
+            ?? $from?->get('username')
             ?? $from?->username
             ?? $from?->get('first_name')
             ?? $from?->first_name
@@ -48,11 +48,11 @@ class StartRouteHandler
             'referrer_id' => $referrerId,
             'username' => $username,
             'message_text' => $messageText,
-            'update'=>$update
+            'update' => $update
         ]);
 
-        Cache::store('redis')->forget("tg_user_data:$chatId");
-        Cache::store('redis')->forget("tg_user:$chatId");
+        Cache::connection('bot')->forget("tg_user_data:$chatId");
+        Cache::connection('bot')->forget("tg_user:$chatId");
 
         Queue::connection('rabbitmq')->push(new StartAndRefferralJob(
             $chatId,

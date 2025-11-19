@@ -13,19 +13,17 @@ class PendingCommandRunner
     public function run(string $chatId, $text)
     {
         Log::info("Bot pending command ishlamoqda: " . $text);
-        // Cache::store('redis')->forget("tg_pending:$chatId");
 
         $chat = new Chat(['id' => $chatId, 'type' => 'private']);
-        // Yangi update yasaymiz
         $message = new Message([
             'message_id' => time(),
-            'chat'       => ['id' => $chatId],
-            'text'       => $text,
-            'date'       => time(),
+            'chat' => ['id' => $chatId],
+            'text' => $text,
+            'date' => time(),
         ]);
         $update = new Update([
             'update_id' => time(),
-            'message'   => $message,
+            'message' => $message,
         ]);
 
         Telegram::addUpdate($update);

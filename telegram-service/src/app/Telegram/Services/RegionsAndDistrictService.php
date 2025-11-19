@@ -32,8 +32,8 @@ class RegionsAndDistrictService
 
     protected function fetchAndCache(string $key, string $endpoint, string $responsePath): array
     {
-        $cached = Cache::store('redis')->get($key);
-        if (! empty($cached)) {
+        $cached = Cache::connection('bot')->get($key);
+        if (!empty($cached)) {
             $decoded = json_decode($cached, true);
             return is_array($decoded) ? $decoded : [];
         }
@@ -47,19 +47,19 @@ class RegionsAndDistrictService
             []
         );
 
-        if (! $response->successful()) {
+        if (!$response->successful()) {
             logger()->error('API fetch error', [
                 'endpoint' => $endpoint,
-                'status'   => $response->status(),
-                'body'     => $response->body(),
+                'status' => $response->status(),
+                'body' => $response->body(),
             ]);
             return [];
         }
 
         $data = $response->json($responsePath) ?? [];
 
-        if (is_array($data) && ! empty($data)) {
-            Cache::store('redis')->put($key, json_encode($data), now()->addHours(12));
+        if (is_array($data) && !empty($data)) {
+            Cache::connection('bot')->put($key, json_encode($data), now()->addHours(12));
         }
 
         return is_array($data) ? $data : [];

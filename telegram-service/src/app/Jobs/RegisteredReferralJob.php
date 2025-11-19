@@ -21,7 +21,7 @@ class RegisteredReferralJob implements ShouldQueue
     protected ?string $referredId;
     protected $username;
 
-    public function __construct(string $chatId,?string $referredId = null, $username)
+    public function __construct(string $chatId, ?string $referredId = null, $username)
     {
         $this->chatId = $chatId;
         $this->referredId = $referredId;
@@ -33,16 +33,16 @@ class RegisteredReferralJob implements ShouldQueue
         $forwarder = app(FromServiceRequest::class);
         $translator = app(Translator::class);
         $baseUrl = config('services.urls.auth_service');
-        $lang = Cache::store('redis')->get("tg_lang:$this->chatId", 'uz');
+        $lang = Cache::connection("bot")->get("tg_lang:$this->chatId", 'uz');
 
 
         // 🔧 Asosiy yuklama
         $payload = [
             'chat_id' => $this->chatId,
-            'referredId'=>$this->referredId,
+            'referredId' => $this->referredId,
             'lang' => $lang,
         ];
-        $promoball = Cache::remember('promo_settings_start_bot', now()->addHours(1), function () use ($forwarder) {
+        $promoball = Cache::connection('bot')->remember('promo_settings_start_bot', now()->addHours(1), function () use ($forwarder) {
             $response = $forwarder->forward(
                 'GET',
                 config('services.urls.promo_service'),
@@ -81,7 +81,7 @@ class RegisteredReferralJob implements ShouldQueue
             'POST',
             config('services.urls.promo_service'),
             '/webapp/add-points-to-user_register',
-            ['promoball' => $registerPoints,'referred_chat_id'=>$this->chatId, 'referred_id'=>$this->referredId, 'username'=>$this->username]
+            ['promoball' => $registerPoints, 'referred_chat_id' => $this->chatId, 'referred_id' => $this->referredId, 'username' => $this->username]
         );
 
         if (!$res->successful()) {
@@ -94,7 +94,7 @@ class RegisteredReferralJob implements ShouldQueue
         $data = $res->json();
 
         Log::info("resp", ['data' => $data]);
-        if(!empty($data['chat_id']) && $data['exists']){
+        if (!empty($data['chat_id']) && $data['exists']) {
             Telegram::sendMessage([
                 'chat_id' => $data['chat_id'],
                 'text' => $message,
