@@ -53,6 +53,29 @@ network:
 	else \
 		echo "✅ Docker network '$(DOCKER_NETWORK)' already exists."; \
 	fi
+.PHONY: queue-all
+queue-all:
+	@if [ -z "$(s)" ]; then \
+		SERVICES="$(SERVICES)"; \
+	else \
+		SERVICES="$(s)"; \
+	fi; \
+	for service in $$SERVICES; do \
+		APP_CONTAINER="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
+		echo "▶️ Starting queue worker in $$service (container: $$APP_CONTAINER)..."; \
+		docker compose -f $$service/docker-compose.yml exec -T $$APP_CONTAINER sh -c "php artisan queue:work --tries=3 --timeout=60" & \
+		PID=$$!; \
+		sleep 2; \
+		if ! kill -0 $$PID 2>/dev/null; then \
+			echo "❌ Queue worker failed to start in $$service ($$APP_CONTAINER)"; \
+		else \
+			echo "✅ Queue worker running for $$service ($$APP_CONTAINER)"; \
+		fi; \
+	done; \
+	wait
+
+
+
 .PHONY: fix-permissions
 fix-permissions:
 	@if [ -z "$(s)" ]; then \

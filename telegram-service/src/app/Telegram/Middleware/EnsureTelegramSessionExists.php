@@ -20,9 +20,17 @@ class EnsureTelegramSessionExists
         $callback = $update->getCallbackQuery();
 
         // Xabarning textini xavfsiz olish
-        $messageText = $message?->getText() ?? null;
+$messageText = null;
 
-        // Chat ID ni xavfsiz olish
+if ($message) {
+    if (is_a($message, \Telegram\Bot\Objects\Message::class)) {
+        $messageText = $message->text ?? null;
+    } elseif ($message instanceof \Illuminate\Support\Collection) {
+        // Agar collection bo'lsa, array-style olish
+        $messageText = $message->get('text') ?? null;
+    }
+}
+        // Chat ID ni xavfsiz olishs
         $chatId =
             $message?->getChat()?->getId()
             ?? $callback?->getMessage()?->getChat()?->getId()

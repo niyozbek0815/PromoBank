@@ -30,7 +30,7 @@ class SubscriptionService
 
         $channels = [
             '@my5tv',
-            '@@promobank_uz',
+            '@promobank_uz',
             '@musofir_shou'
         ];
 

@@ -36,6 +36,9 @@ use App\Http\Controllers\WebApp\PromotionsController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Bot\TelegramController;
+
+Route::get('/telegram/setwebhook', [TelegramController::class, 'setwebhook']);
 
 
 Route::get('/', [HomeController::class, 'index'])->name('frontend.home');

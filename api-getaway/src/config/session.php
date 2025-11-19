@@ -156,7 +156,7 @@ return [
     |
     */
 
-    'domain'          => env('SESSION_DOMAIN', 'qadarun.com'),
+    'domain'          => env('SESSION_DOMAIN', 'promobank.io'),
 
     /*
     |--------------------------------------------------------------------------
