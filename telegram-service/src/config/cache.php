@@ -46,6 +46,14 @@ return [
             'lock_table' => env('DB_CACHE_LOCK_TABLE'),
         ],
 
+
+        // bot uchun Redis store
+        'bot' => [
+            'driver' => 'redis',
+            'connection' => 'bot', // config/database.php da 'bot' Redis connection
+        ],
+
+
         'file' => [
             'driver' => 'file',
             'path' => storage_path('framework/cache/data'),
@@ -75,6 +83,11 @@ return [
             'driver' => 'redis',
             'connection' => env('REDIS_CACHE_CONNECTION', 'cache'),
             'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
+
+            'bot' => [
+                'driver' => 'redis',
+                'connection' => 'bot', // config/database.php ichidagi redis connection nomi
+            ],
         ],
 
         'dynamodb' => [
@@ -103,6 +116,6 @@ return [
     |
     */
 
-    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
+    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_cache_'),
 
 ];

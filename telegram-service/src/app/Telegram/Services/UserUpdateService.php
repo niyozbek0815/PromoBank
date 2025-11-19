@@ -21,7 +21,7 @@ class UserUpdateService
     }
     public function mergeToCache(string $chatId, array $newData)
     {
-        $existing = Cache::connection('bot')->get(
+        $existing = Cache::store('bot')->get(
             $this->prefix . $chatId,
         );
 
@@ -29,14 +29,14 @@ class UserUpdateService
 
         // Yangi ma’lumotlarni birlashtiramiz
         $merged = array_merge($data, $newData);
-        $existing = Cache::connection('bot')->set(
+        $existing = Cache::store('bot')->set(
             $this->prefix . $chatId,
             json_encode($merged),
         );
         Log::info(
             "mergeToCache" . $this->prefix . $chatId,
             [
-                'data' => Cache::connection('bot')->get(
+                'data' => Cache::store('bot')->get(
                     $this->prefix . $chatId,
                 )
             ]
@@ -45,13 +45,13 @@ class UserUpdateService
     }
     public function get(string $chatId)
     {
-        $existing = Cache::connection('bot')->get($this->prefix . $chatId);
+        $existing = Cache::store('bot')->get($this->prefix . $chatId);
         $data = $existing ? json_decode($existing, true) : [];
         return $data;
     }
     public function forget(string $chatId)
     {
-        Cache::connection('bot')->forget($this->prefix . $chatId);
+        Cache::store('bot')->forget($this->prefix . $chatId);
     }
     public function finalizeUserRegistration(Update $update)
     {
@@ -59,7 +59,7 @@ class UserUpdateService
 
         $required = $this->get($chatId);
         $fields = ['region_id', 'district_id', 'name', 'phone2', 'gender', 'birthdate'];
-        $lang = Cache::connection('bot')->get("tg_lang:$chatId", 'uz');
+        $lang = Cache::store('bot')->get("tg_lang:$chatId", 'uz');
         $data = ['lang' => $lang, 'chat_id' => (string) $chatId, 'name' => $required['name']];
 
         foreach ($fields as $field) {

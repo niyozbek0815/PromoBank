@@ -551,7 +551,7 @@ As a welcome gift, we provide you with a <b>free PROMOCODE</b> for the <b>ONTV</
 
     public function get($chatId, $key)
     {
-        $lang = Cache::connection('bot')->get("tg_lang:$chatId", 'uz');
+        $lang = Cache::store('bot')->get("tg_lang:$chatId", 'uz');
         return $this->messages[$key][$lang] ?? $this->messages[$key]['uz'];
     }
     public function getForLang(string $key, string $lang): string

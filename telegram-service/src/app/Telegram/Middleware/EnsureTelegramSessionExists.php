@@ -16,41 +16,42 @@ class EnsureTelegramSessionExists
 {
     public function handle($update)
     {
-        $message = $update->getMessage()->first(); // agar collection bo'lsa
         $message = $update->getMessage();
         $callback = $update->getCallbackQuery();
 
-        // Xabarning textini xavfsiz olish
-$messageText = null;
+        $chatId = null;
+        $messageText = null;
 
-if ($message) {
-    if (is_a($message, \Telegram\Bot\Objects\Message::class)) {
-        $messageText = $message->text ?? null;
-    } elseif ($message instanceof \Illuminate\Support\Collection) {
-        // Agar collection bo'lsa, array-style olish
-        $messageText = $message->get('text') ?? null;
-    }
-}
-        // Chat ID ni xavfsiz olishs
-  // Chat ID ni xavfsiz olish (Message yoki Collection bo‘lishi mumkin)
-$chatId = null;
+        // Message obyektidan olish
+        if ($message instanceof \Telegram\Bot\Objects\Message) {
+            $chatId = $message->getChat()->getId();
+            $messageText = $message->text ?? null;
+        } elseif ($message instanceof \Illuminate\Support\Collection || is_array($message)) {
+            $chatId = data_get($message, 'chat.id');
+            $messageText = data_get($message, 'text');
+        }
 
-if ($message instanceof \Telegram\Bot\Objects\Message) {
-    $chatId = $message->getChat()->getId();
-} elseif ($message instanceof \Illuminate\Support\Collection) {
-    // Telegram SDK ba’zan message ni array sifatida beradi
-    $chatId = data_get($message, 'chat.id');
-}
+        // Callback query fallback
+        if (!$chatId && $callback instanceof \Telegram\Bot\Objects\CallbackQuery) {
+            $chatId = $callback->getMessage()?->getChat()?->getId();
+            $messageText = $callback->getMessage()?->text ?? null;
+        }
 
-// Callback orqali olish (fallback)
-if (!$chatId && $callback) {
-    $chatId = $callback->getMessage()?->getChat()?->getId();
-}
+        // Agar $chatId hali null bo‘lsa, hech narsani ishlatmaslik
+        if (!$chatId) {
+            Log::warning("Telegram update chatId not found", [
+                'update' => $update->toArray()
+            ]);
+            return response()->noContent(); // yoki boshqacha fallback
+        }
 
         $getData = $callback?->getData() ?? null;
-Log::info("EnsureTelegramSessionExists chatId: $chatId, messageText: $messageText, getData: $getData");
-        // 🔹 "start" so‘zi mavjudligini tekshirish (katta-kichik harf farq qilmaydi)
+
+        // "start" xabarini tekshirish (katta/kichik harf farqi yo'q)
         $isOpenRoute = $messageText && stripos($messageText, '/start') !== false;
+
+
+        Log::info("1EnsureTelegramSessionExists", ["chatId" => $chatId, "messageText" => $messageText, "getData" => $getData, "isOpenRoute" => $isOpenRoute]);
         if ($isOpenRoute) {
             Log::info("Middleware openRoute", [
                 'chat_id' => $chatId,
@@ -61,20 +62,20 @@ Log::info("EnsureTelegramSessionExists chatId: $chatId, messageText: $messageTex
         }
         $status = app(RegisterService::class)->getSessionStatus($chatId);
 
-        // 🔹 Agar ro‘yxatdan o‘tish jarayonida bo‘lsa
+        //  Agar ro‘yxatdan o‘tish jarayonida bo‘lsa
         if ($status === 'in_register' && !$isOpenRoute) {
             return app(RegisterRouteHandler::class)->handle($update);
         }
 
-        // 🔹 Agar ma’lumot yangilash jarayonida bo‘lsa
+        //  Agar ma’lumot yangilash jarayonida bo‘lsa
         if ($status === 'in_update' && !$isOpenRoute) {
             return app(UpdateRouteHandler::class)->handle($update);
         }
 
-        // 🔹 Agar xabar "start"ni o‘z ichiga olsa
+        //  Agar xabar "start"ni o‘z ichiga olsa
 
 
-        // 🔹 Autentifikatsiyadan o‘tgan foydalanuvchilar
+        //  Autentifikatsiyadan o‘tgan foydalanuvchilar
         if ($status === 'authenticated') {
             $notSubscribed = app(SubscriptionService::class)->checkUserSubscriptions($chatId);
 
@@ -96,7 +97,7 @@ Log::info("EnsureTelegramSessionExists chatId: $chatId, messageText: $messageTex
                         // return app(AuthenticatedRouteHandler::class)->handle($updateObject);
                     }
 
-                        return app(Menu::class)->handle($chatId);
+                    return app(Menu::class)->handle($chatId);
                 }
 
                 return app(SubscriptionRouteHandler::class)->handle($update, $notSubscribed, true);

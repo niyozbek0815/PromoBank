@@ -51,8 +51,8 @@ class StartRouteHandler
             'update' => $update
         ]);
 
-        Cache::connection('bot')->forget("tg_user_data:$chatId");
-        Cache::connection('bot')->forget("tg_user:$chatId");
+        Cache::store('bot')->forget("tg_user_data:$chatId");
+        Cache::store('bot')->forget("tg_user:$chatId");
 
         Queue::connection('rabbitmq')->push(new StartAndRefferralJob(
             $chatId,

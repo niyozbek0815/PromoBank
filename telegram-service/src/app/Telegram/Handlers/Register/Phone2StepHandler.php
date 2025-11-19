@@ -30,7 +30,7 @@ class Phone2StepHandler
                 ],
             ]),
         ]);
-        Cache::connection('bot')->put("tg_phone2_msg:$chatId", $response->getMessageId(), now()->addMinutes(30));
+        Cache::store('bot')->put("tg_phone2_msg:$chatId", $response->getMessageId(), now()->addMinutes(30));
     }
 
     protected function process(Update $update, $cacheService)
@@ -59,7 +59,7 @@ class Phone2StepHandler
                 return null;
             }
             $phone2 = '+' . $cleaned;
-            if ($storedMsgId = Cache::connection('bot')->pull("tg_phone2_msg:$chatId")) {
+            if ($storedMsgId = Cache::store('bot')->pull("tg_phone2_msg:$chatId")) {
                 Telegram::deleteMessage([
                     'chat_id' => $chatId,
                     'message_id' => $storedMsgId,

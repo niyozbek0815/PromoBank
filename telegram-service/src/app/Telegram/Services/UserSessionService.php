@@ -17,12 +17,12 @@ class UserSessionService
 
     public function exists(string $chatId)
     {
-        return Cache::connection('bot')->has($this->prefix . $chatId);
+        return Cache::store('bot')->has($this->prefix . $chatId);
     }
 
     public function put(string $chatId, array $data)
     {
-        Cache::connection('bot')->put(
+        Cache::store('bot')->put(
             $this->prefix . $chatId,
             $data,
             now()->addDays(700)
@@ -31,7 +31,7 @@ class UserSessionService
 
     public function get(string $chatId)
     {
-        $data = Cache::connection('bot')->get($this->prefix . $chatId);
+        $data = Cache::store('bot')->get($this->prefix . $chatId);
         // ✅ Agar $data string bo‘lsa, decode qilamiz, aks holda o‘zini qaytaramiz
         if (is_string($data)) {
             return json_decode($data, true) ?? [];
@@ -42,13 +42,13 @@ class UserSessionService
 
     public function clear($chatId)
     {
-        Cache::connection('bot')->forget($this->prefix . $chatId);
+        Cache::store('bot')->forget($this->prefix . $chatId);
     }
 
     public function bindChatToUser(string $chatId, string $phone, $username)
     {
         $baseUrl = config('services.urls.auth_service');
-        $lang = Cache::connection('bot')->get("tg_lang:$chatId", 'uz');
+        $lang = Cache::store('bot')->get("tg_lang:$chatId", 'uz');
         Log::info("url=" . $lang);
         $response = $this->forwarder->forward(
             'POST',

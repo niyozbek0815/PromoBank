@@ -33,7 +33,7 @@ class RegisteredReferralJob implements ShouldQueue
         $forwarder = app(FromServiceRequest::class);
         $translator = app(Translator::class);
         $baseUrl = config('services.urls.auth_service');
-        $lang = Cache::connection("bot")->get("tg_lang:$this->chatId", 'uz');
+        $lang = Cache::store("bot")->get("tg_lang:$this->chatId", 'uz');
 
 
         // 🔧 Asosiy yuklama
@@ -42,7 +42,7 @@ class RegisteredReferralJob implements ShouldQueue
             'referredId' => $this->referredId,
             'lang' => $lang,
         ];
-        $promoball = Cache::connection('bot')->remember('promo_settings_start_bot', now()->addHours(1), function () use ($forwarder) {
+        $promoball = Cache::store('bot')->remember('promo_settings_start_bot', now()->addHours(1), function () use ($forwarder) {
             $response = $forwarder->forward(
                 'GET',
                 config('services.urls.promo_service'),

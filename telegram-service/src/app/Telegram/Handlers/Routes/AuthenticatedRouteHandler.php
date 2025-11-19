@@ -49,9 +49,9 @@ class AuthenticatedRouteHandler
             app(Refferral::class)->handle($update);
         }
         if ($getData === 'edit_profile') {
-            // Cache::connection('bot')->forget('tg_user_data:' . $chatId);
-            // Cache::connection('bot')->forget('tg_user:' . $chatId);
-            // Cache::connection('bot')->forget('tg_user_update:' . $chatId);
+            // Cache::store('bot')->forget('tg_user_data:' . $chatId);
+            // Cache::store('bot')->forget('tg_user:' . $chatId);
+            // Cache::store('bot')->forget('tg_user_update:' . $chatId);
 
             return app(UpdateStartHandler::class)->handle($chatId);
         }

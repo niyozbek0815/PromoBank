@@ -44,7 +44,7 @@ class StartHandler
             ]),
         ]);
 
-        $lang = json_decode(Cache::connection('bot')->get("tg_lang:$chatId"), true) ?? [];
+        $lang = json_decode(Cache::store('bot')->get("tg_lang:$chatId"), true) ?? [];
 
         if (empty($lang)) {
             Telegram::sendMessage([

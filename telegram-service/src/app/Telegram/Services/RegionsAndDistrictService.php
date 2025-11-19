@@ -32,7 +32,7 @@ class RegionsAndDistrictService
 
     protected function fetchAndCache(string $key, string $endpoint, string $responsePath): array
     {
-        $cached = Cache::connection('bot')->get($key);
+        $cached = Cache::store('bot')->get($key);
         if (!empty($cached)) {
             $decoded = json_decode($cached, true);
             return is_array($decoded) ? $decoded : [];
@@ -59,7 +59,7 @@ class RegionsAndDistrictService
         $data = $response->json($responsePath) ?? [];
 
         if (is_array($data) && !empty($data)) {
-            Cache::connection('bot')->put($key, json_encode($data), now()->addHours(12));
+            Cache::store('bot')->put($key, json_encode($data), now()->addHours(12));
         }
 
         return is_array($data) ? $data : [];

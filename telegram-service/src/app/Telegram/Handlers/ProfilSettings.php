@@ -18,7 +18,7 @@ class ProfilSettings
         $chatId = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
         $messageId = $update->getCallbackQuery()?->getMessage()?->getMessageId();
         $user = app(UserSessionService::class)->get($chatId);
-        $lang = Cache::connection('bot')->get("tg_lang:$chatId", 'uz');
+        $lang = Cache::store('bot')->get("tg_lang:$chatId", 'uz');
 
         $text = "📋 <b>" . $this->translator->get($chatId, 'profile_title') . "</b>\n\n" .
             "👤 <b>" . $this->translator->get($chatId, 'profile_name') . ":</b> {$user['name']}\n" .

@@ -72,7 +72,7 @@ class LanguageHandler
             }
             $lang = str_replace('lang:', '', $messageText);
             Log::info("Language selected: $lang");
-            Cache::connection('bot')->put("tg_lang:$chatId", $lang, now()->addDays(700));
+            Cache::store('bot')->put("tg_lang:$chatId", $lang, now()->addDays(700));
             app($serviceClass)->mergeToCache($chatId, [
                 'chat_id' => $chatId,
                 'lang' => $lang,

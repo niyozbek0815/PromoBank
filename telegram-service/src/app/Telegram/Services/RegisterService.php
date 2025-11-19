@@ -24,7 +24,7 @@ class RegisterService
     }
     public function mergeToCache(string $chatId, array $newData)
     {
-        $existing = Cache::connection("bot")->get(
+        $existing = Cache::store("bot")->get(
             $this->prefix . $chatId,
         );
 
@@ -32,7 +32,7 @@ class RegisterService
 
         // Yangi ma’lumotlarni birlashtiramiz
         $merged = array_merge($data, $newData);
-        $existing = Cache::connection("bot")->set(
+        $existing = Cache::store("bot")->set(
             $this->prefix . $chatId,
             json_encode($merged)
         );
@@ -40,25 +40,25 @@ class RegisterService
     }
     public function get(string $chatId)
     {
-        $existing = Cache::connection("bot")->get($this->prefix . $chatId);
+        $existing = Cache::store("bot")->get($this->prefix . $chatId);
         $data = $existing ? json_decode($existing, true) : [];
         return $data;
     }
     public function forget(string $chatId)
     {
-        Cache::connection("bot")->forget($this->prefix . $chatId, );
+        Cache::store("bot")->forget($this->prefix . $chatId, );
     }
     public function getSessionStatus(string $chatId)
     {
-        if (Cache::connection("bot")->has('tg_user_data:' . $chatId)) {
+        if (Cache::store("bot")->has('tg_user_data:' . $chatId)) {
             return 'in_register';
         }
 
-        if (Cache::connection("bot")->has('tg_user_update:' . $chatId)) {
+        if (Cache::store("bot")->has('tg_user_update:' . $chatId)) {
             return 'in_update';
         }
 
-        if (Cache::connection("bot")->has('tg_user:' . $chatId)) {
+        if (Cache::store("bot")->has('tg_user:' . $chatId)) {
             return 'authenticated';
         }
 
@@ -69,7 +69,7 @@ class RegisterService
         $chatId = $update->getMessage()?->getChat()?->getId();
         $required = $this->get($chatId);
         $fields = ['region_id', 'district_id', 'name', 'phone2', 'gender', 'birthdate'];
-        $lang = Cache::connection("bot")->get("tg_lang:$chatId", 'uz');
+        $lang = Cache::store("bot")->get("tg_lang:$chatId", 'uz');
         $data = ['lang' => $lang, 'chat_id' => (string) $chatId, 'phone' => $required['phone'], 'name' => $required['name']];
         $message = $update->getMessage();
         $callback = $update->getCallbackQuery();

@@ -24,9 +24,9 @@ class SubscriptionService
     {
         // 🔹 Avval cache'ni tekshiramiz
         $cacheKey = "tg_subscriptions_ok:$chatId";
-        // Cache::connection('bot')->forget($cacheKey);
+        // Cache::store('bot')->forget($cacheKey);
 
-        if (Cache::connection('bot')->has($cacheKey)) {
+        if (Cache::store('bot')->has($cacheKey)) {
             Log::info("{$chatId} uchun obuna cache mavjud — qayta tekshirilmaydi.");
             return []; // ✅ Barcha kanallarga obuna deb hisoblanadi
         }
@@ -81,7 +81,7 @@ class SubscriptionService
             Queue::connection('rabbitmq')->push(new RegisterPrizeJob(
                 chatId: $chatId,
             ));
-            Cache::connection('bot')->put($cacheKey, true, now()->addHour(3));
+            Cache::store('bot')->put($cacheKey, true, now()->addHour(3));
             Log::info("{$chatId} barcha kanallarga obuna — cache saqlandi (1 soatga).");
         }
 
@@ -121,7 +121,7 @@ class SubscriptionService
 
     public function storePendingAction($chatId, $update, array $payload = [])
     {
-        Cache::connection('bot')->set("tg_pending_action:$chatId", json_encode($update), 600);
+        Cache::store('bot')->set("tg_pending_action:$chatId", json_encode($update), 600);
     }
 
     public function getPendingAction($chatId): ?array
@@ -130,11 +130,11 @@ class SubscriptionService
         $key = "tg_pending_action:$chatId";
 
         // Cache’dan olish
-        $json = Cache::connection('bot')->get($key);
+        $json = Cache::store('bot')->get($key);
 
         if ($json) {
             // O'qilganidan so'ng darhol o'chirish
-            Cache::connection('bot')->forget($key);
+            Cache::store('bot')->forget($key);
             return json_decode($json, true);
         }
 
@@ -143,7 +143,7 @@ class SubscriptionService
 
     public function isSubscriptionCached(int|string $chatId): bool
     {
-        return Cache::connection('bot')->has("tg_subscriptions_ok:$chatId");
+        return Cache::store('bot')->has("tg_subscriptions_ok:$chatId");
     }
 
 }

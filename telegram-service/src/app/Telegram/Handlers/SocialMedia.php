@@ -36,7 +36,7 @@ class SocialMedia
             ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
         $messageId = $update->getCallbackQuery()?->getMessage()?->getMessageId();
 
-        $links = Cache::connection('bot')->remember($this->prefix, now()->addHours(6), function () use ($baseUrl) {
+        $links = Cache::store('bot')->remember($this->prefix, now()->addHours(6), function () use ($baseUrl) {
             $response = $this->forwarder->forward('POST', $baseUrl, '/telegram/social_links', []);
 
             if (!$response instanceof Response || !$response->successful()) {
