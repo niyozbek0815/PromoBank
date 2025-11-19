@@ -80,7 +80,7 @@ return [
     'code_placeholder' => 'Введите код...',
 
     'secret_number_placeholder' => 'Введите секретный номер..',
-    'ball_text' => 'промобалл',
+    'ball_text' => 'балл',
     'today' => 'Сегодня',
     'top_100' => 'ТОП 100 Рейтинг',
     // :time ni olib tashlamang

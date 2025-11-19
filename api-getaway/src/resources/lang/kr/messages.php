@@ -81,7 +81,7 @@ return [
     'code_placeholder' => 'Кодни киритинг...',
 
     'secret_number_placeholder' => 'Сирли рақамни киритинг..',
-    'ball_text' => 'промобалл',
+    'ball_text' => 'балл',
     'today' => 'Бугун',
     'top_100' => 'ТОП 100 Рейтинг',
     // :time ni olib tashlamang

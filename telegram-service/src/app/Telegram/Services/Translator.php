@@ -237,13 +237,13 @@ class Translator
             'en' => '📰 News',
         ],
         'menu_social' => [
-            'uz' => '🌐 Tarmoqlar',
-            'ru' => '🌐 Сети',
-            'kr' => '🌐 Тармоқлар',
+            'uz' => '🌐 Bizning ijtimoiy tarmoqlar',
+            'ru' => '🌐 Наши социальные сети',
+            'kr' => '🌐 Бизнинг ижтимоий тармоқлар',
             'en' => '🌐 Social Networks',
         ],
         'menu_profile' => [
-            'uz' => '👤 Profil Sozlamalari',
+            'uz' => '👤 Profil ma‘lumotlari',
             'ru' => '👤 Настройки профиля',
             'kr' => '👤 Профил Созламалари',
             'en' => '👤 Profile Settings',
@@ -365,9 +365,9 @@ class Translator
             'en' => '✅ Check',
         ],
         'menu_referral' => [
-            'uz' => "🤝 Do'stni taklif qilish",
-            'ru' => "🤝 Пригласить друга",
-            'kr' => "🤝 Дўстни таклиф қилиш",
+            'uz' => "🤝 Qo‘shimcha ball yig‘ish",
+            'ru' => "🤝 Дополнительные баллы",
+            'kr' => "🤝 Extra points",
             'en' => "🤝 Invite a Friend",
         ],
         'refferral_text' => [

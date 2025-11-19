@@ -79,7 +79,7 @@ return [
     'code_title' => 'Promokodeni kiriting',
     'code_placeholder' => 'Kodni kiriting...',
     'secret_number_placeholder'=>"Sirli raqamni kiriting..",
-    'ball_text'=>"promoball",
+    'ball_text'=>"ball",
     'today'=>"Bugun",
     'top_100'=>"TOP 100 Reyting",
     // :time ni olib tashlamang

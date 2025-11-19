@@ -258,3 +258,4 @@ run-all:
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container sh -c '$(c)'; \
 		done; \
 	fi
+

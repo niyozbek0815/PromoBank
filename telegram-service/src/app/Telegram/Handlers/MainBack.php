@@ -26,19 +26,20 @@ class MainBack
                     [
                         [
                             'text'    => $this->translator->get($chatId, 'menu_promotions'),
-                            'web_app' => ['url' => 'https://promobank.io/webapp/promotions/7'],
+                            'web_app' => ['url' => 'https://promobank.io/webapp/promotions/1'],
                         ],
-                        [
-                            'text'    => $this->translator->get($chatId, 'menu_games'),
-                            'web_app' => ['url' => 'https://promobank.io/webapp/games'],
-                        ],
+                        // [
+                        //     'text'    => $this->translator->get($chatId, 'menu_games'),
+                        //     'web_app' => ['url' => 'https://promobank.io/webapp/games'],
+                        // ],
                     ],
                     [
-                        ['text' => $this->translator->get($chatId, 'menu_news'), 'callback_data' => 'menu_news'],
-                        ['text' => $this->translator->get($chatId, 'menu_social'), 'callback_data' => 'menu_social'],
-                    ],
-                    [
+                        // ['text' => $this->translator->get($chatId, 'menu_news'), 'callback_data' => 'menu_news'],
                         ['text' => $this->translator->get($chatId, 'menu_referral'), 'callback_data' => 'menu_referral'],
+                    ],
+                    [
+                        ['text' => $this->translator->get($chatId, 'menu_social'), 'callback_data' => 'menu_social'],
+
                     ],
                     [
                         ['text' => $this->translator->get($chatId, 'menu_profile'), 'callback_data' => 'menu_profile'],

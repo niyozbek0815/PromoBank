@@ -79,7 +79,7 @@ return [
     'code_placeholder' => 'Enter the code...',
 
     'secret_number_placeholder' => 'Enter the secret number..',
-    'ball_text' => 'promoball',
+    'ball_text' => 'ball',
     'today' => 'Today',
     'top_100' => 'TOP 100 Ranking',
     // :time ni olib tashlamang

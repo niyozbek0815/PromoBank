@@ -6,7 +6,6 @@
         @endphp
         <div class="footer-bottom">
             <div class="container">
-                <p>© {{ now()->year }} {{ $settings['footer_bottom'] }}</p>
                 <select id="languageSwitcher">
                     <option value="uz" {{ app()->getLocale() === 'uz' ? 'selected' : '' }}>🇺🇿 O‘zbekcha
                     </option>
