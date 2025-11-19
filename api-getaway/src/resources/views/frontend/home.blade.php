@@ -7,16 +7,16 @@
 <section class="hero" id="hero" data-relative>
         <div class="scene">
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/1.png') }}" alt="" />
+                <img src="{{secure_asset('assets/image/scene/1.png') }}" alt="" />
             </div>
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/2.png') }}" alt="" />
+                <img src="{{secure_asset('assets/image/scene/2.png') }}" alt="" />
             </div>
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/3.png') }}" alt="" />
+                <img src="{{secure_asset('assets/image/scene/3.png') }}" alt="" />
             </div>
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/4.png') }}" alt="" />
+                <img src="{{secure_asset('assets/image/scene/4.png') }}" alt="" />
             </div>
         </div>
 
@@ -28,38 +28,38 @@
 
         <div id="stars">
             <div class="img-wrap star">
-       x         <img src="{{ asset('assets/image/hero/star-1.png') }}" alt="star" />
+       x         <img src="{{secure_asset('assets/image/hero/star-1.png') }}" alt="star" />
             </div>
             <div class="img-wrap star">
-                <img src="{{ asset('assets/image/hero/star-2.png') }}" alt="star" />
+                <img src="{{secure_asset('assets/image/hero/star-2.png') }}" alt="star" />
             </div>
             <div class="img-wrap star">
-                <img src="{{ asset('assets/image/hero/star-3.png') }}" alt="star" />
+                <img src="{{secure_asset('assets/image/hero/star-3.png') }}" alt="star" />
             </div>
             <div class="img-wrap star">
-                <img src="{{ asset('assets/image/hero/star-4.webp') }}" alt="star" />
+                <img src="{{secure_asset('assets/image/hero/star-4.webp') }}" alt="star" />
             </div>
         </div>
 
         <div id="back">
             <div class="img-wrap spin">
-                <img src="{{ asset('assets/image/hero/rotate.png') }}" alt="back" />
+                <img src="{{secure_asset('assets/image/hero/rotate.png') }}" alt="back" />
             </div>
         </div>
     </section>
     <section class="promo-download" data-relative>
         <div class="scene">
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/3.png') }}" alt="" />
+                <img src="{{secure_asset('assets/image/scene/3.png') }}" alt="" />
             </div>
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/5.png') }}" alt="" />
+                <img src="{{secure_asset('assets/image/scene/5.png') }}" alt="" />
             </div>
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/6.png') }}" alt="" />
+                <img src="{{secure_asset('assets/image/scene/6.png') }}" alt="" />
             </div>
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/4.png') }}" alt="" />
+                <img src="{{secure_asset('assets/image/scene/4.png') }}" alt="" />
             </div>
         </div>
 
@@ -129,10 +129,10 @@
     <section class="benefit" id="benefit" data-relative>
         <div class="scene">
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/7.png') }}" alt="" />
+                <img src="{{secure_asset('assets/image/scene/7.png') }}" alt="" />
             </div>
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/6.png') }}" alt="" />
+                <img src="{{secure_asset('assets/image/scene/6.png') }}" alt="" />
             </div>
         </div>
 
@@ -181,7 +181,7 @@
     <section class="for-sponsors" id="for-sponsors" data-relative>
         <div class="scene">
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/2.png') }}" alt="scene" />
+                <img src="{{secure_asset('assets/image/scene/2.png') }}" alt="scene" />
             </div>
         </div>
 
@@ -213,13 +213,13 @@
     <section class="sponsors-about" data-relative>
         <div class="scene">
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/8.png') }}" alt="scene">
+                <img src="{{secure_asset('assets/image/scene/8.png') }}" alt="scene">
             </div>
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/1.png') }}" alt="scene">
+                <img src="{{secure_asset('assets/image/scene/1.png') }}" alt="scene">
             </div>
             <div class="img-wrap innerAnimated">
-                <img src="{{ asset('assets/image/scene/5.png') }}" alt="scene">
+                <img src="{{secure_asset('assets/image/scene/5.png') }}" alt="scene">
             </div>
         </div>
         <div class="content" data-content>

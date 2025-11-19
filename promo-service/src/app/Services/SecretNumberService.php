@@ -108,7 +108,8 @@ class SecretNumberService
                 $encourage = EncouragementPoint::create([
                     'user_id' => $user['id'],
                     'scope_id' => $entry->id,
-                    'scope_type' => 'secret_number',
+                    'scope_type' => "App\\Models\\SecretNumberEntry",
+                    "type"=>"secret_number",
                     'points' => $points,
                 ]);
 

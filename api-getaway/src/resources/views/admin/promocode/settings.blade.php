@@ -1,8 +1,8 @@
 @extends('admin.layouts.app')
 @section('title', 'Promocode sozlamalari')
 @push('scripts')
-    <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/form_layouts.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/select2.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/form_layouts.js') }}"></script>
     <script>
         $(document).on('change', 'input[name="logo"]', function(evt) {
             const [file] = this.files;

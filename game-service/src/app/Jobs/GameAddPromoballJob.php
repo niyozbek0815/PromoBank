@@ -43,7 +43,7 @@ class GameAddPromoballJob implements ShouldQueue
             $balance->increment('balance', $this->promoball);
             $en = EncouragementPoint::create([
                 'user_id' => $this->user_id,
-                'scope_type' => self::class,
+                'scope_type' =>"App\\Models\\GameSession", ,
                 'scope_id' => $this->session,
                 'type' => 'game',
                 'points' => $this->promoball,

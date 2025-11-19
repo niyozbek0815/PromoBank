@@ -1492,7 +1492,7 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     <a href="#" class="d-inline-block me-3">
-                                        <img src="{{ asset('adminpanel/assets/images/svg/1.svg') }}" alt=""
+                                        <img src="{{secure_asset('adminpanel/assets/images/svg/1.svg') }}" alt=""
                                             height="36">
                                     </a>
                                     <div>

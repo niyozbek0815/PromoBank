@@ -132,7 +132,7 @@ class EncouragementPoint extends Model
 
         // 3️⃣ Foydalanuvchining jami balli
         $userTotal = (int) DB::table('encouragement_points')
-            ->when($types, fn($q) => $q->whereIn('scope_type', $types))
+            ->when($types, fn($q) => $q->whereIn('type', $types))
             ->when($fromTime, fn($q) => $q->where('created_at', '>=', $fromTime))
             ->when($toTime, fn($q) => $q->where('created_at', '<=', $toTime))
             ->where('user_id', $userId)
@@ -141,7 +141,7 @@ class EncouragementPoint extends Model
         // 4️⃣ Aggregatsiya: barcha foydalanuvchilar bo‘yicha total points
         $agg = DB::table('encouragement_points')
             ->select('user_id', DB::raw('SUM(points) as total_points'))
-            ->when($types, fn($q) => $q->whereIn('scope_type', $types))
+            ->when($types, fn($q) => $q->whereIn('type', $types))
             ->when($fromTime, fn($q) => $q->where('created_at', '>=', $fromTime))
             ->when($toTime, fn($q) => $q->where('created_at', '<=', $toTime))
             ->groupBy('user_id');
@@ -190,7 +190,7 @@ class EncouragementPoint extends Model
 
         // 2️⃣ Foydalanuvchining jami ballarini olish
         $totalPoints = (int) DB::table('encouragement_points')
-            ->when($types, fn($q) => $q->whereIn('scope_type', $types))
+            ->when($types, fn($q) => $q->whereIn('type', $types))
             ->where('user_id', $userId)
             ->sum('points');
 
@@ -229,7 +229,7 @@ class EncouragementPoint extends Model
         // 3️⃣ Aggregatsiya: userlar bo‘yicha total points
         $agg = DB::table('encouragement_points')
             ->select('user_id', DB::raw('SUM(points) as total_points'))
-            ->when($types, fn($q) => $q->whereIn('scope_type', $types))
+            ->when($types, fn($q) => $q->whereIn('type', $types))
             ->when($fromTime, fn($q) => $q->where('created_at', '>=', $fromTime))
             ->when($toTime, fn($q) => $q->where('created_at', '<=', $toTime))
             ->groupBy('user_id')

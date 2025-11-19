@@ -93,15 +93,15 @@ $maxSelectable = $prize['quantity'] - ($prize['used_count'] + $prize['unused_cou
             background-color: #0d6efd;
         }
     </style>
-    <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/form_layouts.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/bootstrap_multiselect.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/form_multiselect.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/select2.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/form_layouts.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/bootstrap_multiselect.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/form_multiselect.js') }}"></script>
     {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> --}}
     <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
-    <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/datatables.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/buttons.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
     <script src="https://themes.kopyov.com/limitless/demo/template/assets/demo/pages/form_select2.js"></script>
     <script src="https://themes.kopyov.com/limitless/demo/template/assets/js/vendor/forms/selects/select2.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">

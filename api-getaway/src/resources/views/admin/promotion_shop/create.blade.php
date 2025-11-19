@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
 @section('title', "Promoaksiya qo'shish")
 @push('scripts')
-    <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/form_layouts.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/bootstrap_multiselect.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/form_multiselect.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/select2.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/form_layouts.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/bootstrap_multiselect.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/form_multiselect.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/buttons.min.js') }}"></script>
 @endpush
 @section('content')
     <div class="tab-content flex-1 order-2 order-lg-1">

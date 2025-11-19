@@ -2,8 +2,8 @@
 @section('title', 'Default Xabarni Tahrirlash')
 
 @push('scripts')
-    <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/form_layouts.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/select2.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/form_layouts.js') }}"></script>
 @endpush
 
 @section('content')

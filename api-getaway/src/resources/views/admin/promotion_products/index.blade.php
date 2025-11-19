@@ -1,9 +1,9 @@
 @extends('admin.layouts.app')
 @section('title', 'Promoaksiya mahsulotlari')
 @push('scripts')
-    <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/datatables.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/buttons.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
 
     <script>
         $.ajaxSetup({

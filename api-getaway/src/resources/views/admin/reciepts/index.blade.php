@@ -3,9 +3,9 @@
 @section('title', 'Check skaneri')
 
 @push('scripts')
-    <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/datatables.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/buttons.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
     </script>
     <script>
         $.ajaxSetup({

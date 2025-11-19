@@ -4,8 +4,8 @@
 
 @push('scripts')
 
-    <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/form_layouts.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/select2.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/form_layouts.js') }}"></script>
     <script>
         $(document).ready(function() {
             $('#region').on('change', function() {
@@ -135,7 +135,7 @@
                      id="user-avatar-preview" class="img-thumbnail"
                      style="max-width: 120px; height: 120px;">
             @else
-                <img src="{{ asset('adminpanel/assets/images/user.jpg') }}" alt="Default avatar"
+                <img src="{{secure_asset('adminpanel/assets/images/user.jpg') }}" alt="Default avatar"
                      class="img-thumbnail" style="max-width: 120px; height: 120px;"
                      id="user-avatar-preview">
             @endif

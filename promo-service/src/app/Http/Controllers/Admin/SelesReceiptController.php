@@ -1,204 +1,251 @@
 <?php
-namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+namespace App\Jobs;
+
+use App\Models\EncouragementPoint;
+use App\Models\PlatformPromoSetting;
+use App\Models\Prize;
 use App\Models\PromoAction;
 use App\Models\PromoCodeUser;
+use App\Models\SalesProduct;
 use App\Models\SalesReceipt;
-use Illuminate\Http\Request;
+use App\Models\UserPointBalance;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\Log;
 
-class SelesReceiptController extends Controller
+class CreateReceiptAndProductJob implements ShouldQueue
 {
-    public function data(Request $request)
-    {
-        $query = SalesReceipt::query()
-            ->with('userCache:id,user_id,name,phone')
-            ->withCount([
-                'promoCodeUsers as manual_count' => fn($q) => $q->whereNull('prize_id'),
-                'promoCodeUsers as prize_count' => fn($q) => $q->whereNotNull('prize_id'),
-            ]);
+    use InteractsWithQueue, Queueable, SerializesModels;
 
-        return DataTables::of($query)
-            ->addColumn('id', fn(SalesReceipt $r) => $r->id)
-            ->addColumn('user_info', function (SalesReceipt $r) {
-                $name = e($r->userCache?->name ?? '—');
-                $phone = e($r->userCache?->phone ?? '—');
 
-                return "<div>
-                <strong>{$name}</strong>
-                <div class='text-muted' style='font-size:12px;'>{$phone}</div>
-            </div>";
-            })            ->addColumn('manual_count', fn(SalesReceipt $r) => $r->manual_count)
-            ->addColumn('prize_count', fn(SalesReceipt $r) => $r->prize_count)
-            ->addColumn('summa', fn(SalesReceipt $r) => number_format($r->summa ?? 0, 0, '.', ' '))
-            ->addColumn('check_date', fn(SalesReceipt $r) => $r->check_date?->format('d.m.Y H:i') ?? '-')
-            ->addColumn('created_at', fn(SalesReceipt $r) => $r->created_at?->format('d.m.Y H:i') ?? '-')
-            ->addColumn(
-                'actions',
-                fn($r) =>
-                view('admin.actions', [
-                    'row' => $r,
-                    'routes' => ['show' => "/admin/sales-receipts/show/{$r->id}"],
-                ])->render()
-            )
-            ->rawColumns(['actions', 'user_info'])
-            ->make(true);
+
+    public $tries = 3;
+    public $timeout = 15;
+
+    public function __construct(
+        protected array $data,
+        protected array $user,
+        protected $promoCodeId = null,
+        protected $platformId,
+        protected $selectedPrizes = [],
+        protected $subPrizeId = null,
+        protected $manualPrizeCount = 0,
+        protected $promotionId,
+        protected $shopId = null
+    ) {
     }
-
-    public function winningByPromotion($promotionId)
+    public function middleware()
     {
-        $query = SalesReceipt::query()
-            ->select(
-                'sales_receipts.*',
-                'users_caches.phone',
-                'users_caches.name as user_name',
-                DB::raw('
-                SUM(CASE WHEN promo_code_users.prize_id IS NULL THEN 1 ELSE 0 END) AS manual_count,
-                SUM(CASE WHEN promo_code_users.prize_id IS NOT NULL THEN 1 ELSE 0 END) AS prize_count
-            ')
-            )
-            ->join('promo_code_users', 'promo_code_users.receipt_id', '=', 'sales_receipts.id')
-            ->leftJoin('users_caches', 'users_caches.user_id', '=', 'sales_receipts.user_id')
-            ->where('promo_code_users.promotion_id', $promotionId)
-            ->groupBy('sales_receipts.id', 'users_caches.phone', 'users_caches.name');
-        return DataTables::of($query)
-            ->addColumn('id', fn($r) => $r->id)
-            ->addColumn('user_info', function ($r) {
-                $name = $r->user_name ?? '-';
-                $phone = $r->phone ?? '-';
-                return "<div>{$name}</div><div style='color: #6c757d; font-size: 12px;'>{$phone}</div>";
-            })
-            ->addColumn('manual_count', fn($r) => (int) $r->manual_count)
-            ->addColumn('prize_count', fn($r) => (int) $r->prize_count)
-            ->addColumn('summa', fn($r) => number_format((float) str_replace(' ', '', $r->summa), 0, '.', ' '))
-            ->addColumn('check_date', fn($r) => $r->check_date ? date('d.m.Y H:i', strtotime($r->check_date)) : '-')
-            ->addColumn('created_at', fn($r) => $r->created_at ? date('d.m.Y H:i', strtotime($r->created_at)) : '-')
-            ->addColumn(
-                'actions',
-                fn($r) =>
-                view('admin.actions', [
-                    'row' => $r,
-                    'routes' => ['show' => "/admin/sales-receipts/show/{$r->id}"],
-                ])->render()
-            )
-            ->rawColumns(['actions', 'user_info']) // HTML chiqishi uchun
-            ->make(true);
+        return [new WithoutOverlapping("receipt_{$this->data['chek_id']}")];
     }
-    public function show($id)
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
     {
-        $receipt = SalesReceipt::query()
-            ->with([
-                'userCache:id,user_id,name,phone',
-                'products:id,receipt_id,name,count,summa,created_at',
-            ])
-            ->withCount([
-                'promoCodeUsers as manual_count' => fn($q) => $q->whereNull('prize_id'),
-                'promoCodeUsers as prize_count' => fn($q) => $q->whereNotNull('prize_id'),
-            ])
-            ->findOrFail($id);
-        $receipt->products()->delete();
+        $user = $this->user;
 
-        // O'zini receiptni o'chiramiz
-        $receipt->delete();
-        $formatted = [
-            'id' => $receipt->id,
-            'check_id' => $receipt->chek_id,
-            'company_name' => $receipt->name ?: '—',
-            'address' => $receipt->address ?: '—',
-            'nkm_number' => $receipt->nkm_number ?: '—',
-            'sn' => $receipt->sn ?: '—',
-            'check_date' => $receipt->check_date?->format('d.m.Y H:i') ?? '—',
-            'summa' => number_format($receipt->summa ?? 0, 2, '.', ' '),
-            'qqs_summa' => number_format($receipt->qqs_summa ?? 0, 2, '.', ' '),
-            'manual_count' => (int) $receipt->manual_count,
-            'prize_count' => (int) $receipt->prize_count,
-            'user' =>$receipt->userCache?->phone ?? $receipt->user_id ,
-            'products' => $receipt->products->map(fn($p) => [
-                'id' => $p->id,
-                'name' => $p->name,
-                'count' => (int) $p->count,
-                'summa' => number_format($p->summa ?? 0, 2, '.', ' '),
-                'created_at' => $p->created_at?->format('d.m.Y H:i') ?? '—',
-            ]),
-            'created_at' => $receipt->created_at?->format('d.m.Y H:i'),
+        $actions = [];
+        try {
+             DB::transaction(function () use ($user, $actions) {
+                $receipt = SalesReceipt::create([
+                    'user_id' => $user['id'],
+                    'name' => $this->data['name'],
+                    'chek_id' => $this->data['chek_id'],
+                    'nkm_number' => $this->data['nkm_number'],
+                    'sn' => $this->data['sn'],
+                    'check_date' => $this->data['check_date'],
+                    'qqs_summa' => $this->data['qqs_summa'],
+                    'summa' => $this->data['summa'],
+                    'lat' => $this->data['lat'] ?? null,
+                    'long' => $this->data['long'] ?? null,
+                    // "payment_type" => "naqt",
+                ]);
+                $actions[] = $this->buildAction(
+                    'vote',
+                    'scaner',
+                    $receipt->id,
+                    null,
+                    'Receipt created',
+                    null
+                );
+                Log::info('Receipts', ['receipts' => $receipt]);
+
+                $products = collect($this->data['products'])->map(function ($product) use ($receipt) {
+                    return [
+                        'receipt_id' => $receipt->id,
+                        'name' => $product['name'],
+                        'count' => $product['count'],
+                        'summa' => $product['summa'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                });
+
+                Log::info("receipt", ['receipt' => $receipt]);
+
+                SalesProduct::insert($products->toArray());
+                if ($this->manualPrizeCount > 0 || !empty($this->selectedPrizes)) {
+                    Log::info("Dispatching PromoCodeUserForReceiptJob", [
+                        'user_id' => $user['id'],
+                        'receipt_id' => $receipt['id'],
+                        'manual_prize_count' => $this->manualPrizeCount,
+                        'selected_prizes' => $this->selectedPrizes,
+                    ]);
+                    $this->dispatchPromoCodeJob($user['id'], $receipt['id'], $actions);
+                }
+                ;
+                if ($this->manualPrizeCount == 0 && empty($this->selectedPrizes)) {
+                    Log::info("Ball berildi");
+                    $this->giveEncouragementPoints($user['id'], $receipt['id'], $actions);
+                }
+                if (!empty($actions)) {
+                    Log::info('actions', ['data' => $actions]);
+                    try {
+                        PromoAction::insert($actions);
+                    } catch (\Throwable $e) {
+                        Log::error("PromoAction insert failed", ['error' => $e->getMessage()]);
+                    }
+                }
+            });
+
+        } catch (\Exception $e) {
+
+            Log::error("Error processing job: " . $e->getMessage());
+            Log::info("Selected prizes count", ['count' => count($this->selectedPrizes)]);
+            Log::info("Manual prize count", ['count' => $this->manualPrizeCount]);
+        }
+    }
+    private function giveEncouragementPoints($user_id, $receipt_id, array &$actions)
+    {
+        $settings = Cache::remember('platform_promo_settings', now()->addHours(1), function () {
+            return PlatformPromoSetting::default();
+        });
+        $promoball = $settings['scanner_points'];
+        UserPointBalance::firstOrCreate(
+            ['user_id' => $user_id],
+            ['balance' => 0]
+        );
+
+        // 2. So'ngra balansni oshirish
+        UserPointBalance::where('user_id', $user_id)->increment('balance', $promoball);
+        Log::info("promoball",['promo'=>$promoball]);
+
+        $actions[] = $this->buildAction(
+            'points_win',
+            'scaner_win',
+            $receipt_id,
+            null,
+            "Encouragement points: {$promoball}",
+            null
+        );
+        Log::info("promoball", ['promo' => $promoball, 'actions'=>$actions]);
+
+        // Log the awarded encouragement points
+        EncouragementPoint::create([
+            'user_id' => $user_id,
+            'scope_id' => $receipt_id,
+            'scope_type' => "App\\Models\\SalesReceipt",
+            'type' => "scanner",
+            'points' => $promoball,
+        ]);
+
+    }
+    private function dispatchPromoCodeJob(int $userId, int $receiptId, array &$actions): void
+    {
+        $now = now();
+        $baseData = [
+            'promo_code_id' => $this->promoCodeId,
+            'user_id' => $userId,
+            'platform_id' => $this->platformId,
+            'receipt_id' => $receiptId,
+            'sub_prize_id' => $this->subPrizeId,
+            'promotion_id' => $this->promotionId,
+            'created_at' => $now,
+            'updated_at' => $now,
         ];
 
-        $promoCodes = PromoCodeUser::with([
-            'prize',           // prize bilan bog‘liq ma’lumot
-            'promotion',
-            'platform',
-            'promotionProduct'        // promotionProduct bilan bog‘liq ma’lumot
-        ])
-            ->where('receipt_id', $id)
-            ->orderByDesc('created_at')
-            ->get()
-            ->map(function ($item): array {
-                return [
-                    'id' => $item->id,
-                    'promotion_id' => $item->promotion_id,
-                    'prize_name' => $item->prize?->name,            // nullable safe
-                    'created_at' => $item->created_at,
-                    'promotion_name' => $item->promotion?->name,    // nullable safe
-                    'platform_name' => $item->platform?->name,        // nullable safe
-                    'product_name' => $item->promotionProduct?->name, // nullable safe
-                    'user_id' => $item->user_id,
-                ];
-            });
+        $lastIdBeforeInsert = PromoCodeUser::max('id') ?? 0;
 
-        // Foydalanuvchiga berilgan rag‘bat ballari (agar mavjud bo‘lsa)
-        $encouragement = DB::table('encouragement_points')
-            ->select('points', 'created_at')->where('type','scanner')
-            ->where('scope_id', $id)
-            ->orderByDesc('created_at')
-            ->first();
+        // 1️⃣ Manual prizes
+        if ($this->manualPrizeCount > 0) {
+            $manualRows = array_map(fn() => array_merge($baseData, ['prize_id' => null]), range(1, $this->manualPrizeCount));
+            PromoCodeUser::insert($manualRows);
 
-        // Kvitansiyaga oid barcha harakatlar (PromoAction loglari)
-
-$actions = PromoAction::with([
-        'promotion:id,name',
-        'promoCode:id,code',
-        'prize:id,name',
-        'userCache:user_id,name,phone',
-        'platform:id,name',
-        'shop:name'
-    ])
-    ->where('receipt_id', $id)
-    ->orderByDesc('created_at')
-    ->get()
-            ->map(function ($item): array {
-                return [
-                    'id' => $item->id,
-                    'action' => $item->action,
-                    'status' => $item->status,
-                    'message' => $item->message??'-',
-                    'user' => $item->userCache?->phone  ?? $item->user_id,
-                    'prize_name' => $item->prize?->name,            // nullable safe
-                    'promotion_name' => $item->promotion?->name,    // nullable safe
-                    'platform_name' => $item->platform?->name,
-                    'shop_name' => $item->shop?->name ?? '-',
-                    'created_at' => $item->created_at,
-                ];
-            });
-
-        // JSON chiqish so‘ralgan bo‘lsa
-        if (request()->wantsJson()) {
-            return response()->json([
-                'receipt' => $receipt,
-                'promo_codes' => $promoCodes,
-                'encouragement' => $encouragement,
-                'actions' => $actions,
-            ]);
+            foreach ($manualRows as $_) {
+                $actions[] = $this->buildAction('manual_win', 'scaner_pending', $receiptId, null, 'Manual win recorded', $this->shopId);
+            }
         }
 
-        // Blade uchun ma’lumotlarni yuborish
-        return view('admin.sales_receipts.show', compact(
-            'receipt',
-            'products',
-            'promoCodes',
-            'encouragement',
-            'actions'
-        ));
+        // 2️⃣ Selected prizes
+        if (!empty($this->selectedPrizes)) {
+            $rows = $prizeIds = [];
+            foreach ($this->selectedPrizes as $item) {
+                $prize = $item['prize'] ?? null;
+                $entry = $item['entry'] ?? [];
+                if (!isset($prize['id']))
+                    continue;
+
+                $rows[] = array_merge($baseData, [
+                    'prize_id' => $prize['id'],
+                    'promotion_product_id' => $entry['product_id'] ?? null,
+                ]);
+                $prizeIds[] = $prize['id'];
+
+                $actions[] = $this->buildAction(
+                    'auto_win',
+                    'scaner_win',
+                    $receiptId,
+                    $prize['id'],
+                    "Prize auto-awarded: {$prize['name']}",
+                    $this->shopId ?? null
+                );
+            }
+
+            if ($rows) {
+                PromoCodeUser::insert($rows);
+
+                // Prize awarded quantity update
+                foreach (array_count_values($prizeIds) as $id => $count) {
+                    Prize::where('id', $id)->increment('awarded_quantity', $count);
+                }
+            }
+        }
+
+        // 3️⃣ Actions insert
+
+
+        // 4️⃣ Log inserted rows (optional, light logging)
+        Log::info('Inserted PromoCodeUsers', PromoCodeUser::where('id', '>', $lastIdBeforeInsert)->get(['id', 'prize_id', 'promotion_product_id'])->toArray());
+    }
+    private function buildAction(
+        string $action,
+        string $status,
+        ?int $receiptId = null,
+        ?int $prizeId = null,
+        ?string $message = null,
+        ?int $shopId = null
+    ): array {
+        return [
+            'promotion_id' => $this->promotionId,
+            'promo_code_id' => $this->promoCodeId,
+            'platform_id' => $this->platformId,
+            'receipt_id' => $receiptId,
+            'shop_id' => $shopId,
+            'user_id' => $this->user['id'],
+            'prize_id' => $prizeId,
+            'action' => $action,
+            'status' => $status,
+            'attempt_time' => now(),
+            'message' => $message,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
     }
 }

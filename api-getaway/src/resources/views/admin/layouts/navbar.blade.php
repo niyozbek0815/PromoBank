@@ -9,8 +9,8 @@
 
          <div class="navbar-brand flex-1 flex-lg-0">
              <a href="index.html" class="d-inline-flex align-items-center">
-                 <img src="{{ asset('adminpanel/assets/images/svg/logo_icon.svg') }}" alt="">
-                 <img src="{{ asset('adminpanel/assets/images/svg/logo_text_light.svg') }}"
+                 <img src="{{secure_asset('adminpanel/assets/images/svg/logo_icon.svg') }}" alt="">
+                 <img src="{{secure_asset('adminpanel/assets/images/svg/logo_text_light.svg') }}"
                      class="d-none d-sm-inline-block h-16px ms-3" alt="">
              </a>
          </div>
@@ -42,7 +42,7 @@
                              <button type="button"
                                  class="dropdown-item text-wrap h-100 align-items-start border-end-sm border-bottom p-3">
                                  <div>
-                                     <img src="{{ asset('adminpanel/assets/images/svg/1.svg') }}" class="h-40px mb-2"
+                                     <img src="{{secure_asset('adminpanel/assets/images/svg/1.svg') }}" class="h-40px mb-2"
                                          alt="">
                                      <div class="fw-semibold my-1">Customer data platform</div>
                                      <div class="text-muted">Unify customer data from multiple sources</div>
@@ -54,7 +54,7 @@
                              <button type="button"
                                  class="dropdown-item text-wrap h-100 align-items-start border-bottom p-3">
                                  <div>
-                                     <img src="{{ asset('adminpanel/assets/images/svg/2.svg') }}"" class="h-40px mb-2"
+                                     <img src="{{secure_asset('adminpanel/assets/images/svg/2.svg') }}"" class="h-40px mb-2"
                                          alt="">
                                      <div class="fw-semibold my-1">Data catalog</div>
                                      <div class="text-muted">Discover, inventory, and organize data assets</div>
@@ -420,7 +420,7 @@
                      @if (!empty($user['avatar']))
                          <img src="{{ $user['avatar'] }}" class="w-32px h-32px rounded-pill" alt="">
                      @else
-                         <img src="{{ asset('adminpanel/assets/images/user.jpg') }}"
+                         <img src="{{secure_asset('adminpanel/assets/images/user.jpg') }}"
                              class="w-32px h-32px rounded-pill" alt="">
                      @endif
                      <span class="status-indicator bg-success"></span>

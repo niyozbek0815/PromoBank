@@ -19,6 +19,7 @@ class HomeController extends Controller
         $request->merge(['lang' => $locale]);
         $mainResponse = $this->forwardRequest("POST", $this->url, "frontend/", $request);
         $promoResponse = $this->forwardRequest("POST", $this->promo, "frontend/", $request);
+        // dd($promoResponse->json());
         if (
             $mainResponse instanceof \Illuminate\Http\Client\Response
             && $promoResponse instanceof \Illuminate\Http\Client\Response

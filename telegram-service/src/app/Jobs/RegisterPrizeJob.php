@@ -55,7 +55,7 @@ class RegisterPrizeJob implements ShouldQueue
 
             // 🔹 Dinamik promo kod (hozircha misol uchun)
             $promoCode = $data['code'];
-            $video_url = $data['url'] ?? 'https://qadarun.com/namuna/video6.mp4';
+            $video_url = $data['url'] ?? 'https://promobank.io/namuna/video6.mp4';
             Log::info('🎥 RegisterPrizeJob ishga tushdi', ['chat_id' => $this->chatId, 'promo_code' => $promoCode]);
             // 🔹 Matnni o‘zgaruvchida saqlaymiz (HTML formatda)
             $translator = app(Translator::class);

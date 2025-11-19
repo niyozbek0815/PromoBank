@@ -13,10 +13,10 @@
             box-shadow: 0 0.5rem 1.2rem rgba(0, 128, 0, 0.2);
         }
     </style>
-    <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/form_layouts.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/bootstrap_multiselect.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/form_multiselect.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/select2.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/form_layouts.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/bootstrap_multiselect.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/form_multiselect.js') }}"></script>
     <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
     <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
     <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
@@ -25,9 +25,9 @@
     </script>
     <script src="https://unpkg.com/filepond-plugin-file-poster/dist/filepond-plugin-file-poster.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
-    <script src="{{ asset('adminpanel/assets/js/datatables.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/datatables.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/buttons.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/datatables_extension_buttons_init.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // ✅ CKEditor init

@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
 @section('title', "Promoaksiya Do'konlari uchun product qo'shish")
 @push('scripts')
-    <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/form_layouts.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/bootstrap_multiselect.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/form_multiselect.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/buttons.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/select2.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/form_layouts.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/bootstrap_multiselect.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/form_multiselect.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/buttons.min.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const promotionSelect = document.getElementById('promotionSelect');

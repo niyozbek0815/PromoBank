@@ -7,10 +7,10 @@
     <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
 
     {{-- JS Libraries --}}
-    <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/form_layouts.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/bootstrap_multiselect.js') }}"></script>
-    <script src="{{ asset('adminpanel/assets/js/form_multiselect.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/select2.min.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/form_layouts.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/bootstrap_multiselect.js') }}"></script>
+    <script src="{{secure_asset('adminpanel/assets/js/form_multiselect.js') }}"></script>
 
     {{-- FilePond Plugins --}}
     <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>

@@ -16,6 +16,7 @@ use App\Services\SecretNumberService;
 use App\Services\ViaPromocodeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class PromotionsController extends Controller
@@ -245,26 +246,20 @@ class PromotionsController extends Controller
         // $start = $start->copy()->subHours(5);
         // $end = $end->copy()->subHours(5);
         // Foydalanuvchi ballarini faqat shu oraliqda hisoblaymiz
+        $types = ['referral_start', 'referral_register', 'secret_number'];
+
         $usersPoints = EncouragementPoint::getUserTotalAndRank(
             $user['id'],
-            ['referral_start', 'referral_register', 'secret_number'],
+            $types,
             "Noma'lum user",
             $start,
             $end
         );
-        Log::info("ahowAjaxDAta", [
-            'user' => $user,
-            'all_points' => EncouragementPoint::getUserTotalPoints($user['id'], ['referral_start', 'referral_register', 'secret_number']),
-            'user_poinst' => $usersPoints,
-            'hour'=>$hour,
-            "minut"=>$minute,
-            'now'=>$now,
-            'start'=>$start,
-            'end'=>$end
-        ]);
+
+
         return response()->json(
             data: [
-                'all_points'=> EncouragementPoint::getUserTotalPoints($user['id'], ['referral_start', 'referral_register', 'secret_number']),
+                'all_points'=> EncouragementPoint::getUserTotalPoints($user['id'], $types),
                 'today_poinst'=>$usersPoints['total_points'],
             ]
         );

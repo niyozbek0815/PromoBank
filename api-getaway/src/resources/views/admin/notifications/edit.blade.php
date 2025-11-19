@@ -51,8 +51,8 @@
         }
     </style>
     {{-- === Select2 kutubxonalari === --}}
-    <script src="{{ asset('adminpanel/assets/js/select2.min.js') }}"></script>
-    <link href="{{ asset('adminpanel/assets/css/select2.min.css') }}" rel="stylesheet" />
+    <script src="{{secure_asset('adminpanel/assets/js/select2.min.js') }}"></script>
+    <link href="{{secure_asset('adminpanel/assets/css/select2.min.css') }}" rel="stylesheet" />
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

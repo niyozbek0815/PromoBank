@@ -138,7 +138,7 @@ class OnTvVaucherController extends Controller
             return response()->json([
                 'is_new' => false,
                 'code' => null,
-                'url' => 'https://qadarun.com/namuna/video6.mp4'
+                'url' => 'https://promobank.io/namuna/video6.mp4'
             ]);
         }
 
@@ -163,7 +163,7 @@ class OnTvVaucherController extends Controller
         return response()->json([
             'is_new' => true,
             'code' => $voucher->code,
-            'url' => 'https://qadarun.com/namuna/video6.mp4'
+            'url' => 'https://promobank.io/namuna/video6.mp4'
         ]);
     }
 }

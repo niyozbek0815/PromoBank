@@ -7,71 +7,12 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d
-    depends_on:
-      - api_app
-      - auth_app
-      - promo_app
-      - media_app
-      - telegram_app
-      - game_app
-      - web_app
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro         
+      - ./api-getaway/src/public:/var/www/api-getaway/src/public:ro
     networks:
       - promobank
 
-  api_app:
-    build:
-      context: ./api-getaway/php
-    container_name: api_app
-    networks:
-      - promobank
-
-  auth_app:
-    build:
-      context: ./auth-service/php
-    container_name: auth_app
-    networks:
-      - promobank
-
-  promo_app:
-    build:
-      context: ./promo-service/php
-    container_name: promo_app
-    mem_limit: 1024m
-    mem_reservation: 512m
-    networks:
-      - promobank
-
-  media_app:
-    build:
-      context: ./media-service/php
-    container_name: media_app
-    networks:
-      - promobank
-  notification_app:
-    build:
-      context: ./notification-service/php
-    container_name: notification_app
-    networks:
-      - promobank
-  telegram_app:
-    build:
-      context: ./telegram-service/php
-    container_name: telegram_app
-    networks:
-      - promobank
-  game_app:
-    build:
-      context: ./game-service/php
-    container_name: game_app
-    networks:
-      - promobank
-  web_app:
-    build:
-      context: ./web-service/php
-    container_name: web_app
-    networks:
-      - promobank
 networks:
   promobank:
     external: true

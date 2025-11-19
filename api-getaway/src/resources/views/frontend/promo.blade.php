@@ -9,7 +9,7 @@
     <section class="banner">
         <div class="content">
             <div class="container">
-                <img src="{{ $promotion['banner'] ?? asset('assets/image/default-banner.jpg') }}"
+                <img src="{{ $promotion['banner'] ??secure_asset('assets/image/default-banner.jpg') }}"
                      alt="{{ $promotion['name'] }}" class="banner-img">
             </div>
             <div class="container-sm">
@@ -40,7 +40,7 @@
 
                     <div class="company-card">
                         <div class="company-header">
-                            <img src="{{ $promotion['company']['logo']['url'] ?? asset('assets/image/default-logo.png') }}"
+                            <img src="{{ $promotion['company']['logo']['url'] ??secure_asset('assets/image/default-logo.png') }}"
                                  alt="Company Logo" class="company-logo">
                             <div class="company-details">
                                 <h5 class="company-name">

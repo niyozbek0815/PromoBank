@@ -25,23 +25,29 @@ class GameAddPromoballJob implements ShouldQueue
         protected $promoball,
         protected $session,
         protected $user_id,
-    )
-    {}
+    ) {
+    }
 
     /**
      * Execute the job.
      */
     public function handle(): void
     {
-        DB::transaction(function ()  {
+        Log::info('GameAddPromoballJob data', ["session_id" => $this->session, "user_id" => $this->user_id]);
+
+        DB::transaction(function () {
             $balance = UserPointBalance::firstOrCreate(
                 ['user_id' => $this->user_id],
                 ['balance' => 0]
             );
             $balance->increment('balance', $this->promoball);
-           $en= EncouragementPoint::create([
+            $en = EncouragementPoint::create([
                 'user_id' => $this->user_id,
-                'scope_type' => self::class,
+                'scope_type' => "App\\Models\\GameSession"
+
+
+                ,
+            ,
                 'scope_id' => $this->session,
                 'type' => 'game',
                 'points' => $this->promoball,
