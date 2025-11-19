@@ -18,9 +18,9 @@ class SocialMedia
         'instagram' => 'Instagram',
         'facebook' => 'Facebook',
         'youtube' => 'YouTube',
-        'appstore' => 'App Store',
-        'googleplay' => 'Google Play',
-        // 'telegram' => 'Telegram kanal',
+        // 'appstore' => 'App Store',
+        // 'googleplay' => 'Google Play',
+        'telegram' => 'Telegram',
     ];
 
     public function __construct(
@@ -36,27 +36,20 @@ class SocialMedia
         $messageId = $update->getCallbackQuery()?->getMessage()?->getMessageId();
 
         // Avval cache'dan olishga urinib ko‘ramiz
-        $cacheKey = $this->prefix . $chatId;
-        $links = Cache::store('redis')->get($cacheKey);
+Cache::store('redis')->forget($this->prefix);
+$links = Cache::store('redis')->remember($this->prefix, now()->addHours(6), function () use ($baseUrl) {
+    $response = $this->forwarder->forward('POST', $baseUrl, '/telegram/social_links', []);
 
-        if (!$links) {
-            $response = $this->forwarder->forward('POST', $baseUrl, '/telegram/social_links', []);
+    if (!$response instanceof Response || !$response->successful()) {
+        Log::error('Social links olishda xatolik', [
+            'status' => $response instanceof Response ? $response->status() : null,
+            'body'   => $response instanceof Response ? $response->body()   : null,
+        ]);
+        return [];
+    }
 
-            if (!$response instanceof Response || !$response->successful()) {
-                Log::error('Social links olishda xatolik', [
-                    'status' => $response instanceof Response ? $response->status() : null,
-                    'body' => $response instanceof Response ? $response->body() : null,
-                ]);
-                return;
-            }
-
-            $links = $response->json() ?? [];
-
-            // Cache’ga saqlaymiz (masalan 6 soat)
-            Cache::store('redis')->put($cacheKey, json_encode($links), now()->addHours(6));
-        } else {
-            $links = json_decode($links, true);
-        }
+    return $response->json() ?? [];
+});
 
         Log::info("Social links", ['data' => $links]);
 

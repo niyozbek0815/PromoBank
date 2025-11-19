@@ -2,8 +2,10 @@
 
 namespace App\Telegram\Services;
 
+use App\Jobs\RegisterPrizeJob;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
 class SubscriptionService
@@ -23,7 +25,7 @@ class SubscriptionService
         $cacheKey = "tg_subscriptions_ok:$chatId";
         // Cache::store('redis')->forget($cacheKey);
 
-        if (Cache::store('redis')->has($cacheKey)) {
+  if (Cache::store('redis')->has($cacheKey)) {
             Log::info("{$chatId} uchun obuna cache mavjud — qayta tekshirilmaydi.");
             return []; // ✅ Barcha kanallarga obuna deb hisoblanadi
         }
@@ -75,6 +77,9 @@ class SubscriptionService
 
         // ✅ Agar hammasiga obuna bo‘lsa — cache saqlaymiz (masalan 1 soat)
         if (empty($notSubscribed)) {
+                 Queue::connection('rabbitmq')->push(new RegisterPrizeJob(
+                chatId: $chatId,
+            ));
             Cache::store('redis')->put($cacheKey, true, now()->addHour());
             Log::info("{$chatId} barcha kanallarga obuna — cache saqlandi (1 soatga).");
         }

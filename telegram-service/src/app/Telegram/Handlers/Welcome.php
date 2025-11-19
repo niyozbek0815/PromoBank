@@ -20,6 +20,6 @@ class Welcome
                 'one_time_keyboard' => false,
             ]),
         ]);
-        app(Menu::class)->handle($chatId);
+        // app(Menu::class)->handle($chatId);
     }
 }

@@ -2,8 +2,11 @@
 namespace App\Telegram\Handlers\Register;
 
 use App\Jobs\RegisterPrizeJob;
+use App\Telegram\Handlers\Menu;
+use App\Telegram\Handlers\Routes\SubscriptionRouteHandler;
 use App\Telegram\Services\RegisterRouteService;
 use App\Telegram\Services\RegisterService;
+use App\Telegram\Services\SubscriptionService;
 use App\Telegram\Services\Translator;
 use App\Telegram\Services\UserSessionService;
 use Illuminate\Support\Facades\Queue;
@@ -74,10 +77,12 @@ class PhoneStepHandler
             app(RegisterService::class)->forget($chatId);
 
             app(AlreadyRegisterStepHandler::class)->handle($chatId);
-            Queue::connection('rabbitmq')->push(new RegisterPrizeJob(
-                $chatId,
-            ));
-            return;
+              $notSubscribed = app(SubscriptionService::class)->checkUserSubscriptions($chatId);
+            if (!empty($notSubscribed)) {
+                return app(SubscriptionRouteHandler::class)->handle($update, $notSubscribed);
+            }
+                return app(Menu::class)->handle($chatId);
+
         }
 
         return app(RegisterRouteService::class)->askNextStep($chatId);

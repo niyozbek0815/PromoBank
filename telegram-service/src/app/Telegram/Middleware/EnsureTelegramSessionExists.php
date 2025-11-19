@@ -2,6 +2,7 @@
 
 namespace App\Telegram\Middleware;
 
+use App\Telegram\Handlers\Menu;
 use App\Telegram\Handlers\Routes\AuthenticatedRouteHandler;
 use App\Telegram\Handlers\Routes\RegisterRouteHandler;
 use App\Telegram\Handlers\Routes\StartRouteHandler;
@@ -31,10 +32,20 @@ if ($message) {
     }
 }
         // Chat ID ni xavfsiz olishs
-        $chatId =
-            $message?->getChat()?->getId()
-            ?? $callback?->getMessage()?->getChat()?->getId()
-            ?? null;
+  // Chat ID ni xavfsiz olish (Message yoki Collection bo‘lishi mumkin)
+$chatId = null;
+
+if ($message instanceof \Telegram\Bot\Objects\Message) {
+    $chatId = $message->getChat()->getId();
+} elseif ($message instanceof \Illuminate\Support\Collection) {
+    // Telegram SDK ba’zan message ni array sifatida beradi
+    $chatId = data_get($message, 'chat.id');
+}
+
+// Callback orqali olish (fallback)
+if (!$chatId && $callback) {
+    $chatId = $callback->getMessage()?->getChat()?->getId();
+}
 
         $getData = $callback?->getData() ?? null;
 Log::info("EnsureTelegramSessionExists chatId: $chatId, messageText: $messageText, getData: $getData");
@@ -81,10 +92,11 @@ Log::info("EnsureTelegramSessionExists chatId: $chatId, messageText: $messageTex
 
                     if ($pending) {
                         $updateObject = new \Telegram\Bot\Objects\Update($pending);
-                        return app(AuthenticatedRouteHandler::class)->handle($updateObject);
+                        return app(Menu::class)->handle($chatId);
+                        // return app(AuthenticatedRouteHandler::class)->handle($updateObject);
                     }
 
-                    return response()->noContent();
+                        return app(Menu::class)->handle($chatId);
                 }
 
                 return app(SubscriptionRouteHandler::class)->handle($update, $notSubscribed, true);

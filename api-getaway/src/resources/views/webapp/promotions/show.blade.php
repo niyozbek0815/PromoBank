@@ -250,19 +250,14 @@
                             <h3 class="media-title mb-0">{{ __('messages.offer') }}</h3>
                         </div>
 
-                        @if (!empty($promotion['offer']))
-                            <a href="{{ $promotion['offer'] }}" target="_blank"
+
+                            <a href="https://docs.google.com/document/d/1kUNYpFJ6lC-yeNw1CTaIzaHhygeNegoD/edit" target="_blank"
                                 class="offer-link d-flex align-items-center gap-2"
                                 title="{{ __('messages.read_offer') ?? 'O‘qish' }}">
                              <i class="fa-solid fa-eye"></i>
                                 <span>{{ __('messages.read_offer') ?? 'O‘qish' }}</span>
                             </a>
-                        @else
-                            <span class="text-muted d-flex align-items-center gap-2">
-                                <i class="fa-regular fa-file-lines"></i>
-                                {{ __('messages.no_offer') ?? 'Mavjud emas' }}
-                            </span>
-                        @endif
+
                     </div>
                 </div>
             @endif

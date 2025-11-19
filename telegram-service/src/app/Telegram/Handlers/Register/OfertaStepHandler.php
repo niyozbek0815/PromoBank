@@ -2,7 +2,10 @@
 namespace App\Telegram\Handlers\Register;
 
 use App\Jobs\RegisterPrizeJob;
+use App\Telegram\Handlers\Menu;
+use App\Telegram\Handlers\Routes\SubscriptionRouteHandler;
 use App\Telegram\Services\RegisterService;
+use App\Telegram\Services\SubscriptionService;
 use App\Telegram\Services\Translator;
 use Illuminate\Support\Facades\Queue;
 use Telegram\Bot\Laravel\Facades\Telegram;
@@ -24,7 +27,7 @@ class OfertaStepHandler
                     [
                         [
                             'text' => $this->translator->get($chatId, 'offer_button'),
-                            'url'  => 'https://example.com',
+                            'url'  => 'https://docs.google.com/document/d/1kUNYpFJ6lC-yeNw1CTaIzaHhygeNegoD/edit',
                         ],
                     ],
                     [
@@ -62,11 +65,11 @@ class OfertaStepHandler
                 'state' => 'complete',
             ]);
             app(RegisterService::class)->finalizeUserRegistration($update);
-            Queue::connection('rabbitmq')->push(new RegisterPrizeJob(
-                $chatId,
-            ));
-            return;
-
+              $notSubscribed = app(SubscriptionService::class)->checkUserSubscriptions($chatId);
+            if (!empty($notSubscribed)) {
+                return app(SubscriptionRouteHandler::class)->handle($update, $notSubscribed);
+            }
+                return app(Menu::class)->handle($chatId);
         }
         Telegram::sendMessage([
             'chat_id' => $chatId,

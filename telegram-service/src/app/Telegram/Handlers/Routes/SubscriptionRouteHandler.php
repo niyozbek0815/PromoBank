@@ -57,6 +57,8 @@ class SubscriptionRouteHandler
         }
 
         // --- 3) Hech qanday subscription muammosi yo'q — davom et
-        return app(AuthenticatedRouteHandler::class)->handle($update);
+          return      app(Menu::class)->handle($chatId);
+
+        // return app(AuthenticatedRouteHandler::class)->handle($update);
     }
 }

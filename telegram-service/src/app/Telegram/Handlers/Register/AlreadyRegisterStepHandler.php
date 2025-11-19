@@ -24,7 +24,7 @@ class AlreadyRegisterStepHandler
             ]),
         ]);
 
-        app(Menu::class)->handle($chatId);
+        // app(Menu::class)->handle($chatId);
     }
 
 }
