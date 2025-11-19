@@ -67,7 +67,8 @@ class RegisterPrizeJob implements ShouldQueue
             // 🔹 Video bilan birga caption jo‘natish
             Telegram::sendVideo([
                 'chat_id' => $this->chatId,
-                'video' => InputFile::create($video_url),
+                // 'video' => InputFile::create($video_url),
+                'photo' => InputFile::create($video_url),  // Bu yerda video emas, rasm
                 'caption' => $text,
                 'parse_mode' => 'HTML',
             ]);

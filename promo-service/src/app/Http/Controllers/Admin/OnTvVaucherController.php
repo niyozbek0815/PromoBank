@@ -67,7 +67,7 @@ class OnTvVaucherController extends Controller
         ]);
     }
 
-       public function import(Request $request)
+    public function import(Request $request)
     {
         $validated = $request->validate([
             'file' => 'required|file|mimes:xlsx,xls|max:5120',
@@ -163,7 +163,7 @@ class OnTvVaucherController extends Controller
         return response()->json([
             'is_new' => true,
             'code' => $voucher->code,
-            'url' => 'https://promobank.io/namuna/video6.mp4'
+            'url' => 'https://promobank.io/namuna/ontv.jpg'
         ]);
     }
 }

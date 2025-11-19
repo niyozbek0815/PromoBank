@@ -237,13 +237,13 @@ class Translator
             'en' => '📰 News',
         ],
         'menu_social' => [
-            'uz' => '🌐 Tarmoqlar',
-            'ru' => '🌐 Сети',
-            'kr' => '🌐 Тармоқлар',
+            'uz' => '🌐 Bizning ijtimoiy tarmoqlar',
+            'ru' => '🌐 Наши социальные сети',
+            'kr' => '🌐 Бизнинг ижтимоий тармоқлар',
             'en' => '🌐 Social Networks',
         ],
         'menu_profile' => [
-            'uz' => '👤 Profil Sozlamalari',
+            'uz' => '👤 Profil ma‘lumotlari',
             'ru' => '👤 Настройки профиля',
             'kr' => '👤 Профил Созламалари',
             'en' => '👤 Profile Settings',
@@ -365,20 +365,20 @@ class Translator
             'en' => '✅ Check',
         ],
         'menu_referral' => [
-            'uz' => "🤝 Do'stni taklif qilish",
-            'ru' => "🤝 Пригласить друга",
-            'kr' => "🤝 Дўстни таклиф қилиш",
-            'en' => "🤝 Invite a Friend",
+            'uz' => "🤝 Qo‘shimcha ball yig‘ish",
+            'ru' => "🤝 Дополнительные баллы",
+            'kr' => "🤝 Қўшимча балл йиғиш",
+            'en' => "🤝 Extra points",
         ],
         'refferral_text' => [
             'uz' => "<b>🎉 PROMOBANK — Sizning yutug‘ingiz shu yerda!</b> 💰🔥
 
-PromoBank — bu O‘zbekiston bo‘ylab eng katta yutuqli platforma!
-Har bir ishtirokchi <b>pul mukofotlari</b> 🏆, <b>maishiy texnikalar</b> 🏠 va <b>avtomobillar</b> 🚗 yutib olishi mumkin!
+PromoBank — bu O‘zbekiston bo‘ylab barcha eng katta aksiyalarni o‘zida jamlagan yutuqli platforma!
+Har bir ishtirokchi ushbu platformada o‘tkazilayotgan barcha aksiyalarda qatnashishi mumkin!
 
 ❗️Faqat ro‘yxatdan o‘ting va omadni sinab ko‘ring! 😍
 
-Do‘stlaringizni taklif qiling va har bir taklif uchun bonus oling! 💎
+Do‘stlaringizni taklif qiling va har bir taklif uchun bonus oling!
 
 Ushbu havolaga kirib Telegram botda ro‘yxatdan o‘ting 👇
 👉 ::refferral_link
@@ -387,12 +387,12 @@ Ushbu havolaga kirib Telegram botda ro‘yxatdan o‘ting 👇
 
             'ru' => "<b>🎉 PROMOBANK — Ваш шанс выиграть прямо здесь!</b> 💰🔥
 
-PromoBank — крупнейшая призовая платформа по всему Узбекистану!
-Каждый участник может выиграть <b>денежные призы</b> 🏆, <b>бытовую технику</b> 🏠 и <b>автомобили</b> 🚗!
+PromoBank — успешная платформа для проведения акций, объединяющая все крупнейшие акции Узбекистана!
+Каждый участник может принять участие во всех акциях, проводимых на этой платформе!
 
 ❗️Просто зарегистрируйтесь и испытайте удачу! 😍
 
-Приглашайте друзей и получайте бонус за каждого приглашённого! 💎
+Приглашайте друзей и получайте бонус за каждого приглашённого!
 
 Перейдите по ссылке и зарегистрируйтесь в Telegram-боте 👇
 👉 ::refferral_link
@@ -401,12 +401,12 @@ PromoBank — крупнейшая призовая платформа по вс
 
             'kr' => "<b>🎉 PROMOBANK — Сизнинг ютуғингиз шу ерда!</b> 💰🔥
 
-PromoBank — бу Ўзбекистон бўйлаб энг катта ютуқли платформа!
-Ҳар бир иштирокчи <b>пул мукофотлари</b> 🏆, <b>маиший техникалар</b> 🏠 ва <b>автомобиллар</b> 🚗 ютиб олиши мумкин!
+PromoBank — бу Ўзбекистон бўйлаб барча енг катта акцияларни ўзида жамлаган ютуқли платформа!
+Ҳар бир иштирокчи ушбу платформада ўтказилаётган барча акцияларда қатнашиши мумкин!
 
 ❗️Фақат рўйхатдан ўтинг ва омадингизни синаб кўринг! 😍
 
-Дўстларингизни таклиф қилинг ва ҳар бир таклиф учун бонус олинг! 💎
+Дўстларингизни таклиф қилинг ва ҳар бир таклиф учун бонус олинг!
 
 Қуйидаги ҳавола орқали Telegram ботда рўйхатдан ўтинг 👇
 👉 ::refferral_link
@@ -415,12 +415,12 @@ PromoBank — бу Ўзбекистон бўйлаб энг катта ютуқ�
 
             'en' => "<b>🎉 PROMOBANK — Your winnings start here!</b> 💰🔥
 
-PromoBank is the largest reward platform across Uzbekistan!
-Every participant has a chance to win <b>cash prizes</b> 🏆, <b>home appliances</b> 🏠, and <b>cars</b> 🚗!
+PromoBank is a successful promotional platform that brings together all of Uzbekistan's largest promotions!
+Every participant can take part in all promotions held on this platform!
 
 ❗️Just register and try your luck! 😍
 
-Invite your friends and earn a bonus for each one you bring! 💎
+Invite your friends and earn a bonus for each one you bring!
 
 Join through this link and register in our Telegram bot 👇
 👉 ::refferral_link
@@ -460,43 +460,47 @@ Join through this link and register in our Telegram bot 👇
         //     "Now you can also use the referral system to invite your friends and earn promoballs! 💎",
         // ],
         'referral_start_text' => [
-            'uz' => "🎉 Ajoyib yangilik! Siz taklif qilgan foydalanuvchi ::username ro‘yxatdan o‘tdi 🎊\n" .
-                "Sizning hisobingizga ::promoball promo ball qo‘shildi.",
+            'uz' => "🎉 Ajoyib yangilik! Siz taklif qilgan foydalanuvchi ::username botga tashrif buyurdi 🎊\n" .
+                "Buning evaziga sizga ::promoball ball berildi.\n".
+                "Agar ushbu foydalanuvchi to‘liq ro‘yxatdan o‘tsa sizga qo‘shimcha yana 2 ball beriladi!",
 
-            'ru' => "🎉 Отличная новость! Пользователь ::username, которого вы пригласили, зарегистрировался 🎊\n" .
-                "На ваш счёт добавлено ::promoball промобаллов.",
+            'ru' => "🎉 Отличные новости! Приглашённый вами пользователь ::username посетил бота 🎊\n" .
+                "Взамен вы получили баллы ::promoball \n".
+                "Если этот пользователь полностью зарегистрируется, вы получите 2 дополнительных балла!",
 
-            'kr' => "🎉 Ажойиб янгилик! Сиз таклиф қилган фойдаланувчи ::username рўйхатдан ўтди 🎊\n" .
-                "Ҳисобингизга ::promoball промо балл қўшилди.",
+            'kr' => "🎉 Ажойиб янгилик! Сиз таклиф қилган фойдаланувчи ::username ботга ташриф буюрди 🎊\n" .
+                "Бунинг евазига сизга ::promoball балл қўшилди.\n".
+                "Агар ушбу фойдаланувчи тўлиқ рўйхатдан ўтса сизга қўшимча яна 2 балл берилади!",
 
-            'en' => "🎉 Great news! The user ::username you invited has registered 🎊\n" .
-                "::promoball promo points have been added to your account.",
+            'en' => "🎉 Great news! The user you invited ::username visited the bot 🎊\n" .
+                "In return, you were awarded ::promoball points.".
+                "If this user fully registers, you will receive 2 additional points!",
         ],
         'referral_register_text' => [
             'uz' => "🎉 Ajoyib yangilik! Siz taklif qilgan foydalanuvchi ::username ro‘yxatdan o‘tdi 🎊\n" .
-                "Sizning hisobingizga ::promoball promo ball qo‘shildi.",
+                "Sizning hisobingizga ::promoball ball qo‘shildi.",
 
             'ru' => "🎉 Отличная новость! Пользователь ::username, которого вы пригласили, зарегистрировался 🎊\n" .
-                "На ваш счёт добавлено ::promoball промобаллов.",
+                "На ваш счёт добавлено ::promoball баллов.",
 
             'kr' => "🎉 Ажойиб янгилик! Сиз таклиф қилган фойдаланувчи ::username рўйхатдан ўтди 🎊\n" .
-                "Ҳисобингизга ::promoball промо балл қўшилди.",
+                "Сизнинг ҳисобингизга ::promoball балл қўшилди.",
 
             'en' => "🎉 Great news! The user ::username you invited has registered 🎊\n" .
-                "::promoball promo points have been added to your account.",
+                "::promoball points have been added to your account.",
         ],
         'ontv_text' => [
             'uz' => "<b>🎉 PromoBank'ga xush kelibsiz!</b>
 
 Siz birinchi marta bizga qo‘shildingiz 🎊
-Shu munosabat bilan biz sizga <b>ONTV</b> platformasida foydalanish uchun <b>bepul PROMOKOD</b> taqdim etamiz:
+Shu munosabat bilan biz sizga <b>ONTV</b> platformasida foydalanish uchun 1 oylik <b>bepul PROMOKOD</b> taqdim etamiz:
 
 🎁 <code>::promoCode</code>
 
 📲 <b>Batafsil ma'lumot uchun:</b>
 👉 <a href=\"https://ontv.uz\">ONTV platformasiga o'tish</a>
-👉 <a href=\"https://t.me/musofir_shou\">Telegram kanalimizi kuzating</a>
-👉 <a href=\"https://promobank.uz\">Promobank rasmiy sayti</a>
+👉 <a href=\"https://ontv.uz\">Telegram kanal</a>
+👉 <a href=\"https://t.me/promobank_uz\">Promobank rasmiy kanali</a>
 
 <b>🎬 Har kuni yangi imkoniyatlar sizni kutmoqda!</b>",
 
@@ -509,8 +513,8 @@ Shu munosabat bilan biz sizga <b>ONTV</b> platformasida foydalanish uchun <b>bep
 
 📲 <b>Батафсил маълумот учун:</b>
 👉 <a href=\"https://ontv.uz\">ONTV платформасига ўтиш</a>
-👉 <a href=\"https://t.me/musofir_shou\">Телеграм каналимизга обуна бўлинг</a>
-👉 <a href=\"https://promobank.uz\">ПромоБанк расмий сайти</a>
+👉 <a href=\"https://ontv.uz\">Телеграм каналимиз</a>
+👉 <a href=\"https://t.me/promobank_uz\">ПромоБанк расмий канали</a>
 
 <b>🎬 Ҳар куни янги имкониятлар сиз учун кутмоқда!</b>",
 
@@ -523,8 +527,8 @@ Shu munosabat bilan biz sizga <b>ONTV</b> platformasida foydalanish uchun <b>bep
 
 📲 <b>Подробнее:</b>
 👉 <a href=\"https://ontv.uz\">Перейти на платформу ONTV</a>
-👉 <a href=\"https://t.me/musofir_shou\">Следите за нашим каналом Telegram</a>
-👉 <a href=\"https://promobank.uz\">Официальный сайт Promobank</a>
+👉 <a href=\"https://ontv.uz\">Следите за нашим каналом Telegram</a>
+👉 <a href=\"https://t.me/promobank_uz\">Официальный канал Promobank</a>
 
 <b>🎬 Каждый день новые возможности ждут вас!</b>",
 
@@ -537,8 +541,8 @@ As a welcome gift, we provide you with a <b>free PROMOCODE</b> for the <b>ONTV</
 
 📲 <b>For more information:</b>
 👉 <a href=\"https://ontv.uz\">Visit ONTV platform</a>
-👉 <a href=\"https://t.me/musofir_shou\">Follow our Telegram channel</a>
-👉 <a href=\"https://promobank.uz\">Official Promobank website</a>
+👉 <a href=\"https://ontv.uz\">Follow our Telegram channel</a>
+👉 <a href=\"https://t.me/promobank_uz\">Official Promobank channel</a>
 
 <b>🎬 Every day new opportunities await you!</b>",
         ],
