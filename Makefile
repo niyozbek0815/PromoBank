@@ -287,3 +287,16 @@ fix-laravel-permissions:
 				php artisan route:clear"; \
 		done; \
 	fi
+# Restart all Laravel queue workers (queue:restart)
+.PHONY: queue-restart
+queue-restart:
+	@if [ -z "$(s)" ]; then \
+		SERVICES="$(SERVICES)"; \
+	else \
+		SERVICES="$(s)"; \
+	fi; \
+	for service in $$SERVICES; do \
+		APP_CONTAINER="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
+		echo "♻️ Restarting queue workers in $$service (container: $$APP_CONTAINER)..."; \
+		docker compose -f $$service/docker-compose.yml exec -T $$APP_CONTAINER php artisan queue:restart; \
+	done
