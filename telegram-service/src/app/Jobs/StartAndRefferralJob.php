@@ -112,10 +112,20 @@ class StartAndRefferralJob implements ShouldQueue
                 $messageTemplate
             );
 
-            Telegram::sendMessage([
-                'chat_id' => $this->referrerId,
-                'text' => $message,
-            ]);
+
+            try {
+                Telegram::sendMessage([
+                    'chat_id' => $this->referrerId,
+                    'text' => $message,
+                ]);
+            } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
+                if (str_contains($e->getMessage(), 'bot was blocked by the user')) {
+                    Log::warning("User $this->referrerId blocked the bot, skipping message.");
+                    // Shu foydalanuvchidan keyin xabar yubormaslik uchun flag qo‘yish mumkin
+                } else {
+                    throw $e;
+                }
+            }
             $res = $forwarder->forward(
                 'POST',
                 config('services.urls.promo_service'),

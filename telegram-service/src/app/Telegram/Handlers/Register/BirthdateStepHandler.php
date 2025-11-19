@@ -10,7 +10,8 @@ use Telegram\Bot\Objects\Update;
 class BirthdateStepHandler
 {
     public function __construct(protected Translator $translator)
-    {}
+    {
+    }
 
     public function ask($chatId)
     {
@@ -21,9 +22,9 @@ class BirthdateStepHandler
     {
         if (preg_match('/^(\d{1,2})[.,\s\/\\-]?(\d{1,2})[.,\s\/\\-]?(\d{4})$/', trim($text), $matches)) {
             [$day, $month, $year] = [(int) $matches[1], (int) $matches[2], (int) $matches[3]];
-            $minYear              = 1900;
-            $maxYear              = (int) now()->subYears(5)->format('Y');
-            if (! checkdate($month, $day, $year) || $year < $minYear || $year > $maxYear) {
+            $minYear = 1900;
+            $maxYear = (int) now()->subYears(5)->format('Y');
+            if (!checkdate($month, $day, $year) || $year < $minYear || $year > $maxYear) {
                 return [false, $this->translator->get($chatId, 'invalid_birthdate_format')];
             }
             return [true, sprintf('%04d-%02d-%02d', $year, $month, $day)];
@@ -34,19 +35,19 @@ class BirthdateStepHandler
     public function handle(Update $update)
     {
         $message = $update->getMessage();
-        $chatId  = $message?->getChat()?->getId();
-        $text    = $message?->getText();
+        $chatId = $message?->getChat()?->getId();
+        $text = $message?->getText();
 
         [$valid, $result] = $this->validateAndNormalizeBirthdate($text, $chatId);
 
-        if (! $valid) {
+        if (!$valid) {
             $this->sendMessage($chatId, $result);
             return;
         }
 
         app(RegisterService::class)->mergeToCache($chatId, [
             'birthdate' => $result,
-            'state'     => 'waiting_for_offer',
+            'state' => 'waiting_for_offer',
         ]);
 
         $this->sendMessage($chatId, $this->translator->get($chatId, 'birthdate_received'));
@@ -56,12 +57,12 @@ class BirthdateStepHandler
     public function handleUpdate(Update $update)
     {
         $message = $update->getMessage();
-        $chatId  = $message?->getChat()?->getId();
-        $text    = $message?->getText();
+        $chatId = $message?->getChat()?->getId();
+        $text = $message?->getText();
 
         [$valid, $result] = $this->validateAndNormalizeBirthdate($text, $chatId);
 
-        if (! $valid) {
+        if (!$valid) {
             $this->sendMessage($chatId, $result);
             return;
         }
@@ -69,14 +70,14 @@ class BirthdateStepHandler
         $this->sendMessage($chatId, $this->translator->get($chatId, 'birthdate_received'));
         app(UserUpdateService::class)->mergeToCache($chatId, [
             'birthdate' => $result,
-            'state'     => 'complete',
+            'state' => 'complete',
         ]);
         app(UserUpdateService::class)->finalizeUserRegistration($update);
         $replyMarkup = [
-            'keyboard'          => [
+            'keyboard' => [
                 [['text' => $this->translator->get($chatId, 'open_main_menu')]],
             ],
-            'resize_keyboard'   => true,
+            'resize_keyboard' => true,
             'one_time_keyboard' => false,
         ];
         $this->sendMessage($chatId, $this->translator->get($chatId, 'profile_update_success'), $replyMarkup);
@@ -86,7 +87,7 @@ class BirthdateStepHandler
     {
         $params = [
             'chat_id' => $chatId,
-            'text'    => $text,
+            'text' => $text,
         ];
         if ($replyMarkup) {
             $params['reply_markup'] = json_encode($replyMarkup);

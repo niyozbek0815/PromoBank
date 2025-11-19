@@ -14,7 +14,7 @@ class AuthController extends Controller
     {
 
     }
-      public function check(Request $request)
+    public function check(Request $request)
     {
         $data = $request->validate([
             'phone' => ['required', 'regex:/^\+998\d{9}$/'],
@@ -101,7 +101,7 @@ class AuthController extends Controller
             User::where('chat_id', $data['chat_id'])
                 ->where('is_guest', true)
                 ->delete();
-
+            $data['status'] = true;
             // Telefon orqali tekshir
             $user = User::updateOrCreate(['phone' => $data['phone']], $data);
 
