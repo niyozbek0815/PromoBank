@@ -68,3 +68,74 @@ services:
 networks:
   promobank:
     external: true
+
+
+
+
+
+
+
+
+
+# # local uchun bu qism
+# services:
+#   api_nginx:
+#     image: nginx:alpine
+#     container_name: api_nginx
+#     ports:
+#       - "8080:80"
+#     volumes:
+#       - ./src:/var/www
+#       - ./nginx/conf.d/:/etc/nginx/conf.d/
+#     depends_on:
+#       - api_app
+#       - api_db
+#     networks:
+#       - promobank
+
+#   api_db:
+#     image: postgres:18
+#     container_name: api_db
+#     volumes:
+#       - ./postgresql/data:/var/lib/postgresql/18/data
+#     ports:
+#       - "5432:5432"
+#     environment:
+#       POSTGRES_DB: api_db
+#       POSTGRES_USER: root
+#       POSTGRES_PASSWORD: password
+#     networks:
+#       - promobank
+#   # Application Service
+#   api_app:
+#     container_name: api_app
+#     build:
+#       context: ./php
+#       dockerfile: Dockerfile
+#     volumes:
+#       - ./src:/var/www
+#       - ../common:/var/www/common
+#     ports:
+#       - "9000:9000"
+#     working_dir: /var/www
+#     networks:
+#       - promobank
+
+#   api_horizon:
+#     container_name: api_horizon
+#     build:
+#       context: ./php
+#       dockerfile: Dockerfile
+#     depends_on:
+#       - api_app
+#     command: php artisan horizon
+#     volumes:
+#       - ./src:/var/www
+#     working_dir: /var/www
+#     networks:
+#       - promobank
+#     restart: unless-stopped
+
+# networks:
+#   promobank:
+#     external: true
