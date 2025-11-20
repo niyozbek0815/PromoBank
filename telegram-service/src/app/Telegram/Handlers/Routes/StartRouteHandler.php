@@ -55,11 +55,24 @@ class StartRouteHandler
         Cache::store('bot')->forget("tg_user_data:$chatId");
         Cache::store('bot')->forget("tg_user:$chatId");
 
-        Queue::connection('rabbitmq')->push(new StartAndRefferralJob(
-            $chatId,
-            $username,
-            $referrerId
-        ));
+$redis = app('redis'); // Redis client
+$lockKey = "start_job_lock:{$chatId}";
+$lockAcquired = $redis->set($lockKey, 1, 'NX', 'EX', 10); // NX = faqat agar mavjud bo'lmasa, EX = 10 sekund
+
+if (!$lockAcquired) {
+    Log::info("Foydalanuvchi {$chatId} uchun Start job allaqachon ishlamoqda, bekor qilindi");
+    return;
+}
+
+try {
+    Queue::connection('rabbitmq')->push(new StartAndRefferralJob(
+        $chatId,
+        $username,
+        $referrerId
+    ));
+} finally {
+    $redis->del($lockKey); // lockni bo‘shatish
+}
 
         return app(StartHandler::class)->startAsk($chatId);
     }

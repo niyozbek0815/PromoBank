@@ -102,11 +102,20 @@ class RegisteredReferralJob implements ShouldQueue
                     'text' => $message,
                 ]);
             } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
-                if (str_contains($e->getMessage(), 'bot was blocked by the user')) {
-                    // Shu foydalanuvchidan keyin xabar yubormaslik uchun flag qo‘yish mumkin
-                } else {
-                    throw $e;
-                }
+                 } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
+
+                   $msg = $e->getMessage();
+
+            if (str_contains($msg, 'bot was blocked by the user') || str_contains($msg, 'message is not modified')) {
+                Log::warning("Foydalanuvchi xabarni ololmadi (bloklangan yoki o'zgartirish yo'q): {$this->chatId}, msg: $msg");
+                return; // shunchaki return qilamiz
+            }
+
+            // boshqa xatoliklar bo'lsa, log qilamiz va throw qilamiz, job retry qilinadi
+            Log::error("TelegramResponseException: {$msg}", ['chat_id' => $this->chatId]);
+            throw $e;
+
+
             }
         }
     }
