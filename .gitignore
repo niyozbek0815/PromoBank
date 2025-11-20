@@ -1,1 +1,7 @@
 **/postgresql/
+**/docker-compose.yml
+**/docker-compose.*.yml
+
+# Nginx konfiguratsiyalari - istalgan folderda
+**/default.conf
+**/nginx/conf.d/*.conf
