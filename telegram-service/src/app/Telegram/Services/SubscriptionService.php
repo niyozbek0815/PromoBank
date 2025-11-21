@@ -31,11 +31,15 @@ class SubscriptionService
             return []; // ✅ Barcha kanallarga obuna deb hisoblanadi
         }
 
-        $channels = [
-            '@niyozbek_mn',
-            '@classic_mc'
+        // $channels = [
+        //     '@niyozbek_mn',
+        //     '@classic_mc'
+        // ];
+      $channels = [
+'@my5tv',
+'@promobank_uz',
+'@musofir_shou',
         ];
-
         $notSubscribed = [];
         $bots = [];
 

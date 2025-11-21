@@ -193,7 +193,7 @@ class AuthController extends Controller
         // // Delete query
 // User::whereIn('phone', $phonesToDelete)->delete();
         $user = User::where('chat_id', $chatId)->first();
-        $user->delete();
+        // $user->delete();
         $newUser = false;
 
         if (!$user) {
