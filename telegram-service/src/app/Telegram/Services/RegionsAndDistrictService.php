@@ -14,9 +14,10 @@ class RegionsAndDistrictService
     }
     public function handle(): array
     {
+        Cache::store('bot')->forget('regionslang');
         return $this->fetchAndCache(
-            key: 'regions',
-            endpoint: '/regions',
+            key: 'regionslang',
+            endpoint: '/regionslang',
             responsePath: 'data.regions'
         );
     }
@@ -29,39 +30,25 @@ class RegionsAndDistrictService
             responsePath: 'data.districts'
         );
     }
-
     protected function fetchAndCache(string $key, string $endpoint, string $responsePath): array
     {
-        $cached = Cache::store('bot')->get($key);
-        if (!empty($cached)) {
-            $decoded = json_decode($cached, true);
-            return is_array($decoded) ? $decoded : [];
-        }
+        return Cache::store('bot')->remember($key, now()->addDay(), function () use ($endpoint, $responsePath) {
+            Log::info("Fetching from endpoint: {$endpoint}");
 
-        Log::info("Fetching from $endpoint");
+            $response = $this->forwarder->forward('GET', $this->baseUrl, $endpoint, []);
 
-        $response = $this->forwarder->forward(
-            'GET',
-            $this->baseUrl,
-            $endpoint,
-            []
-        );
+            if (!$response->successful()) {
+                Log::error('API fetch error', [
+                    'endpoint' => $endpoint,
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return [];
+            }
 
-        if (!$response->successful()) {
-            logger()->error('API fetch error', [
-                'endpoint' => $endpoint,
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
-            return [];
-        }
+            $data = data_get($response->json(), $responsePath, []);
 
-        $data = $response->json($responsePath) ?? [];
-
-        if (is_array($data) && !empty($data)) {
-            Cache::store('bot')->put($key, json_encode($data), now()->addHours(12));
-        }
-
-        return is_array($data) ? $data : [];
+            return is_array($data) ? $data : [];
+        });
     }
 }

@@ -24,19 +24,21 @@ class RegisterService
     }
     public function mergeToCache(string $chatId, array $newData)
     {
-        $existing = Cache::store("bot")->get(
-            $this->prefix . $chatId,
-        );
+        $key = $this->prefix . $chatId;
 
+        // Mavjud ma'lumotni olish
+        $existing = Cache::store("bot")->get($key);
         $data = $existing ? json_decode($existing, true) : [];
 
-        // Yangi ma’lumotlarni birlashtiramiz
+        // Birlashtirish
         $merged = array_merge($data, $newData);
-        $existing = Cache::store("bot")->set(
-            $this->prefix . $chatId,
-            json_encode($merged)
-        );
 
+        // 1 soatga cachega yozishs
+        Cache::store("bot")->put(
+            $key,
+            json_encode($merged),
+            864000
+        );
     }
     public function get(string $chatId)
     {
@@ -46,8 +48,9 @@ class RegisterService
     }
     public function forget(string $chatId)
     {
-        Cache::store("bot")->forget($this->prefix . $chatId, );
+        Cache::store("bot")->forget($this->prefix . $chatId);
     }
+
     public function getSessionStatus(string $chatId)
     {
         if (Cache::store("bot")->has('tg_user_data:' . $chatId)) {
@@ -68,7 +71,9 @@ class RegisterService
     {
         $chatId = $update->getMessage()?->getChat()?->getId();
         $required = $this->get($chatId);
-        $fields = ['region_id', 'district_id', 'name', 'phone2', 'gender', 'birthdate'];
+        // $fields = ['region_id', 'district_id', 'name', 'phone2', 'gender', 'birthdate'];
+        $fields = ['region_id', 'name', 'phone2', 'gender', 'birthdate'];
+
         $lang = Cache::store("bot")->get("tg_lang:$chatId", 'uz');
         $data = ['lang' => $lang, 'chat_id' => (string) $chatId, 'phone' => $required['phone'], 'name' => $required['name']];
         $message = $update->getMessage();
@@ -101,7 +106,7 @@ class RegisterService
             !array_key_exists('phone2', $data) => app(Phone2StepHandler::class)->ask($chatId),
             empty($data['gender']) => app(GenderStepHandler::class)->ask($chatId),
             empty($data['region_id']) => app(RegionStepHandler::class)->ask($chatId),
-            empty($data['district_id']) => app(DistrictStepHandler::class)->ask($chatId, $data['region_id'] ?? null),
+            // empty($data['district_id']) => app(DistrictStepHandler::class)->ask($chatId, $data['region_id'] ?? null),
             empty($data['birthdate']) => app(BirthdateStepHandler::class)->ask($chatId),
             default => $this->registerUserAndFinalize($chatId, $data, $username),
         };

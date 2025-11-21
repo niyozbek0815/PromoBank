@@ -76,16 +76,16 @@ class RegisterPrizeJob implements ShouldQueue
                 ]);
             } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
 
-                   $msg = $e->getMessage();
+                $msg = $e->getMessage();
 
-            if (str_contains($msg, 'bot was blocked by the user') || str_contains($msg, 'message is not modified')) {
-                Log::warning("Foydalanuvchi xabarni ololmadi (bloklangan yoki o'zgartirish yo'q): {$this->chatId}, msg: $msg");
-                return; // shunchaki return qilamiz
-            }
+                if (str_contains($msg, 'bot was blocked by the user') || str_contains($msg, 'message is not modified')) {
+                    Log::warning("Foydalanuvchi xabarni ololmadi (bloklangan yoki o'zgartirish yo'q): {$this->chatId}, msg: $msg");
+                    return; // shunchaki return qilamiz
+                }
 
-            // boshqa xatoliklar bo'lsa, log qilamiz va throw qilamiz, job retry qilinadi
-            Log::error("TelegramResponseException: {$msg}", ['chat_id' => $this->chatId]);
-            throw $e;
+                // boshqa xatoliklar bo'lsa, log qilamiz va throw qilamiz, job retry qilinadi
+                Log::error("TelegramResponseException: {$msg}", ['chat_id' => $this->chatId]);
+                throw $e;
 
             }
             Log::info('🎥 RegisterPrizeJob video xabari yuborildi', ['chat_id' => $this->chatId]);

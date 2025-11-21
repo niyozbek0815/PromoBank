@@ -32,8 +32,8 @@ class UpdateRouteHandler
                 return app(GenderStepHandler::class)->handleUpdate($chatId, $text);
             case 'waiting_for_region':
                 return app(RegionStepHandler::class)->handleUpdate($update);
-            case 'waiting_for_district':
-                return app(DistrictStepHandler::class)->handleUpdate($update);
+            // case 'waiting_for_district':
+            //     return app(DistrictStepHandler::class)->handleUpdate($update);
             case 'waiting_for_birthdate':
                 return app(BirthdateStepHandler::class)->handleUpdate($update);
 

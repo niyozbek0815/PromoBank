@@ -17,7 +17,8 @@ class AuthController extends Controller
     public function check(Request $request)
     {
         $data = $request->validate([
-            'phone' => ['required', 'regex:/^\+998\d{9}$/'],
+            // 'phone' => ['required', 'regex:/^\+998\d{9}$/'],
+            'phone' => ['required', 'regex:/^\+[1-9]\d{7,14}$/'],
             'chat_id' => ['required', 'string'],
             'lang' => ['nullable', 'in:uz,ru,kr,en'],
         ]);
@@ -27,7 +28,7 @@ class AuthController extends Controller
             ->where('is_guest', true)
             ->delete();
 
-        $user = User::with(['region:id,name', 'district:id,name'])
+        $user = User::with(['regionlang:id,name', 'district:id,name'])
             ->where('phone', $data['phone'])
             ->first();
 
@@ -68,8 +69,8 @@ class AuthController extends Controller
     {
         return [
             'id' => $user->id,
-            'region' => $user->region?->name,
-            'district' => $user->district?->name,
+            'region' => $user->regionlang?->name,
+            // 'district' => $user->district?->name,
             'name' => $user->name,
             'phone' => $user->phone,
             'phone2' => $user->phone2,
@@ -82,7 +83,8 @@ class AuthController extends Controller
     public function create(Request $request)
     {
         $data = $request->validate([
-            'phone' => ['required', 'string', 'regex:/^\\+998\\d{9}$/'],
+            // 'phone' => ['required', 'string', 'regex:/^\\+998\\d{9}$/'],
+            'phone' => ['required', 'string', 'regex:/^\+[1-9]\d{7,14}$/'],
             'chat_id' => ['required', 'string'],
             'name' => ['nullable', 'string', 'max:255'],
             'region_id' => ['nullable', 'integer'],
@@ -143,7 +145,7 @@ class AuthController extends Controller
             'gender' => ['nullable', 'in:male,female'],
             'birthdate' => ['nullable', 'date_format:Y-m-d'],
             'phone2' => ['nullable', 'string', 'regex:/^\\+998\\d{9}$/'],
-            'lang' => ['nullable', 'in:uz,ru,kr'],
+            'lang' => ['nullable', 'in:uz,ru,kr,en'],
         ]);
         $user = User::where('chat_id', $data['chat_id'])->first();
 
@@ -177,9 +179,21 @@ class AuthController extends Controller
         $referrerUser = $referrerId
             ? User::where('chat_id', $referrerId)->first()
             : null;
+        // O'chiriladigan telefon raqamlar
+// $phonesToDelete = [
+//     '+998944427787',
+//     '+998994477787',
+//     '+998977851797',
+//     '+998887851797',
+//     '+998940940994',
+//     '+998981211228',
+//     '+998900191099',
+// ];
 
+        // // Delete query
+// User::whereIn('phone', $phonesToDelete)->delete();
         $user = User::where('chat_id', $chatId)->first();
-        // $user->delete();
+        $user->delete();
         $newUser = false;
 
         if (!$user) {

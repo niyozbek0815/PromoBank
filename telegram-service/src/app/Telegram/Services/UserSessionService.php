@@ -79,13 +79,10 @@ class UserSessionService
             ));
             return true;
         }
-        $initialData = [
+        app(RegisterService::class)->mergeToCache($chatId, $initialData = [
             'phone' => $phone,
             'state' => 'waiting_for_name', // birinchi step flag
-        ];
-
-        // Log::info(message: "intial:", $initialData);
-        app(RegisterService::class)->mergeToCache($chatId, $initialData);
+        ]);
 
         return false;
     }

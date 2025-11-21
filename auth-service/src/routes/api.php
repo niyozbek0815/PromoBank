@@ -38,6 +38,7 @@ Route::controller(WebAppAuthController::class)->prefix('webapp')->name('webapp.'
 
 Route::controller(AddresController::class)->group(function () {
     Route::get('/regions', 'region');
+    Route::get('/regionslang', 'regionlang');
     Route::get('/regions/{region_id}/districts', 'district');
 });
 Route::prefix('front')->group(function () {

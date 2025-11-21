@@ -47,7 +47,7 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'birthdate'         => 'date:Y-m-d',
+        'birthdate' => 'date:Y-m-d',
     ];
 
     // JWT interface methods
@@ -63,8 +63,8 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims(): array
     {
         return [
-            'user_id'  => $this->id,
-            'phone'    => $this->phone,
+            'user_id' => $this->id,
+            'phone' => $this->phone,
             'is_guest' => $this->is_guest,
         ];
     }
@@ -75,6 +75,10 @@ class User extends Authenticatable implements JWTSubject
     public function region()
     {
         return $this->belongsTo(Region::class);
+    }
+    public function regionlang()
+    {
+        return $this->belongsTo(RegionLang::class, 'region_id', 'id');
     }
     public function district()
     {

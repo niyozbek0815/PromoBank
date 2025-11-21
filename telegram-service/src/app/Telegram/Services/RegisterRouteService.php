@@ -24,7 +24,7 @@ class RegisterRouteService
             'waiting_for_phone' => app(PhoneStepHandler::class)->ask($chatId),
             'waiting_for_phone2' => app(Phone2StepHandler::class)->ask($chatId),
             'waiting_for_region' => app(RegionStepHandler::class)->ask($chatId),
-            'waiting_for_district' => app(DistrictStepHandler::class)->ask($chatId, $tg_user_data['region_id'] ?? null),
+            // 'waiting_for_district' => app(DistrictStepHandler::class)->ask($chatId, $tg_user_data['region_id'] ?? null),
             'waiting_for_gender' => app(GenderStepHandler::class)->ask($chatId),
             'waiting_for_birthdate' => app(BirthdateStepHandler::class)->ask($chatId),
             'waiting_for_offer' => app(OfertaStepHandler::class)->ask($chatId),

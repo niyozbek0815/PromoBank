@@ -58,7 +58,9 @@ class UserUpdateService
         $chatId = $update->getMessage()?->getChat()?->getId();
 
         $required = $this->get($chatId);
-        $fields = ['region_id', 'district_id', 'name', 'phone2', 'gender', 'birthdate'];
+        // $fields = ['region_id', 'district_id', 'name', 'phone2', 'gender', 'birthdate'];
+        $fields = ['region_id', 'name', 'phone2', 'gender', 'birthdate'];
+
         $lang = Cache::store('bot')->get("tg_lang:$chatId", 'uz');
         $data = ['lang' => $lang, 'chat_id' => (string) $chatId, 'name' => $required['name']];
 
@@ -73,7 +75,7 @@ class UserUpdateService
             !array_key_exists('phone2', $data) => app(Phone2StepHandler::class)->ask($chatId),
             empty($data['gender']) => app(GenderStepHandler::class)->ask($chatId),
             empty($data['region_id']) => app(RegionStepHandler::class)->ask($chatId),
-            empty($data['district_id']) => app(DistrictStepHandler::class)->ask($chatId, $data['region_id'] ?? null),
+            // empty($data['district_id']) => app(DistrictStepHandler::class)->ask($chatId, $data['region_id'] ?? null),
             empty($data['birthdate']) => app(BirthdateStepHandler::class)->ask($chatId),
             default => $this->registerUserAndFinalize($chatId, $data),
         };

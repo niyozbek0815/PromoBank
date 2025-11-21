@@ -2,10 +2,8 @@
 
 namespace App\Telegram\Handlers\Routes;
 
-use App\Jobs\RefferralJob;
 use App\Jobs\StartAndRefferralJob;
 use App\Telegram\Handlers\Start\StartHandler;
-use App\Telegram\Handlers\Start\ReferralStartHandler;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
@@ -55,24 +53,12 @@ class StartRouteHandler
         Cache::store('bot')->forget("tg_user_data:$chatId");
         Cache::store('bot')->forget("tg_user:$chatId");
 
-$redis = app('redis'); // Redis client
-$lockKey = "start_job_lock:{$chatId}";
-$lockAcquired = $redis->set($lockKey, 1, 'NX', 'EX', 10); // NX = faqat agar mavjud bo'lmasa, EX = 10 sekund
+        Queue::connection('rabbitmq')->push(new StartAndRefferralJob(
+            $chatId,
+            $username,
+            $referrerId
+        ));
 
-if (!$lockAcquired) {
-    Log::info("Foydalanuvchi {$chatId} uchun Start job allaqachon ishlamoqda, bekor qilindi");
-    return;
-}
-
-try {
-    Queue::connection('rabbitmq')->push(new StartAndRefferralJob(
-        $chatId,
-        $username,
-        $referrerId
-    ));
-} finally {
-    $redis->del($lockKey); // lockni bo‘shatish
-}
 
         return app(StartHandler::class)->startAsk($chatId);
     }

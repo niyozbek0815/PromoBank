@@ -21,14 +21,19 @@ class ProfilSettings
         $messageId = $update->getCallbackQuery()?->getMessage()?->getMessageId();
         $user = app(UserSessionService::class)->get($chatId);
         $lang = Cache::store('bot')->get("tg_lang:$chatId", 'uz');
-
+        // Region nomini tanlangan til bo'yicha olish
+        $regionName = '';
+        if (isset($user['region']) && is_array($user['region'])) {
+            $regionName = $user['region'][$lang] ?? $user['region']['uz'] ?? '';
+        }
+        Log::info("ProfilSettings uchun foydalanuvchi ma'lumotlari", ['user' => $user]);
         $text = "📋 <b>" . $this->translator->get($chatId, 'profile_title') . "</b>\n\n" .
             "👤 <b>" . $this->translator->get($chatId, 'profile_name') . ":</b> {$user['name']}\n" .
             "📞 <b>" . $this->translator->get($chatId, 'profile_phone') . ":</b> {$user['phone']}\n" .
             ($user['phone2'] ? "📞 <b>" . $this->translator->get($chatId, 'profile_phone2') . ":</b> {$user['phone2']}\n" : '') .
-            "📍 <b>" . $this->translator->get($chatId, 'profile_region') . ":</b> {$user['region']}\n" .
-            "🏘 <b>" . $this->translator->get($chatId, 'profile_district') . ":</b> {$user['district']}\n" .
-            "⚧ <b>" . $this->translator->get($chatId, 'profile_gender') . ":</b> " . ($user['gender'] === 'M' ? $this->translator->get($chatId, 'gender_male') : $this->translator->get($chatId, 'gender_female')) . "\n" .
+            "📍 <b>" . $this->translator->get($chatId, 'profile_region') . ":</b> $regionName\n" .
+            // "🏘 <b>" . $this->translator->get($chatId, 'profile_district') . ":</b> {$user['district']}\n" .
+            "⚧ <b>" . $this->translator->get($chatId, 'profile_gender') . ":</b> " . ($user['gender'] == 'e' ? $this->translator->get($chatId, 'gender_male') : $this->translator->get($chatId, 'gender_female')) . "\n" .
             "📅 <b>" . $this->translator->get($chatId, 'profile_birthdate') . ":</b> " . date('d.m.Y', strtotime($user['birthdate'])) . "\n" .
             "🌐 <b>" . $this->translator->get($chatId, 'profile_lang') . ":</b> "
             . $this->translator->getForLang('language_selection', $lang)

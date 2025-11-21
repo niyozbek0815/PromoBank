@@ -18,8 +18,8 @@ class GenderStepHandler
     public function ask($chatId)
     {
         Telegram::sendMessage([
-            'chat_id'      => $chatId,
-            'text'         => $this->translator->get($chatId, 'ask_gender'),
+            'chat_id' => $chatId,
+            'text' => $this->translator->get($chatId, 'ask_gender'),
             'reply_markup' => $this->getGenderKeyboard($chatId),
         ]);
     }
@@ -27,13 +27,13 @@ class GenderStepHandler
     protected function getGenderKeyboard($chatId)
     {
         return json_encode([
-            'keyboard'          => [
+            'keyboard' => [
                 [
                     ['text' => $this->translator->get($chatId, 'gender_male')],
                     ['text' => $this->translator->get($chatId, 'gender_female')],
                 ],
             ],
-            'resize_keyboard'   => true,
+            'resize_keyboard' => true,
             'one_time_keyboard' => true,
         ]);
     }
@@ -41,7 +41,7 @@ class GenderStepHandler
     protected function getGenderMap($chatId)
     {
         return [
-            $this->translator->get($chatId, 'gender_male')   => 'male',
+            $this->translator->get($chatId, 'gender_male') => 'male',
             $this->translator->get($chatId, 'gender_female') => 'female',
         ];
     }
@@ -50,24 +50,23 @@ class GenderStepHandler
     {
         $genderMap = $this->getGenderMap($chatId);
 
-        if (! isset($genderMap[$text])) {
+        if (!isset($genderMap[$text])) {
             return Telegram::sendMessage([
                 'chat_id' => $chatId,
-                'text'    => $this->translator->get($chatId, 'invalid_gender_format'),
+                'text' => $this->translator->get($chatId, 'invalid_gender_format'),
             ]);
         }
 
         Telegram::sendMessage([
-            'chat_id'      => $chatId,
-            'text'         => $this->translator->get($chatId, 'gender_received'),
+            'chat_id' => $chatId,
+            'text' => $this->translator->get($chatId, 'gender_received'),
             'reply_markup' => json_encode(['remove_keyboard' => true]),
         ]);
 
-        $gender = $genderMap[$text];
 
         app($service)->mergeToCache($chatId, [
-            'gender' => $gender,
-            'state'  => 'waiting_for_region',
+            'gender' => $genderMap[$text],
+            'state' => 'waiting_for_region',
         ]);
 
         return app(RegionStepHandler::class)->ask($chatId);
