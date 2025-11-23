@@ -3,7 +3,6 @@ namespace App\Telegram\Handlers;
 
 use App\Telegram\Services\SendMessages;
 use App\Telegram\Services\Translator;
-use Telegram\Bot\Laravel\Facades\Telegram;
 
 class Welcome
 {

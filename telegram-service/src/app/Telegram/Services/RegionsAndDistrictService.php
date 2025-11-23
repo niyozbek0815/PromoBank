@@ -33,10 +33,7 @@ class RegionsAndDistrictService
     protected function fetchAndCache(string $key, string $endpoint, string $responsePath): array
     {
         return Cache::store('bot')->remember($key, now()->addDay(), function () use ($endpoint, $responsePath) {
-            Log::info("Fetching from endpoint: {$endpoint}");
-
             $response = $this->forwarder->forward('GET', $this->baseUrl, $endpoint, []);
-
             if (!$response->successful()) {
                 Log::error('API fetch error', [
                     'endpoint' => $endpoint,
@@ -45,9 +42,7 @@ class RegionsAndDistrictService
                 ]);
                 return [];
             }
-
             $data = data_get($response->json(), $responsePath, []);
-
             return is_array($data) ? $data : [];
         });
     }

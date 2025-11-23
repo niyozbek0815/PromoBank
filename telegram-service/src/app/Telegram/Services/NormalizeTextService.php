@@ -1,12 +1,6 @@
 <?php
 namespace App\Telegram\Services;
 
-use App\Http\Controllers\TelegramBotController;
-use Illuminate\Support\Facades\Log;
-use Telegram\Bot\Laravel\Facades\Telegram;
-use Telegram\Bot\Objects\Chat;
-use Telegram\Bot\Objects\Message;
-use Telegram\Bot\Objects\Update;
 use Normalizer;
 class NormalizeTextService
 {

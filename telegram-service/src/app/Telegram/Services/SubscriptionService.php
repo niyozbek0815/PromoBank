@@ -3,7 +3,6 @@
 namespace App\Telegram\Services;
 use App\Jobs\RegisterPrizeJob;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
@@ -77,9 +76,7 @@ class SubscriptionService
         // To‘liq subscribe qilingan bo‘lsa
         if (!$notSubscribed) {
             $this->put($chatId);
-
             if ($dispatchRegisterPrize) {
-                Log::info('Segisterda dispatch qildim ');
                 Queue::connection('rabbitmq')
                     ->push(new RegisterPrizeJob($chatId));
             }
@@ -99,51 +96,12 @@ class SubscriptionService
     {
         return Cache::store('bot')->has("tg_subs:$chatId");
     }
-    public function deleteMessage($chatId, $messageId = null)
-    {
-
-        if ($messageId) {
-            try {
-                Telegram::deleteMessage([
-                    'chat_id' => $chatId,
-                    'message_id' => $messageId,
-                ]);
-            } catch (\Throwable $e) {
-                Log::warning("Tekshiruv xabarini o'chirishda xatolik", [
-                    'chat_id' => $chatId,
-                    'message_id' => $messageId,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
-    }
-
 
     private function isBotUsername(string $username): bool
     {
         $u = strtolower($username);
         return str_ends_with($u, '_bot') || str_ends_with($u, 'bot');
     }
-
-    public function storePendingAction($chatId, $update, array $payload = [])
-    {
-        Cache::store('bot')->set("tg_pending_action:$chatId", json_encode($update), 600);
-    }
-
-    public function getPendingAction($chatId): ?array
-    {
-
-        $key = "tg_pending_action:$chatId";
-        $json = Cache::store('bot')->get($key);
-
-        if ($json) {
-            Cache::store('bot')->forget($key);
-            return json_decode($json, true);
-        }
-
-        return null;
-    }
-
 
 
 }

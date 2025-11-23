@@ -12,7 +12,6 @@ class LanguageHandler
     public function __construct(
         protected Translator $translator,
         protected SendMessages $sender
-
     ) {
     }
 

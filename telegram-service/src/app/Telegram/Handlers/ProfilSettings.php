@@ -1,17 +1,18 @@
 <?php
 namespace App\Telegram\Handlers;
 
+use App\Telegram\Services\SendMessages;
 use App\Telegram\Services\Translator;
 use App\Telegram\Services\UserSessionService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
-use Telegram\Bot\Laravel\Facades\Telegram;
 use Telegram\Bot\Objects\Update;
 
 class ProfilSettings
 {
-    public function __construct(protected Translator $translator)
-    {
+    public function __construct(
+        protected Translator $translator,
+        protected SendMessages $sender
+    ) {
         // Constructor can be used for dependency injection if needed
     }
 
@@ -26,7 +27,6 @@ class ProfilSettings
         if (isset($user['region']) && is_array($user['region'])) {
             $regionName = $user['region'][$lang] ?? $user['region']['uz'] ?? '';
         }
-        Log::info("ProfilSettings uchun foydalanuvchi ma'lumotlari", ['user' => $user]);
         $text = "📋 <b>" . $this->translator->get($chatId, 'profile_title') . "</b>\n\n" .
             "👤 <b>" . $this->translator->get($chatId, 'profile_name') . ":</b> {$user['name']}\n" .
             "📞 <b>" . $this->translator->get($chatId, 'profile_phone') . ":</b> {$user['phone']}\n" .
@@ -49,31 +49,12 @@ class ProfilSettings
                 ],
             ],
         ]);
-
-        // Telegram API xatosini oldini olish uchun: faqat o'zgargan bo'lsa edit qilamiz
-        try {
-            $currentMessage = $update->getCallbackQuery()?->getMessage();
-            $currentText = $currentMessage?->getText() ?? '';
-            $currentMarkup = json_encode($currentMessage?->getReplyMarkup()?->toArray() ?? []);
-
-            if ($currentText === $text && $currentMarkup === $replyMarkup) {
-                return; // Hech qanday o'zgarish yo'q, edit qilinmaydi
-            }
-        } catch (\Throwable $e) {
-            // Agar xatolik bo‘lsa davom etamiz, xavfsiz
-        }
-
-        try {
-            Telegram::editMessageText([
-                'chat_id' => $chatId,
-                'message_id' => $messageId,
-                'text' => $text,
-                'parse_mode' => 'HTML',
-                'reply_markup' => $replyMarkup,
-            ]);
-        } catch (\Throwable $e) {
-            // Xatolik bo‘lsa log qilamiz, lekin bot to‘xtamaydi
-            Log::warning("ProfilSettings editMessageText xatolik: {$e->getMessage()}", ['chat_id' => $chatId]);
-        }
+        $this->sender->editMessage([
+            'chat_id' => $chatId,
+            'message_id' => $messageId,
+            'text' => $text,
+            'parse_mode' => 'HTML',
+            'reply_markup' => $replyMarkup,
+        ]);
     }
 }

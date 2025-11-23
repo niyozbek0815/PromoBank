@@ -31,6 +31,33 @@ class SendMessages
             return;
         }
     }
+
+    public function SendReturnId(array $data)
+    {
+        try {
+            $response = Telegram::sendMessage($data);
+            return $response->getMessageId();
+        } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
+
+            $msg = $e->getMessage();
+            $chatId = $data['chat_id'] ?? null;
+
+            // Foydalanuvchi botni bloklagan yoki xabar o'zgarmagan holatlari
+            if (
+                str_contains($msg, 'bot was blocked by the user')
+                || str_contains($msg, 'message is not modified')
+            ) {
+
+                Log::warning("Telegram xabar yuborilmadi: chat_id={$chatId}, sabab={$msg}");
+                return;
+            }
+
+            // Boshqa telegram xatoliklari
+            Log::error("Telegram xabari yuborishda xatolik: chat_id={$chatId}, error={$msg}");
+
+            return;
+        }
+    }
     public function delete(array $data): void
     {
         try {
@@ -53,6 +80,48 @@ class SendMessages
             // Boshqa telegram xatoliklari
             Log::error("Telegram xabari yuborishda xatolik: chat_id={$chatId}, error={$msg}");
 
+            return;
+        }
+    }
+    public function answerCallback(array $data): void
+    {
+        try {
+            Telegram::answerCallbackQuery($data);
+        } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
+
+            $msg = $e->getMessage();
+            $chatId = $data['chat_id'] ?? null;
+
+            if (
+                str_contains($msg, 'bot was blocked by the user')
+                || str_contains($msg, 'message is not modified')
+            ) {
+
+                Log::warning("Telegram xabar yuborilmadi: chat_id={$chatId}, sabab={$msg}");
+                return;
+            }
+
+            Log::error("Telegram xabari yuborishda xatolik: chat_id={$chatId}, error={$msg}");
+
+            return;
+        }
+    }
+    public function editMessage(array $data): void
+    {
+        try {
+            Telegram::editMessageText($data);
+        } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
+
+            $msg = $e->getMessage();
+            $chatId = $data['chat_id'] ?? null;
+            if (
+                str_contains($msg, 'bot was blocked by the user')
+                || str_contains($msg, 'message is not modified')
+            ) {
+                Log::warning("Telegram xabar yuborilmadi: chat_id={$chatId}, sabab={$msg}");
+                return;
+            }
+            Log::error("Telegram xabari yuborishda xatolik: chat_id={$chatId}, error={$msg}");
             return;
         }
     }

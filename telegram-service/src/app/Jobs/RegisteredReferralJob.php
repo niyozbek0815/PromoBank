@@ -32,16 +32,8 @@ class RegisteredReferralJob implements ShouldQueue
     {
         $forwarder = app(FromServiceRequest::class);
         $translator = app(Translator::class);
-        $baseUrl = config('services.urls.auth_service');
         $lang = Cache::store("bot")->get("tg_lang:$this->chatId", 'uz');
 
-
-        // 🔧 Asosiy yuklama
-        $payload = [
-            'chat_id' => $this->chatId,
-            'referredId' => $this->referredId,
-            'lang' => $lang,
-        ];
         $promoball = Cache::store('bot')->remember('promo_settings_start_bot', now()->addHours(1), function () use ($forwarder) {
             $response = $forwarder->forward(
                 'GET',
@@ -61,13 +53,6 @@ class RegisteredReferralJob implements ShouldQueue
             ];
         });
         $registerPoints = $promoball['refferal_registered_points'];
-        Log::info("RegisterRefferralJob ishga tushdi", [
-            'promoball' => $registerPoints,
-            'referred_id' => $this->referredId,
-            'username' => $this->username,
-            'lang' => $lang,
-        ]);
-
         $messageTemplate = $translator->get($this->referredId, 'referral_register_text');
 
         $message = str_replace(
@@ -93,7 +78,6 @@ class RegisteredReferralJob implements ShouldQueue
         }
         $data = $res->json();
 
-        Log::info("resp", ['data' => $data]);
         if (!empty($data['chat_id']) && $data['exists']) {
 
             try {
@@ -102,20 +86,17 @@ class RegisteredReferralJob implements ShouldQueue
                     'text' => $message,
                 ]);
             } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
-                 } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
 
-                   $msg = $e->getMessage();
+                $msg = $e->getMessage();
 
-            if (str_contains($msg, 'bot was blocked by the user') || str_contains($msg, 'message is not modified')) {
-                Log::warning("Foydalanuvchi xabarni ololmadi (bloklangan yoki o'zgartirish yo'q): {$this->chatId}, msg: $msg");
-                return; // shunchaki return qilamiz
-            }
+                if (str_contains($msg, 'bot was blocked by the user') || str_contains($msg, 'message is not modified')) {
+                    Log::warning("Foydalanuvchi xabarni ololmadi (bloklangan yoki o'zgartirish yo'q): {$this->chatId}, msg: $msg");
+                    return; // shunchaki return qilamiz
+                }
 
-            // boshqa xatoliklar bo'lsa, log qilamiz va throw qilamiz, job retry qilinadi
-            Log::error("TelegramResponseException: {$msg}", ['chat_id' => $this->chatId]);
-            throw $e;
-
-
+                // boshqa xatoliklar bo'lsa, log qilamiz va throw qilamiz, job retry qilinadi
+                Log::error("TelegramResponseException: {$msg}", ['chat_id' => $this->chatId]);
+                throw $e;
             }
         }
     }

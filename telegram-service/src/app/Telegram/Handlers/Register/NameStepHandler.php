@@ -3,48 +3,51 @@ namespace App\Telegram\Handlers\Register;
 
 use App\Telegram\Services\NormalizeTextService;
 use App\Telegram\Services\RegisterService;
+use App\Telegram\Services\SendMessages;
 use App\Telegram\Services\Translator;
 use App\Telegram\Services\UserUpdateService;
-use Telegram\Bot\Laravel\Facades\Telegram;
 
 class NameStepHandler
 {
     public function __construct(
-        protected Translator $translator
-    ) {}
+        protected Translator $translator,
+        protected SendMessages $sender
+    ) {
+    }
 
     public function ask($chatId)
     {
-        Telegram::sendMessage([
-            'chat_id'      => $chatId,
-            'text'         => $this->translator->get($chatId, 'ask_name'),
+        $this->sender->handle([
+            'chat_id' => $chatId,
+            'text' => $this->translator->get($chatId, 'ask_name'),
             'reply_markup' => json_encode(['remove_keyboard' => true]),
         ]);
+        return;
     }
 
     protected function processName($update, $service)
     {
         $messageText = $update->getMessage()?->getText();
-        $chatId      = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
+        $chatId = $update->getMessage()?->getChat()?->getId() ?? $update->getCallbackQuery()?->getMessage()?->getChat()?->getId();
 
-        if (! preg_match('/^[\p{L}\s]{3,}$/u', $messageText)) {
-            return Telegram::sendMessage([
-                'chat_id' => $chatId,
-                'text'    => $this->translator->get($chatId, 'invalid_name_format'),
-            ]);
+        if (!preg_match('/^[\p{L}\s]{3,}$/u', $messageText)) {
+            $this->sender->handle(
+                [
+                    'chat_id' => $chatId,
+                    'text' => $this->translator->get($chatId, 'invalid_name_format'),
+                ]
+            );
+            return;
         }
-
-        Telegram::sendMessage([
+        $this->sender->handle([
             'chat_id' => $chatId,
-            'text'    =>  $this->translator->get($chatId, 'name_received'),
+            'text' => $this->translator->get($chatId, 'name_received'),
         ]);
-
         app($service)->mergeToCache($chatId, [
             'chat_id' => $chatId,
-            'name'    => app(NormalizeTextService::class)->normalizeText( $messageText),
-            'state'   => 'waiting_for_phone2',
+            'name' => app(NormalizeTextService::class)->normalizeText($messageText),
+            'state' => 'waiting_for_phone2',
         ]);
-
         return app(Phone2StepHandler::class)->ask($chatId);
     }
 

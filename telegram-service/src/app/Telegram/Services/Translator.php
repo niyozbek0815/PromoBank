@@ -68,6 +68,12 @@ class Translator
             'kr' => "❗️Илтимос, фақат телефон рақамингизни қуйидаги тугмани босиш орқали юборинг.",
             'en' => "❗️ Please, send only your phone number by clicking the button below.",
         ],
+        "error_retry_later" => [
+            'uz' => "⚠️ Iltimos, birozdan so‘ng qayta uruning. Noqulayliklar uchun uzr so‘raymiz.",
+            'ru' => "⚠️ Пожалуйста, попробуйте снова через некоторое время. Приносим извинения за неудобства.",
+            'kr' => "⚠️ Илтимос, бироздан сўнг қайта уриниг. Ноқулайликлар учун узр сўраймиз.",
+            'en' => "⚠️ Please try again later. We apologize for the inconvenience.",
+        ],
 
         'phone_received' => [
             'uz' => "📱 Telefon raqam qabul qilindi.",

@@ -1,17 +1,14 @@
 <?php
 namespace App\Telegram\Handlers\Register;
 
-use App\Jobs\RegisterPrizeJob;
 use App\Telegram\Handlers\Menu;
-use App\Telegram\Handlers\Routes\SubscriptionRouteHandler;
-use App\Telegram\Services\RegisterRouteService;
+use App\Telegram\Handlers\Subscriptions;
 use App\Telegram\Services\RegisterService;
 use App\Telegram\Services\SendMessages;
 use App\Telegram\Services\SubscriptionService;
 use App\Telegram\Services\Translator;
 use App\Telegram\Services\UserSessionService;
-use Illuminate\Support\Facades\Queue;
-use Telegram\Bot\Laravel\Facades\Telegram;
+use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Objects\Update;
 class PhoneStepHandler
 {
@@ -57,7 +54,7 @@ class PhoneStepHandler
             ?? $from?->username
             ?? $from?->get('first_name')
             ?? $from?->first_name
-            ?? null;
+            ?? 'TelegramUser_' . $chatId;
         if (!$contact) {
             $this->sender->handle([
                 'chat_id' => $chatId,
@@ -78,12 +75,17 @@ class PhoneStepHandler
             app(AlreadyRegisterStepHandler::class)->handle($chatId);
             $notSubscribed = app(SubscriptionService::class)->check($chatId, true);
             if (!empty($notSubscribed)) {
-                return app(SubscriptionRouteHandler::class)->handle($update, $notSubscribed);
+                return app(Subscriptions::class)->showSubscriptionPrompt(
+                    $chatId,
+                    $notSubscribed,
+                    null,
+                    'check_subscriptions_register'
+                );
             }
             return app(Menu::class)->handle($chatId);
         }
 
-        return app(RegisterRouteService::class)->askNextStep($chatId);
+        return app(NameStepHandler::class)->ask($chatId);
     }
 
 }

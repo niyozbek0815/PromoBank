@@ -6,12 +6,11 @@ use App\Services\FromServiceRequest;
 use App\Telegram\Handlers\Register\BirthdateStepHandler;
 use App\Telegram\Handlers\Register\DistrictStepHandler;
 use App\Telegram\Handlers\Register\GenderStepHandler;
+use App\Telegram\Handlers\Register\LanguageHandler;
 use App\Telegram\Handlers\Register\Phone2StepHandler;
 use App\Telegram\Handlers\Register\RegionStepHandler;
-use App\Telegram\Handlers\Start\StartHandler;
 use App\Telegram\Handlers\Welcome;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Telegram\Bot\Objects\Update;
 
@@ -68,7 +67,6 @@ class RegisterService
         // 🔹 Foydalanuvchi va chat obyektlarini olish
         $from = $message?->getFrom() ?? $callback?->getFrom();
         $chat = $message?->getChat() ?? $callback?->getMessage()?->getChat();
-        Log::info("update", ['data' => $update]);
 
         // 🔹 Username olishda eng ishonchli usul
         $username = $chat?->get('first_name')
@@ -87,7 +85,7 @@ class RegisterService
 
 
         return match (true) {
-            empty($data['lang']) => app(StartHandler::class)->ask($chatId),
+            empty($data['lang']) => app(LanguageHandler::class)->ask($chatId),
             !array_key_exists('phone2', $data) => app(Phone2StepHandler::class)->ask($chatId),
             empty($data['gender']) => app(GenderStepHandler::class)->ask($chatId),
             empty($data['region_id']) => app(RegionStepHandler::class)->ask($chatId),
@@ -98,7 +96,6 @@ class RegisterService
     }
     protected function registerUserAndFinalize($chatId, $data, $username)
     {
-        Log::info("User create request yuborilmoqda", ['chat_id' => $chatId, 'data' => $data]);
 
         $baseUrl = config('services.urls.auth_service');
         $data['chat_id'] = (string) $chatId;
@@ -112,12 +109,10 @@ class RegisterService
             return;
         }
 
-        // Log::info("Auth servisidan javob", context: ['response' => $response->json()]);
 
         $user = $response->json('user');
 
         if ($user) {
-            Log::info("Qaytgan user malumotlari: ", ['user' => $user]);
             $user['state'] = 'completed';
             Queue::connection('rabbitmq')->push(new RegisteredReferralJob(
                 $chatId,
@@ -129,7 +124,6 @@ class RegisterService
                 $user
             );
             $this->forget($chatId);
-            Log::info("User session saqlandi va ro‘yxat yakunlandi", ['chat_id' => $chatId]);
             return app(Welcome::class)->handle($chatId);
         }
 

@@ -2,26 +2,27 @@
 namespace App\Telegram\Handlers\Register;
 
 use App\Telegram\Services\RegisterService;
+use App\Telegram\Services\SendMessages;
 use App\Telegram\Services\Translator;
 use App\Telegram\Services\UserUpdateService;
-use Telegram\Bot\Laravel\Facades\Telegram;
 
 class GenderStepHandler
 {
-    protected Translator $translator;
 
-    public function __construct(Translator $translator)
-    {
-        $this->translator = $translator;
+    public function __construct(
+        protected Translator $translator,
+        protected SendMessages $sender
+    ) {
     }
 
     public function ask($chatId)
     {
-        Telegram::sendMessage([
+        $this->sender->handle([
             'chat_id' => $chatId,
             'text' => $this->translator->get($chatId, 'ask_gender'),
             'reply_markup' => $this->getGenderKeyboard($chatId),
         ]);
+        return;
     }
 
     protected function getGenderKeyboard($chatId)
@@ -51,18 +52,17 @@ class GenderStepHandler
         $genderMap = $this->getGenderMap($chatId);
 
         if (!isset($genderMap[$text])) {
-            return Telegram::sendMessage([
+            $this->sender->handle([
                 'chat_id' => $chatId,
                 'text' => $this->translator->get($chatId, 'invalid_gender_format'),
             ]);
+            return;
         }
-
-        Telegram::sendMessage([
+        $this->sender->handle([
             'chat_id' => $chatId,
             'text' => $this->translator->get($chatId, 'gender_received'),
             'reply_markup' => json_encode(['remove_keyboard' => true]),
         ]);
-
 
         app($service)->mergeToCache($chatId, [
             'gender' => $genderMap[$text],

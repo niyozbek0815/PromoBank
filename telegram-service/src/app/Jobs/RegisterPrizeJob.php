@@ -49,14 +49,10 @@ class RegisterPrizeJob implements ShouldQueue
         }
 
         $data = $response->json();
-        Log::info("return Data", ['data' => $data]);
         if ($data['is_new']) {
-
-
             // 🔹 Dinamik promo kod (hozircha misol uchun)
             $promoCode = $data['code'];
             $video_url = $data['url'] ?? 'https://promobank.io/namuna/video6.mp4';
-            Log::info('🎥 RegisterPrizeJob ishga tushdi', ['chat_id' => $this->chatId, 'promo_code' => $promoCode]);
             // 🔹 Matnni o‘zgaruvchida saqlaymiz (HTML formatda)
             $translator = app(Translator::class);
             $textTemplate = $translator->get($this->chatId, 'ontv_text');
@@ -88,10 +84,6 @@ class RegisterPrizeJob implements ShouldQueue
                 throw $e;
 
             }
-            Log::info('🎥 RegisterPrizeJob video xabari yuborildi', ['chat_id' => $this->chatId]);
         }
-
-
-
     }
 }

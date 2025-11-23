@@ -2,16 +2,19 @@
 
 namespace App\Telegram\Middleware;
 
+use App\Jobs\RegisterPrizeJob;
 use App\Telegram\Handlers\Menu;
 use App\Telegram\Handlers\Routes\AuthenticatedRouteHandler;
 use App\Telegram\Handlers\Routes\RegisterRouteHandler;
 use App\Telegram\Handlers\Routes\StartRouteHandler;
 use App\Telegram\Handlers\Routes\SubscriptionRouteHandler;
 use App\Telegram\Handlers\Routes\UpdateRouteHandler;
-use App\Telegram\Services\RegisterService;
+use App\Telegram\Handlers\Subscriptions;
+use App\Telegram\Services\SendMessages;
 use App\Telegram\Services\SessionStatusService;
 use App\Telegram\Services\SubscriptionService;
 use Illuminate\Support\Facades\Log;
+use Queue;
 use Telegram\Bot\Objects\Message;
 use Telegram\Bot\Objects\CallbackQuery;
 class EnsureTelegramSessionExists
@@ -83,42 +86,21 @@ class EnsureTelegramSessionExists
         //  Autentifikatsiyadan o‘tgan foydalanuvchilar
         if ($status === 'authenticated') {
             $notSubscribed = app(SubscriptionService::class)->check($chatId);
-
+            if (!empty($notSubscribed) || in_array($getData, ['check_subscriptions', 'check_subscriptions_register'])) {
+                app(SubscriptionRouteHandler::class)->handle($update, $chatId, $getData, $notSubscribed);
+                return;
+            }
             Log::info("Middleware authenticated", [
                 'chat_id' => $chatId,
                 'notSubscribedCount' => count($notSubscribed),
             ]);
 
-            if ($getData === 'check_subscriptions') {
-                if (empty($notSubscribed)) {
-                    $pending = app(SubscriptionService::class)->getPendingAction($chatId);
-                    $messageId = $update->getCallbackQuery()?->getMessage()?->getMessageId();
-
-                    app(SubscriptionService::class)->deleteMessage($chatId, $messageId);
-
-                    if ($pending) {
-                        $updateObject = new \Telegram\Bot\Objects\Update($pending);
-                        return app(Menu::class)->handle($chatId);
-                        // return app(AuthenticatedRouteHandler::class)->handle($updateObject);
-                    }
-
-                    return app(Menu::class)->handle($chatId);
-                }
-
-                return app(SubscriptionRouteHandler::class)->handle($update, $notSubscribed, true);
-            }
-
-            if (!empty($notSubscribed)) {
-                return app(SubscriptionRouteHandler::class)->handle($update, $notSubscribed);
-            }
 
             return app(AuthenticatedRouteHandler::class)->handle($update);
         }
 
         if ($status === 'none') {
             Log::info("Middleware none", ['chat_id' => $chatId]);
-
-            // Agar foydalanuvchi hali sessionga ega emas — start xabarini simulyatsiya qilamiz
             $fakeUpdate = new \Telegram\Bot\Objects\Update([
                 'update_id' => $update->getUpdateId(),
                 'message' => [
@@ -137,7 +119,6 @@ class EnsureTelegramSessionExists
                 ]
             ]);
 
-            // /start handler ga yo‘naltiramiz
             return app(StartRouteHandler::class)->handle($fakeUpdate);
         }
 

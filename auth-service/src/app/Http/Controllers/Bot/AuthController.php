@@ -215,6 +215,9 @@ class AuthController extends Controller
             ->where('chat_id', $chatId)
             ->where('is_guest', false)
             ->first();
+        // if ($user) {
+        //     $user->update(['chat_id' => null]);
+        // }
         // $user->delete();
         if ($user) {
             return response()->json([

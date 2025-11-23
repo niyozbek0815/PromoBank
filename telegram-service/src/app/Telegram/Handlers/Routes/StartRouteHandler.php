@@ -5,6 +5,7 @@ namespace App\Telegram\Handlers\Routes;
 use App\Jobs\StartAndRefferralJob;
 use App\Telegram\Handlers\Menu;
 use App\Telegram\Handlers\Start\StartHandler;
+use App\Telegram\Handlers\Subscriptions;
 use App\Telegram\Handlers\Welcome;
 use App\Telegram\Services\StartService;
 use App\Telegram\Services\SubscriptionService;
@@ -45,11 +46,18 @@ class StartRouteHandler
             $referrerId = ($m[1] == $chatId) ? null : (string) $m[1];
         }
         Cache::store('bot')->forget("tg_user_data:$chatId");
+        Cache::store('bot')->forget('tg_user:' . $chatId);
+        Cache::store('bot')->forget('tg_user_update:' . $chatId);
         if (app(StartService::class)->handle($chatId, $username, $referrerId)) {
             app(Welcome::class)->handle($chatId);
             $notSubscribed = app(SubscriptionService::class)->check($chatId);
             if (!empty($notSubscribed)) {
-                return app(SubscriptionRouteHandler::class)->handle($update, $notSubscribed);
+                return app(Subscriptions::class)->showSubscriptionPrompt(
+                    $chatId,
+                    $notSubscribed,
+                    null,
+                    'check_subscriptions_register'
+                );
             }
             return app(Menu::class)->handle($chatId);
         }
