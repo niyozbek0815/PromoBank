@@ -51,22 +51,7 @@ class RegisterService
         Cache::store("bot")->forget($this->prefix . $chatId);
     }
 
-    public function getSessionStatus(string $chatId)
-    {
-        if (Cache::store("bot")->has('tg_user_data:' . $chatId)) {
-            return 'in_register';
-        }
 
-        if (Cache::store("bot")->has('tg_user_update:' . $chatId)) {
-            return 'in_update';
-        }
-
-        if (Cache::store("bot")->has('tg_user:' . $chatId)) {
-            return 'authenticated';
-        }
-
-        return 'none';
-    }
     public function finalizeUserRegistration(Update $update)
     {
         $chatId = $update->getMessage()?->getChat()?->getId();

@@ -3,9 +3,13 @@
 namespace App\Telegram\Handlers\Routes;
 
 use App\Jobs\StartAndRefferralJob;
+use App\Telegram\Handlers\Menu;
 use App\Telegram\Handlers\Start\StartHandler;
+use App\Telegram\Handlers\Welcome;
+use App\Telegram\Services\StartService;
+use App\Telegram\Services\SubscriptionService;
+use App\Telegram\Services\UserSessionService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Telegram\Bot\Objects\Update;
 
@@ -37,29 +41,19 @@ class StartRouteHandler
             ?? null;
         $referrerId = null;
 
-        if (preg_match('/^\/start\s+(\d+)/', trim($messageText ?? ''), $matches)) {
-            $referrerId = (string) $matches[1];
+        if (preg_match('/^\/start\s+(\d+)/', trim($messageText ?? ''), $m)) {
+            $referrerId = ($m[1] == $chatId) ? null : (string) $m[1];
+        }
+        Cache::store('bot')->forget("tg_user_data:$chatId");
+        if (app(StartService::class)->handle($chatId, $username, $referrerId)) {
+            app(Welcome::class)->handle($chatId);
+            $notSubscribed = app(SubscriptionService::class)->check($chatId);
+            if (!empty($notSubscribed)) {
+                return app(SubscriptionRouteHandler::class)->handle($update, $notSubscribed);
+            }
+            return app(Menu::class)->handle($chatId);
         }
 
-        Log::info("StartRouteHandler dispatch StartAndRefferralJob", [
-            'chat_id' => $chatId,
-            'referrer_id' => $referrerId,
-            'username' => $username,
-            'message_text' => $messageText,
-            'update' => $update
-        ]);
-        Cache::store('bot')->forget("tg_subscriptions_ok:$chatId");
-
-        Cache::store('bot')->forget("tg_user_data:$chatId");
-        Cache::store('bot')->forget("tg_user:$chatId");
-
-        Queue::connection('rabbitmq')->push(new StartAndRefferralJob(
-            $chatId,
-            $username,
-            $referrerId
-        ));
-
-
-        return app(StartHandler::class)->startAsk($chatId);
+        return app(StartHandler::class)->handle($chatId);
     }
 }

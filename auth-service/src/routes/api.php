@@ -24,6 +24,7 @@ Route::controller(AuthController::class)->group(function () {
     // Route::post('/logout', 'logout')->middleware('guestCheck'); // POST /auth/logout
 });
 Route::controller(BotAuthController::class)->group(function () {
+    Route::post('/user_exists', 'exists');
     Route::post('/user_check', 'check');
     Route::post('/user_create', 'create');
     Route::post('/user_update', 'update');

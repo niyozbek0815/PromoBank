@@ -11,20 +11,21 @@ class HomeController extends Controller
     public function __construct()
     {
         $this->url = config('services.urls.web_service');
-        $this->promo= config('services.urls.promo_service');
+        $this->promo = config('services.urls.promo_service');
     }
     public function index(Request $request)
     {
+        // dd("data");
         $locale = app()->getLocale();
         $request->merge(['lang' => $locale]);
         $mainResponse = $this->forwardRequest("POST", $this->url, "frontend/", $request);
         $promoResponse = $this->forwardRequest("POST", $this->promo, "frontend/", $request);
-        // dd($promoResponse->json());
+        // dd($promoResponse);
         if (
             $mainResponse instanceof \Illuminate\Http\Client\Response
             && $promoResponse instanceof \Illuminate\Http\Client\Response
         ) {
-            $mainData  = $mainResponse->json() ?? [];
+            $mainData = $mainResponse->json() ?? [];
             $promoData = $promoResponse->json() ?? [];
             $mergedData = array_merge($mainData, [
                 'promos' => $promoData['data'] ?? $promoData

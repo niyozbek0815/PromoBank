@@ -6,6 +6,7 @@ use App\Telegram\Handlers\Menu;
 use App\Telegram\Handlers\Routes\SubscriptionRouteHandler;
 use App\Telegram\Services\RegisterRouteService;
 use App\Telegram\Services\RegisterService;
+use App\Telegram\Services\SendMessages;
 use App\Telegram\Services\SubscriptionService;
 use App\Telegram\Services\Translator;
 use App\Telegram\Services\UserSessionService;
@@ -16,12 +17,13 @@ class PhoneStepHandler
 {
     public function __construct(
         protected Translator $translator,
-        protected UserSessionService $userSession
+        protected UserSessionService $userSession,
+        protected SendMessages $sender
     ) {
     }
     public function ask($chatId)
     {
-        Telegram::sendMessage([
+        $this->sender->handle([
             'chat_id' => $chatId,
             'text' => $this->translator->get($chatId, 'ask_phone'),
             'reply_markup' => json_encode([
@@ -55,19 +57,16 @@ class PhoneStepHandler
             ?? $from?->username
             ?? $from?->get('first_name')
             ?? $from?->first_name
-
             ?? null;
-        // ✅ Faqat contact kelganini tekshirish
         if (!$contact) {
-            Telegram::sendMessage([
+            $this->sender->handle([
                 'chat_id' => $chatId,
                 'text' => $this->translator->get($chatId, 'invalid_phone_format'),
             ]);
             return;
         }
         $phone = str_starts_with($phone, '+') ? $phone : '+' . $phone;
-
-        Telegram::sendMessage([
+        $this->sender->handle([
             'chat_id' => $chatId,
             'text' => $this->translator->get($chatId, 'phone_received'),
             'reply_markup' => json_encode(['remove_keyboard' => true]),
@@ -77,12 +76,11 @@ class PhoneStepHandler
             app(RegisterService::class)->forget($chatId);
 
             app(AlreadyRegisterStepHandler::class)->handle($chatId);
-              $notSubscribed = app(SubscriptionService::class)->checkUserSubscriptions($chatId);
+            $notSubscribed = app(SubscriptionService::class)->check($chatId, true);
             if (!empty($notSubscribed)) {
                 return app(SubscriptionRouteHandler::class)->handle($update, $notSubscribed);
             }
-                return app(Menu::class)->handle($chatId);
-
+            return app(Menu::class)->handle($chatId);
         }
 
         return app(RegisterRouteService::class)->askNextStep($chatId);

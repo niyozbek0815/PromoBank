@@ -65,7 +65,7 @@ class OfertaStepHandler
                 'state' => 'complete',
             ]);
             app(RegisterService::class)->finalizeUserRegistration($update);
-              $notSubscribed = app(SubscriptionService::class)->checkUserSubscriptions($chatId);
+              $notSubscribed = app(SubscriptionService::class)->check($chatId,true);
             if (!empty($notSubscribed)) {
                 return app(SubscriptionRouteHandler::class)->handle($update, $notSubscribed);
             }

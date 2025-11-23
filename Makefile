@@ -1,6 +1,6 @@
 # Docker settings
 DOCKER_NETWORK=promobank
-SERVICES=  api-getaway   auth-service media-service promo-service telegram-service  web-service  game-service  notification-service
+SERVICES=  api-getaway   auth-service media-service promo-service   web-service  game-service  notification-service telegram-service
 # notification-service payment-service  profile-service    
 INFRA_COMPOSE=docker-compose/infrastructure.yml 
 
@@ -53,27 +53,6 @@ network:
 	else \
 		echo "✅ Docker network '$(DOCKER_NETWORK)' already exists."; \
 	fi
-.PHONY: queue-all
-queue-all:
-	@if [ -z "$(s)" ]; then \
-		SERVICES="$(SERVICES)"; \
-	else \
-		SERVICES="$(s)"; \
-	fi; \
-	for service in $$SERVICES; do \
-		APP_CONTAINER="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
-		echo "▶️ Starting queue worker in $$service (container: $$APP_CONTAINER)..."; \
-		docker compose -f $$service/docker-compose.yml exec -T $$APP_CONTAINER sh -c "php artisan queue:work --tries=3 --timeout=60" & \
-		PID=$$!; \
-		sleep 2; \
-		if ! kill -0 $$PID 2>/dev/null; then \
-			echo "❌ Queue worker failed to start in $$service ($$APP_CONTAINER)"; \
-		else \
-			echo "✅ Queue worker running for $$service ($$APP_CONTAINER)"; \
-		fi; \
-	done; \
-	wait
-
 
 
 .PHONY: fix-permissions
@@ -246,7 +225,7 @@ run:
 			docker compose -f $$service/docker-compose.yml exec -T $$app_container sh -c '$(c)'; \
 		done; \
 	fi
-x.PHONY: run-all
+.PHONY: run-all
 run-all:
 	@if [ -z "$(c)" ]; then \
 		echo "❌ Please provide a command to run in all services:"; \
@@ -287,8 +266,34 @@ fix-laravel-permissions:
 				php artisan route:clear"; \
 		done; \
 	fi
-# Restart all Laravel queue workers (queue:restart)
+
+
+.PHONY: queue-all
+queue-all:
+	@if [ -z "$(s)" ]; then \
+		QUEUE_SERVICES="$(SERVICES)"; \
+	else \
+		QUEUE_SERVICES="$(s)"; \
+	fi; \
+	for service in $$QUEUE_SERVICES; do \
+		APP_CONTAINER="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
+		echo "▶️ Starting 3 queue workers in $$service (container: $$APP_CONTAINER)..."; \
+		for i in 1 2 3; do \
+			( \
+				echo "⚡ Starting worker $$i in $$service..."; \
+				docker compose -f $$service/docker-compose.yml exec -T $$APP_CONTAINER sh -c "\
+					php artisan queue:work --tries=3 --timeout=60 --sleep=3 \
+				" \
+			) & \
+		done; \
+	done; \
+	wait; \
+	echo "✅ All workers started for all services."
+# Queue workerlarni restart qilish optimal usulda
+
+
 .PHONY: queue-restart
+
 queue-restart:
 	@if [ -z "$(s)" ]; then \
 		SERVICES="$(SERVICES)"; \
@@ -299,4 +304,5 @@ queue-restart:
 		APP_CONTAINER="$$(basename $$service | sed 's/-service/_app/' | sed 's/-getaway/_app/')"; \
 		echo "♻️ Restarting queue workers in $$service (container: $$APP_CONTAINER)..."; \
 		docker compose -f $$service/docker-compose.yml exec -T $$APP_CONTAINER php artisan queue:restart; \
+		echo "✅ Workers restarted in $$service"; \
 	done

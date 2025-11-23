@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Telegram\Services;
-
 use App\Jobs\RegisterPrizeJob;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -16,38 +15,38 @@ class SubscriptionService
      * ularni oxirida doimiy ro‘yxatga qo‘shadi.
      */
 
+
     public function handle()
     {
 
     }
-    public function checkUserSubscriptions(int|string $chatId): array
+    public function check(int|string $chatId, bool $dispatchRegisterPrize = false): array
     {
-        // 🔹 Avval cache'ni tekshiramiz
-        $cacheKey = "tg_subscriptions_ok:$chatId";
-        // Cache::store('bot')->forget($cacheKey);
+        // $this->forget($chatId);
 
-        if (Cache::store('bot')->has($cacheKey)) {
-            Log::info("{$chatId} uchun obuna cache mavjud — qayta tekshirilmaydi.");
-            return []; // ✅ Barcha kanallarga obuna deb hisoblanadi
+        // Agar avvaldan tekshiruvdan o'tgan bo‘lsa
+        if ($this->exists($chatId)) {
+            return [];
         }
-
         // $channels = [
         //     '@niyozbek_mn',
-        //     '@classic_mc'
+        //     '@classic_mc',
+        //     // '@promobank_uz',
         // ];
-      $channels = [
-'@my5tv',
-'@promobank_uz',
-'@musofir_shou',
+
+
+        $channels = [
+            '@my5tv',
+            '@promobank_uz',
+            '@musofir_shou',
         ];
         $notSubscribed = [];
         $bots = [];
 
         foreach ($channels as $channel) {
-            // 🔹 Agar bot bo‘lsa, tekshiruvdan o‘tkazmaymiz
+
             if ($this->isBotUsername($channel)) {
                 $bots[] = $channel;
-                Log::info("{$channel} bot ekan, tekshiruv tashlab o'tildi.");
                 continue;
             }
 
@@ -58,39 +57,48 @@ class SubscriptionService
                 ]);
 
                 $status = $member->status ?? null;
-                Log::info("Channel {$channel} -> status", ['status' => $status]);
 
-                if (!in_array($status, ['creator', 'administrator', 'member'])) {
+                if (!in_array($status, ['creator', 'administrator', 'member'], true)) {
                     $notSubscribed[] = $channel;
                 }
-            } catch (\Throwable $e) {
-                Log::error("Channel tekshirishda xatolik: {$channel}", [
-                    'error' => $e->getMessage(),
-                ]);
 
+            } catch (\Throwable $e) {
                 if (!str_contains($e->getMessage(), 'bot is not a member')) {
                     $notSubscribed[] = $channel;
                 }
             }
         }
 
-        // 🔹 Agar obuna bo‘lmagan kanal bo‘lsa — botlarni ham qo‘shamiz
-        if (!empty($notSubscribed) && !empty($bots)) {
+        // Agar botlar bo‘lsa va unsubscribed bo‘lsa — birlashtiramiz
+        if ($notSubscribed && $bots) {
             $notSubscribed = array_merge($notSubscribed, $bots);
         }
 
-        // ✅ Agar hammasiga obuna bo‘lsa — cache saqlaymiz (masalan 1 soat)
-        if (empty($notSubscribed)) {
-            Queue::connection('rabbitmq')->push(new RegisterPrizeJob(
-                chatId: $chatId,
-            ));
-            Cache::store('bot')->put($cacheKey, true, now()->addHours(3));
-            Log::info("{$chatId} barcha kanallarga obuna — cache saqlandi (1 soatga).");
+        // To‘liq subscribe qilingan bo‘lsa
+        if (!$notSubscribed) {
+            $this->put($chatId);
+
+            if ($dispatchRegisterPrize) {
+                Log::info('Segisterda dispatch qildim ');
+                Queue::connection('rabbitmq')
+                    ->push(new RegisterPrizeJob($chatId));
+            }
         }
 
         return $notSubscribed;
     }
-
+    public function put($chatId)
+    {
+        Cache::store('bot')->put("tg_subs:$chatId", true, 103800);
+    }
+    public function forget($chatId)
+    {
+        Cache::store('bot')->forget("tg_subs:$chatId");
+    }
+    public function exists($chatId): bool
+    {
+        return Cache::store('bot')->has("tg_subs:$chatId");
+    }
     public function deleteMessage($chatId, $messageId = null)
     {
 
@@ -109,13 +117,8 @@ class SubscriptionService
             }
         }
     }
-    /**
-     * Foydalanuvchiga obuna bo‘lish uchun xabar yuboradi yoki eski xabarni yangilaydi.
-     */
 
-    /**
-     * Username botligini tekshiradi (masalan: @PromoBank_uz_bot, @TestBot)
-     */
+
     private function isBotUsername(string $username): bool
     {
         $u = strtolower($username);
@@ -131,12 +134,9 @@ class SubscriptionService
     {
 
         $key = "tg_pending_action:$chatId";
-
-        // Cache’dan olish
         $json = Cache::store('bot')->get($key);
 
         if ($json) {
-            // O'qilganidan so'ng darhol o'chirish
             Cache::store('bot')->forget($key);
             return json_decode($json, true);
         }
@@ -144,9 +144,6 @@ class SubscriptionService
         return null;
     }
 
-    public function isSubscriptionCached(int|string $chatId): bool
-    {
-        return Cache::store('bot')->has("tg_subscriptions_ok:$chatId");
-    }
+
 
 }

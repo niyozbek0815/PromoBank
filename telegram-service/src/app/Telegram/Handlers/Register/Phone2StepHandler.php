@@ -64,6 +64,7 @@ class Phone2StepHandler
                     'chat_id' => $chatId,
                     'message_id' => $storedMsgId,
                 ]);
+                Cache::store('bot')->forget("tg_phone2_msg:$chatId");
             }
             Telegram::sendMessage([
                 'chat_id' => $chatId,

@@ -65,9 +65,9 @@
       - api_db
     networks:
     - promobank
-networks:
-  promobank:
-    external: true
+  networks:
+    promobank:
+      external: true
 
 
 
@@ -115,8 +115,8 @@ networks:
 #     volumes:
 #       - ./src:/var/www
 #       - ../common:/var/www/common
-#     ports:
-#       - "9000:9000"
+#     # ports:
+#     #   - "9000:9000"
 #     working_dir: /var/www
 #     networks:
 #       - promobank

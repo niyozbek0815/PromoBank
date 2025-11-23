@@ -18,6 +18,9 @@ services:
     container_name: promobank_redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "1gb", "--maxmemory-policy", "allkeys-lru"]
     networks:
       - promobank
 
@@ -25,16 +28,22 @@ services:
     image: rabbitmq:4-management
     container_name: promobank_rabbitmq
     ports:
-      - "5672:5672"       # AMQP
-      - "15672:15672"     # Web UI
+      - "5672:5672"
+      - "15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=admin
       - RABBITMQ_DEFAULT_PASS=admin
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - rabbitmq-data:/var/lib/rabbitmq
+    restart: unless-stopped
     networks:
       - promobank
 
 volumes:
   pgadmin-data:
+  redis-data:
+  rabbitmq-data:  # ← bu qo‘shildi
 
 networks:
   promobank:

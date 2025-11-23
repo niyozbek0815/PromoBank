@@ -17,6 +17,7 @@ class PromotionsController extends Controller
     }
     public function index(Request $request)
     {
+
         $locale = app()->getLocale();
         $request->merge(['lang' => $locale]);
         $mainResponse = $this->forwardRequest("POST", $this->url, "frontend/pages", $request);
@@ -87,7 +88,7 @@ class PromotionsController extends Controller
         $locale = $request->header('X-Locale') ?? session('locale', config('app.locale'));
         $request->merge(['lang' => $locale]);
         $response = $this->forwardRequest("POST", $this->promo, "webapp/promotions/{$id}/receipt", $request);
-        Log::info("Response",[$response->json()]);
+        Log::info("Response", [$response->json()]);
         return response()->json($response->json());
     }
     public function secretNumber(Request $request, $id)
@@ -97,7 +98,7 @@ class PromotionsController extends Controller
         $request->merge(['lang' => $locale]);
         $response = $this->forwardRequest("POST", $this->promo, "webapp/promotions/{$id}/secret-number", $request);
         Log::info("Response", [$response->json()]);
-        return response()->json($response->json(),$response->status());
+        return response()->json($response->json(), $response->status());
     }
     public function showAjaxData(Request $request, $id)
     {

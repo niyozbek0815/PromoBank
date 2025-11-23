@@ -1,8 +1,10 @@
 <?php
 namespace App\Telegram\Handlers\Start;
 
+use App\Telegram\Handlers\Register\LanguageHandler;
 use App\Telegram\Services\RegisterRouteService;
 use App\Telegram\Services\RegisterService;
+use App\Telegram\Services\SendMessages;
 use App\Telegram\Services\Translator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -11,67 +13,40 @@ use Telegram\Bot\Laravel\Facades\Telegram;
 class StartHandler
 {
     public function __construct(
-        protected Translator $translator
+        protected Translator $translator,
+        protected SendMessages $sender
     ) {
-        // Constructor can be used for dependency injection if needed
     }
 
-
-public function startAsk($chatId)
-{
-    Log::info("StartHandler startAsk ishladi: $chatId");
-
-    try {
-        Telegram::sendMessage([
+    public function handle($chatId)
+    {
+        $this->sender->handle([
             'chat_id' => $chatId,
             'text' => $this->translator->get($chatId, 'start'),
             'reply_markup' => json_encode([
                 'remove_keyboard' => true,
             ]),
         ]);
-    } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
-        $msg = $e->getMessage();
-        if (str_contains($msg, 'bot was blocked by the user') || str_contains($msg, 'message is not modified')) {
-            Log::warning("Telegram xabari yuborilmadi, foydalanuvchi bloklagan yoki o'zgartirish yo'q: $chatId, msg: $msg");
-            return; // shunchaki return qilamiz, xatolik qaytarmaydi
-        }
-        Log::warning("12Telegram xabari yuborilmadi: $chatId, msg: $msg");
-
-      return;
+        app(RegisterService::class)->mergeToCache($chatId, [
+            'chat_id' => $chatId,
+            'state' => 'waiting_for_language',
+        ]);
+        return app(LanguageHandler::class)->ask($chatId);
     }
 
-    app(RegisterService::class)->mergeToCache($chatId, [
-        'chat_id' => $chatId,
-        'state' => 'waiting_for_language',
-    ]);
+    public function ask($chatId)
+    {
 
-    return app(RegisterRouteService::class)->askNextStep($chatId);
-}
-
-public function ask($chatId)
-{
-    try {
-        Telegram::sendMessage([
+        $this->sender->handle([
             'chat_id' => $chatId,
             'text' => $this->translator->get($chatId, 'welcome'),
             'reply_markup' => json_encode([
                 'remove_keyboard' => true,
-            ]),
+            ])
         ]);
-    } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
-        $msg = $e->getMessage();
-        if (str_contains($msg, 'bot was blocked by the user') || str_contains($msg, 'message is not modified')) {
-            Log::warning("Telegram xabari yuborilmadi, foydalanuvchi bloklagan yoki o'zgartirish yo'q: $chatId, msg: $msg");
-            return;
-        }
-        throw $e;
-    }
-
-    $lang = json_decode(Cache::store('bot')->get("tg_lang:$chatId"), true) ?? [];
-
-    if (empty($lang)) {
-        try {
-            Telegram::sendMessage([
+        $lang = json_decode(Cache::store('bot')->get("tg_lang:$chatId"), true) ?? [];
+        if (empty($lang)) {
+            $this->sender->handle([
                 'chat_id' => $chatId,
                 'text' => "❗️ Iltimos, tilni tanlang.\n❗️ Пожалуйста, выберите язык.\n❗️ Илтимос, тилни танланг.\n❗️ Please, select your language.",
                 'reply_markup' => json_encode([
@@ -99,16 +74,9 @@ public function ask($chatId)
                     ],
                 ]),
             ]);
-        } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
-            $msg = $e->getMessage();
-            if (str_contains($msg, 'bot was blocked by the user') || str_contains($msg, 'message is not modified')) {
-                Log::warning("Telegram xabari yuborilmadi, foydalanuvchi bloklagan yoki o'zgartirish yo'q: $chatId, msg: $msg");
-                return;
-            }
-            throw $e;
+            return;
         }
-        return;
-    }
 
-    return app(RegisterRouteService::class)->askNextStep($chatId);
-}}
+        return app(RegisterRouteService::class)->askNextStep($chatId);
+    }
+}

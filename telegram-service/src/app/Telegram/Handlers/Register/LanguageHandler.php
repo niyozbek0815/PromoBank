@@ -2,16 +2,17 @@
 namespace App\Telegram\Handlers\Register;
 
 use App\Telegram\Services\RegisterService;
+use App\Telegram\Services\SendMessages;
 use App\Telegram\Services\Translator;
 use App\Telegram\Services\UserUpdateService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
-use Telegram\Bot\Laravel\Facades\Telegram;
 
 class LanguageHandler
 {
     public function __construct(
-        protected Translator $translator
+        protected Translator $translator,
+        protected SendMessages $sender
+
     ) {
     }
 
@@ -19,13 +20,12 @@ class LanguageHandler
     {
         // 🔹 4 tildagi "til tanlang" matnlarini Translator orqali olish
         $text = implode("\n", [
-            $this->translator->get($chatId, 'language_prompt'), // foydalanuvchi tiliga mos
+            $this->translator->getForLang('language_prompt', 'uz'),
             $this->translator->getForLang('language_prompt', 'ru'),
             $this->translator->getForLang('language_prompt', 'kr'),
             $this->translator->getForLang('language_prompt', 'en'),
         ]);
 
-        // 🔹 Har bir til nomini Translator orqali olish
         $keyboard = [
             [
                 [
@@ -48,8 +48,7 @@ class LanguageHandler
                 ],
             ],
         ];
-
-        Telegram::sendMessage([
+        $this->sender->handle([
             'chat_id' => $chatId,
             'text' => $text,
             'reply_markup' => json_encode(['inline_keyboard' => $keyboard]),
@@ -65,14 +64,14 @@ class LanguageHandler
 
         if (strpos($messageText, 'lang:') === 0) {
             if ($callbackMessage) {
-                Telegram::deleteMessage([
+                $this->sender->delete([
                     'chat_id' => $chatId,
                     'message_id' => $callbackMessage->getMessageId(),
                 ]);
+
             }
             $lang = str_replace('lang:', '', $messageText);
-            Log::info("Language selected: $lang");
-            Cache::store('bot')->put("tg_lang:$chatId", $lang, now()->addDays(700));
+            Cache::store('bot')->put("tg_lang:$chatId", $lang, now()->addDays(8));
             app($serviceClass)->mergeToCache($chatId, [
                 'chat_id' => $chatId,
                 'lang' => $lang,
@@ -81,12 +80,12 @@ class LanguageHandler
             return app($nextHandlerClass)->ask($chatId);
         }
         $text = implode("\n", [
-            $this->translator->get($chatId, 'language_prompt'), // foydalanuvchi tiliga mos
+            $this->translator->getForLang('language_prompt', 'uz'),
             $this->translator->getForLang('language_prompt', 'ru'),
             $this->translator->getForLang('language_prompt', 'kr'),
             $this->translator->getForLang('language_prompt', 'en'),
         ]);
-        Telegram::sendMessage([
+        $this->sender->handle([
             'chat_id' => $chatId,
             'text' => $text,
         ]);

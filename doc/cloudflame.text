@@ -6,3 +6,15 @@ nohup cloudflared tunnel run promobank-tunnel > /tmp/cloudflared.log 2>&1 &
 🔄 To‘xtatish uchun:
 
 pkill -f "cloudflared tunnel run promobank-tunnel"
+
+
+
+serverga yuklab bo'lib qilishim kerak
+
+Docker globalni qayta ishga tushurish
+
+make run-all  c="composer dump-autoload"
+
+hamma env ichini quyid÷agicha qilib chiqish
+APP_ENV=production
+APP_DEBUG=false

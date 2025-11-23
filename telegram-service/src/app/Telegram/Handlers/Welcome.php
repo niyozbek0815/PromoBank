@@ -1,25 +1,29 @@
 <?php
 namespace App\Telegram\Handlers;
 
+use App\Telegram\Services\SendMessages;
 use App\Telegram\Services\Translator;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
 class Welcome
 {
+    public function __construct(
+        protected Translator $translator,
+        protected SendMessages $sender
+    ) {
+    }
     public function handle($chatId)
     {
-        $translator = app(Translator::class);
-        Telegram::sendMessage([
-            'chat_id'      => $chatId,
-            'text'         => $translator->get($chatId, 'welcome'),
+        return $this->sender->handle([
+            'chat_id' => $chatId,
+            'text' => $this->translator->get($chatId, 'welcome'),
             'reply_markup' => json_encode([
-                'keyboard'          => [
-                    [['text' => $translator->get($chatId, 'open_main_menu')]],
+                'keyboard' => [
+                    [['text' => $this->translator->get($chatId, 'open_main_menu')]],
                 ],
-                'resize_keyboard'   => true,
+                'resize_keyboard' => true,
                 'one_time_keyboard' => false,
             ]),
         ]);
-        // app(Menu::class)->handle($chatId);
     }
 }

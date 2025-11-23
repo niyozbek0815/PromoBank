@@ -9,6 +9,7 @@ use App\Telegram\Handlers\Routes\StartRouteHandler;
 use App\Telegram\Handlers\Routes\SubscriptionRouteHandler;
 use App\Telegram\Handlers\Routes\UpdateRouteHandler;
 use App\Telegram\Services\RegisterService;
+use App\Telegram\Services\SessionStatusService;
 use App\Telegram\Services\SubscriptionService;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Objects\Message;
@@ -62,14 +63,9 @@ class EnsureTelegramSessionExists
 
         Log::info("1EnsureTelegramSessionExists", ["chatId" => $chatId, "messageText" => $messageText, "getData" => $getData, "isOpenRoute" => $isOpenRoute]);
         if ($isOpenRoute) {
-            Log::info("Middleware openRoute", [
-                'chat_id' => $chatId,
-                'text' => $messageText,
-            ]);
-
             return app(StartRouteHandler::class)->handle($update);
         }
-        $status = app(RegisterService::class)->getSessionStatus($chatId);
+        $status = app(SessionStatusService::class)->getStatus($chatId);
 
         //  Agar ro‘yxatdan o‘tish jarayonida bo‘lsa
         if ($status === 'in_register' && !$isOpenRoute) {
@@ -86,7 +82,7 @@ class EnsureTelegramSessionExists
 
         //  Autentifikatsiyadan o‘tgan foydalanuvchilar
         if ($status === 'authenticated') {
-            $notSubscribed = app(SubscriptionService::class)->checkUserSubscriptions($chatId);
+            $notSubscribed = app(SubscriptionService::class)->check($chatId);
 
             Log::info("Middleware authenticated", [
                 'chat_id' => $chatId,
