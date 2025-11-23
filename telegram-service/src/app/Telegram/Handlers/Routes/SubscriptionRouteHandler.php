@@ -28,13 +28,14 @@ class SubscriptionRouteHandler
                 'show_alert' => false,
             ]);
         }
-        if (!empty($notSubscribed)) {
-            return app(Subscriptions::class)->showSubscriptionPrompt($chatId, $notSubscribed, $messageId);
-        }
+
 
         switch ($callbackData) {
 
             case 'check_subscriptions':
+                if (!empty($notSubscribed)) {
+                    return app(Subscriptions::class)->showSubscriptionPrompt($chatId, $notSubscribed, $messageId);
+                }
                 app(SendMessages::class)->delete([
                     'chat_id' => $chatId,
                     'message_id' => $messageId,
@@ -42,6 +43,14 @@ class SubscriptionRouteHandler
                 return app(Menu::class)->handle($chatId);
 
             case 'check_subscriptions_register':
+                if (!empty($notSubscribed)) {
+                    return app(Subscriptions::class)->showSubscriptionPrompt(
+                        $chatId,
+                        $notSubscribed,
+                        $messageId,
+                        'check_subscriptions_register'
+                    );
+                }
                 app(SendMessages::class)->delete([
                     'chat_id' => $chatId,
                     'message_id' => $messageId,
@@ -52,6 +61,8 @@ class SubscriptionRouteHandler
 
                 return app(Menu::class)->handle($chatId);
         }
-        return;
+        if (!empty($notSubscribed)) {
+            return app(Subscriptions::class)->showSubscriptionPrompt($chatId, $notSubscribed, $messageId);
+        }
     }
 }
