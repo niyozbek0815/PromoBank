@@ -1,4 +1,4 @@
-# services:
+services:
 
   api_db:
     image: postgres:18
@@ -65,9 +65,9 @@
       - api_db
     networks:
     - promobank
-  networks:
-    promobank:
-      external: true
+networks:
+  promobank:
+    external: true
 
 
 
