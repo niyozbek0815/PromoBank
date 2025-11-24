@@ -445,8 +445,8 @@
 
                                                                                 const progressBarEl = document.getElementById("progressBar");
                             if (progressBarEl) {
-                                let totalBall = parseInt(todayPointsSpan.textContent.trim()) || 0;
-                                let maxBall = 100;
+                                let totalBall = parseInt(span.textContent.trim()) || 0;
+                            maxBall = {{ $progress_bar['daily_points'] ?? 50 }};
                                 let progressPercent = Math.min((totalBall / maxBall) * 100, 100);
                                 progressBarEl.style.width = progressPercent + "%";
                             }
@@ -630,7 +630,7 @@
                                       2️⃣ DAILY PROGRESS BAR NI YANGILASH
                                    --------------------------------------------------- */
                             const progressBarEl = document.getElementById("progressBar");
-                            totalBall = parseInt(todayPointsSpan.textContent.trim()) || 0;;
+                            totalBall = parseInt(span.textContent.trim()) || 0;
                             maxBall = {{ $progress_bar['daily_points'] ?? 50 }};
                             totalBall += addedPoints;
 
