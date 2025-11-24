@@ -358,6 +358,12 @@ class Translator
             'kr' => "📱 Бизинг ижтимоий тармоқларимизга аъзо бўлинг ва кузатиб боринг:",
             'en' => "📱 Follow us on our social networks and stay updated:",
         ],
+        "promo_join_default_text" => [
+    'uz' => "Aksiyalarda qatnashish uchun Asosiy menyudagi \"Aksiyalar\" bo'limiga kiring❗️",
+    'ru' => "Чтобы участвовать в акциях, зайдите в раздел «Акции» в Главном меню❗️",
+    'kr' => "Аксияларда қатнашиш учун Асосий менюдаги «Аксиялар» бўлимига киринг❗️",
+    'en' => "To participate in promotions, open the “Promotions” section in the Main menu❗️",
+],
         'subscription_prompt' => [
             'uz' => "🔔 Iltimos, yangiliklar va aksiyalar haqida xabardor bo'lish uchun obuna bo'ling:",
             'ru' => "🔔 Пожалуйста, подпишитесь, чтобы быть в курсе новостей и акций:",
@@ -563,5 +569,12 @@ As a welcome gift, we provide you with a <b>free PROMOCODE</b> for the <b>ONTV</
     public function getForLang(string $key, string $lang): string
     {
         return $this->messages[$key][$lang] ?? $this->messages[$key][$this->defaultLanguage] ?? '';
+    }
+        public function getValuesForAllLangs(string $key): array
+    {
+        if (!isset($this->messages[$key])) {
+            return [];
+        }
+        return array_values($this->messages[$key]);
     }
 }

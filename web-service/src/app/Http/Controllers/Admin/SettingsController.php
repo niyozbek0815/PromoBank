@@ -7,7 +7,6 @@ use App\Jobs\StoreUploadedMediaJob;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Queue;
 
 class SettingsController extends Controller
 {
@@ -53,7 +52,7 @@ class SettingsController extends Controller
     public function update(Request $request)
     {
         $data = $request->all();
-
+        Log::info("data", ['data' => $data]);
         // File upload
         foreach (['navbar_logo', 'footer_logo'] as $field) {
             if ($request->hasFile($field)) {
@@ -63,7 +62,8 @@ class SettingsController extends Controller
                 $file = $request->file($field); // ✅ To‘g‘ri: input nomi bo‘yicha olish
                 $tempPath = $file->store('tmp', 'public');
                 Log::info("📎 $field image yuklanmoqda... " . $tempPath);
-                Queue::connection('rabbitmq')->push(new StoreUploadedMediaJob($tempPath, 'logo', $logoSetting['id']));
+                StoreUploadedMediaJob::dispatch($tempPath, 'logo', $logoSetting['id'])
+                    ->onQueue('web-queue');
             }
         }
 
@@ -72,8 +72,8 @@ class SettingsController extends Controller
             if (isset($data[$field])) {
                 if ($field === 'languages') {
                     $encoded = json_encode([
-                        'available' => $data['languages']['available'] ?? ['uz', 'ru', 'kr','en'],
-                        'default'   => $data['languages']['default'] ?? 'uz',
+                        'available' => $data['languages']['available'] ?? ['uz', 'ru', 'kr', 'en'],
+                        'default' => $data['languages']['default'] ?? 'uz',
                     ], JSON_UNESCAPED_UNICODE);
                 } else {
                     $encoded = json_encode($data[$field], JSON_UNESCAPED_UNICODE);

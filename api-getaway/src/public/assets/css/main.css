@@ -356,7 +356,7 @@ section {
 
 
 .navbar .nav_logo img {
-    height: 45px;
+    height: 60px;
 }
 
 .nav-links {
@@ -693,7 +693,7 @@ color: var(--accent-color);
 
 /* Logo */
 .overlay-navbar .nav_logo img {
-    height: 40px;
+    height: 60px;
 }
 
 /* Close tugma */
@@ -3411,7 +3411,7 @@ div.spinner i:nth-child(8) {
     }
 
     .nav_logo img {
-        height: 40px !important;
+        height: 55px !important;
     }
 
     .btn.btn_bars {
@@ -3538,6 +3538,7 @@ div.spinner i:nth-child(8) {
 
     .rating-header .sub-title {
         margin-bottom: 5px;
+        font-size: var(--text-xm);
     }
 
     .secret-number .name-logo .company-logo {
@@ -3579,11 +3580,11 @@ div.spinner i:nth-child(8) {
 
 
     .nav_logo img {
-        height: 35px !important;
+        height: 45px !important;
     }
 
     .overlay-navbar .nav_logo img {
-        height: 35px !important;
+        height: 45px !important;
     }
 
 

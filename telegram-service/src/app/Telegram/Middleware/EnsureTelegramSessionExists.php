@@ -64,7 +64,7 @@ class EnsureTelegramSessionExists
         $getData = $callback?->getData() ?? null;
         $isOpenRoute = $messageText && stripos($messageText, '/start') !== false;
 
-        Log::info("1EnsureTelegramSessionExists", ["chatId" => $chatId, "messageText" => $messageText, "getData" => $getData, "isOpenRoute" => $isOpenRoute]);
+        // Log::info("1EnsureTelegramSessionExists", ["chatId" => $chatId, "messageText" => $messageText, "getData" => $getData, "isOpenRoute" => $isOpenRoute]);
         if ($isOpenRoute) {
             return app(StartRouteHandler::class)->handle($update);
         }
@@ -90,10 +90,10 @@ class EnsureTelegramSessionExists
                 app(SubscriptionRouteHandler::class)->handle($update, $chatId, $getData, $notSubscribed);
                 return;
             }
-            Log::info("Middleware authenticated", [
-                'chat_id' => $chatId,
-                'notSubscribedCount' => count($notSubscribed),
-            ]);
+            // Log::info("Middleware authenticated", [
+            //     'chat_id' => $chatId,
+            //     'notSubscribedCount' => count($notSubscribed),
+            // ]);
 
 
             return app(AuthenticatedRouteHandler::class)->handle($update);

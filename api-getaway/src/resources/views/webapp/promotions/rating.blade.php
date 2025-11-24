@@ -76,16 +76,16 @@ document.addEventListener('DOMContentLoaded', function () {
     setInterval(updateCountdown, 1000);
 
     // ✅ Jadvaldagi "me-row" ni markazga olib kelish
-    const meRow = document.querySelector('.rating tr.me-row');
-    if (meRow) {
-        // Loader yopilganidan keyin ishga tushadi (masalan 500ms kechikish bilan)
-        setTimeout(() => {
-            meRow.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center' // markazga olib keladi
-            });
-        }, 500);
-    }
+    // const meRow = document.querySelector('.rating tr.me-row');
+    // if (meRow) {
+    //     // Loader yopilganidan keyin ishga tushadi (masalan 500ms kechikish bilan)
+    //     setTimeout(() => {
+    //         meRow.scrollIntoView({
+    //             behavior: 'smooth',
+    //             block: 'center' // markazga olib keladi
+    //         });
+    //     }, 500);
+    // }
 });
 </script>
 @endsection

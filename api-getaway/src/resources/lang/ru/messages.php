@@ -84,8 +84,8 @@ return [
     'today' => 'Сегодня',
     'top_100' => 'ТОП 100 Рейтинг',
     // :time ni olib tashlamang
-    'daily_refresh' => 'Таблица обновляется каждый день в :time',
-    'rating_title' => "Ежедневный рейтинг (TOP :100)",
+    'daily_refresh' => 'Рейтинг обновляется каждый день в :time',
+    'rating_title' => "Рейтинг TOP 100",
         'read_offer' => 'Читать',
     'no_offer' => 'Недоступно',
 ];

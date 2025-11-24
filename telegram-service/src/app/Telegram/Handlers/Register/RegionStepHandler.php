@@ -7,7 +7,6 @@ use App\Telegram\Services\SendMessages;
 use App\Telegram\Services\Translator;
 use App\Telegram\Services\UserUpdateService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Objects\Update;
 
 class RegionStepHandler
@@ -68,7 +67,6 @@ class RegionStepHandler
         }
 
         $regionId = (int) $regionId;
-        Log::info("handle region_id: $regionId");
         if ($messageId) {
             $this->sender->delete([
                 'chat_id' => $chatId,

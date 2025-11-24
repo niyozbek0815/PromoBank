@@ -15,10 +15,10 @@ class TelegramController extends Controller
     }
     public function webhook(Request $request)
     {
-        Log::info('start ishaldi', );
+        // Log::info('start ishaldi', );
 
         $response = $this->forwardRequest("POST", $this->url, '/internal/telegram/webhook', $request);
-        Log::info('ishaldi', ['data' => $response]);
+        // Log::info('ishaldi', ['data' => $response]);
         if ($response instanceof \Illuminate\Http\Client\Response) {
             return response()->json($response->json(), $response->status());
         }

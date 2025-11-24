@@ -30,6 +30,8 @@ class PromotionsController extends Controller
     ) {
 
     }
+
+
     public function index(Request $request)
     {
         $lang = $request->get('lang', 'uz');
@@ -95,16 +97,19 @@ class PromotionsController extends Controller
             $end,
             ($usersPoints && $usersPoints['rank'] > 100) ? 99 : 100
         );
-        Log::info("ahowAjaxDAta", [
-            'user' => $user,
-            'user_poinst' => $usersPoints,
-            'hour' => $hour,
-            "minut" => $minute,
-            'now' => $now,
-            'start' => $start,
-            'end' => $end,
+        // 975
+                // Log::info("topUsers", ['top_users' => $topUsers]);
 
-        ]);
+        // Log::info("ahowAjaxDAta", [
+        //     'user' => $user,
+        //     'user_poinst' => $usersPoints,
+        //     'hour' => $hour,
+        //     "minut" => $minute,
+        //     'now' => $now,
+        //     'start' => $start,
+        //     'end' => $end,
+
+        // ]);
         return response()->json([
             'refresh_time' => $dayStartAt,
             'range' => [

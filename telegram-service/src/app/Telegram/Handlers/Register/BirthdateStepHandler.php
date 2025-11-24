@@ -86,27 +86,6 @@ class BirthdateStepHandler
             'birthdate' => $result,
             'state' => 'complete',
         ]);
-        $response = app(UserUpdateService::class)->finalizeUserRegistration($update);
-        $replyMarkup = [
-            'keyboard' => [
-                [['text' => $this->translator->get($chatId, 'open_main_menu')]],
-            ],
-            'resize_keyboard' => true,
-            'one_time_keyboard' => false,
-        ];
-        if ($response == true) {
-            $this->sender->handle([
-                'chat_id' => $chatId,
-                'text' => $this->translator->get($chatId, 'profile_update_success'),
-                'reply_markup' => json_encode($replyMarkup),
-            ]);
-            return;
-        }
-        $this->sender->handle([
-            'chat_id' => $chatId,
-            'text' => $this->translator->get($chatId, 'error_retry_later'),
-            'reply_markup' => json_encode($replyMarkup),
-        ]);
-        return;
+        return $response = app(UserUpdateService::class)->finalizeUserRegistration($update);
     }
 }

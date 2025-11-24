@@ -25,11 +25,14 @@ class AuthenticatedRouteHandler
         $data = $callbackQuery?->getData();
         $chatId = $update->getMessage()?->getChat()?->getId()
             ?? $callbackQuery?->getMessage()?->getChat()?->getId();
-        $triggers = [
-            $this->translator->get($chatId, 'menu_profile'),
-            "/menu",
-            $this->translator->get($chatId, 'open_main_menu'),
-        ];
+
+        $triggers = Cache::store('redis')->remember('menu_combined_values', 3600, function () {
+            $open_menu = $this->translator->getValuesForAllLangs('open_main_menu');
+            $menu_profile = $this->translator->getValuesForAllLangs('menu_profile');
+            $command = ['/menu'];
+
+            return array_merge($open_menu, $menu_profile, $command);
+        });
 
         if (in_array($message, $triggers, true)) {
             app(Menu::class)->handle($chatId);
@@ -60,6 +63,9 @@ class AuthenticatedRouteHandler
             Cache::store('bot')->forget('tg_user_update:' . $chatId);
             return app(UpdateStartHandler::class)->handle($chatId);
         }
-
+   return app(SendMessages::class)->handle([
+            'chat_id' => $chatId,
+            'text' => $this->translator->get($chatId, "promo_join_default_text"),
+        ]);
     }
 }
